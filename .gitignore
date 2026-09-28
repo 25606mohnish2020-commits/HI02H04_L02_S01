@@ -1,0 +1,19 @@
+# --- Not part of the deployed site ---
+# SME review deck
+*.pptx
+*.ppt
+
+# Editor backups of the lesson files
+*.bak
+*.bak[0-9]*
+
+# --- Tooling / OS noise ---
+.vscode/
+.vercel/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk

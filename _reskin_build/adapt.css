@@ -1,0 +1,299 @@
+/* ===== L02-ADAPT: the reference layout (HI02H04_L01_S01) applied to THIS lesson's own content ===== */
+/* ===== page 1 [L02-LANDING-FRAME] — layout from Figma "FLN by MJ" node 98-2 (start_activity_html_layout, 1280x720) =====
+   The white card, the title, the hero picture and the sentence pill are gone. The card keeps the fleet box (1114x456,
+   centred — the Figma frame is exactly that size) and IS the picture frame now: 9px white stroke, 44px corners, a 65%
+   white fill under the picture, and the title scene drawn at the Figma placement — 1147.36x474 at (-40,-37) inside the
+   stroke, clipped by the corners. The bird, the play button and their rules are untouched: both are still positioned from
+   the card's box (bird left:-24/bottom:-12, play pill bottom:26), so they sit on the frame as they sat on the card. */
+.start-gate .sg-card{height:456px;background:none !important;}
+.start-gate .sg-content{display:none !important;}
+.start-gate .sg-title[hidden]{display:none !important;}
+.start-gate .sg-frame{position:absolute;inset:0;z-index:1;box-sizing:border-box;border:9px solid #FFFFFF;border-radius:44px;
+  overflow:hidden;background:rgba(255,255,255,.65);}
+.start-gate .sg-frame img{position:absolute;left:-40px;top:-37px;width:1147.36px;height:474px;max-width:none;max-height:none;
+  object-fit:cover;display:block;pointer-events:none;}
+/* the frame arrives with the landing's own reveal (the pop-in the hero picture had), the moment the loader starts to fade */
+body:not(.tota-landing-in) .start-gate .sg-frame{opacity:0;}
+body.tota-landing-in .start-gate .sg-frame{animation:totaIconReveal .52s cubic-bezier(.34,1.5,.6,1) both;animation-delay:.10s;}
+/* sky-drift hole: back to the kit's value for a 1114x456 card (the 560px card of the hero layout is gone) */
+.sg-sky{--sg-hole-h:calc(416px * var(--scale,1));}
+/* story pages: the picture pops out and holds (2 s) once the sentence has been heard ([L02-POP-AFTER-SENTENCE]: the module
+   adds .p2-pop at the end of the sentence clip, and lights आगे बढ़ें only when these 2 s are over) */
+@keyframes p2BirdPop{
+  0%{transform:scale(1);animation-timing-function:cubic-bezier(.2,.8,.3,1);}
+  10%{transform:scale(1.045);animation-timing-function:ease-in-out;}
+  16%{transform:scale(1.03);animation-timing-function:linear;}
+  86%{transform:scale(1.03);animation-timing-function:ease-in-out;}
+  100%{transform:scale(1);}
+}
+.stage.tut .story-frame.p2-pop{animation:p2BirdPop 2s ease-in-out 1 both;transform-origin:50% 50%;will-change:transform;}
+/* [L02-POP-5S] pages 2, 4, 5 and 10 (card data.pop_ms = 5000, the module adds .p2-pop-5s to the frame): the same pop, 3 s longer —
+   the pop-out (0.2 s) and the settle (0.28 s) are the 2 s pop's, only the hold is longer (0.2 → 4.72 s instead of 0.2 → 1.72 s) */
+@keyframes p2BirdPop5s{
+  0%{transform:scale(1);animation-timing-function:cubic-bezier(.2,.8,.3,1);}
+  4%{transform:scale(1.045);animation-timing-function:ease-in-out;}
+  6.4%{transform:scale(1.03);animation-timing-function:linear;}
+  94.4%{transform:scale(1.03);animation-timing-function:ease-in-out;}
+  100%{transform:scale(1);}
+}
+.stage.tut .story-frame.p2-pop.p2-pop-5s{animation-name:p2BirdPop5s;animation-duration:5s;}
+/* story pages: after the narration ONLY the speaker chip pulses with the "tap here" line (through `scale`, so the chip's
+   transform:none stillness lock stays), and ONLY the chip takes the tap — the sentence bar is not hit-testable */
+@keyframes spkCuePulse{0%,100%{scale:1;}50%{scale:1.10;}}
+.stage.tut .story-caption.p2-cue{animation:none !important;}
+.stage.tut .story-caption.p2-cue .tut-audio{animation:spkCuePulse .8s ease-in-out infinite !important;transform-origin:50% 50%;}
+.stage.tut .story-caption.p2-sentence-btn{pointer-events:none;cursor:default;user-select:none;-webkit-user-select:none;}
+.stage.tut .story-caption.p2-sentence-btn:active{transform:none;}
+.stage.tut .story-caption.p2-sentence-btn .tut-audio{pointer-events:auto;cursor:pointer;}
+/* word-by-word highlight while the sentence speaks: the word being said turns dark orange with a very slight pop;
+   the padding and the negative margin cancel out, so no text moves */
+.stage.tut .story-caption .p2-words{display:inline;}
+.stage.tut .story-caption .p2-word{display:inline-block;border-radius:10px;padding:0 .12em;margin:0 -.12em;transform-origin:50% 60%;}
+.stage.tut .story-caption .p2-word.on{color:#E86A00;animation:p2WordPop .28s ease-out 1;}
+@keyframes p2WordPop{0%{transform:scale(1);}45%{transform:scale(1.10);}100%{transform:scale(1);}}
+/* question pages: the recall picture is shown bare (slide.bare_recall), square, with the yellow stroke; 230px tall so
+   the picture, the 24px gap and the 250px option cards end above the आगे pill (which is drawn on every page) */
+.story-q-stim.sq-bare{margin-bottom:0;}
+.story-q-stim.sq-bare .story-q-thumb{height:230px;width:auto;border-radius:26px;outline:4px solid #FCD86B;outline-offset:-4px;box-shadow:none;}
+.story-q-stim.sq-bare .story-q-thumb-emoji{font-size:150px;line-height:230px;padding:0 40px;}
+/* find-in-the-picture pages: the frame keeps the authored 1000x560 crop (the hotspots are percentages of it), at the
+   full content height; the picture carries the yellow stroke like every other picture */
+.tis-frame{aspect-ratio:1000 / 560 !important;}
+.tis-img{object-fit:cover !important;outline:4px solid #FCD86B;outline-offset:-4px;border-radius:inherit;}
+
+/* ===== pages 2-10 [L02-STORY-FIG] — story pages laid out from Figma "FLN by MJ" section 19-13 (frames "Page 2".."Page 10") =====
+   The Figma pages are 1280x720 artboards drawn with the fleet chrome at 1:1; they map onto the 1333x750 stage by ONE uniform
+   factor, --fs = 1333/1280, so every value below is the Figma number as written, times --fs. Story pages carry .l02-story on the
+   stage (the module adds it; adapt.js clears it on every other slide). The header row is shown (band + mascot circle, no shoulder
+   chip), the fleet teaching card becomes the Figma frame, and the picture, the sentence bar, the speaker chip and the आगे बढ़ें
+   pill sit at the Figma spots inside it. Beats and taps are the module's, unchanged. */
+.stage.l02-story{--fs:1.04140625;}
+/* header — Figma: circle 116.6x120 @ (30,22), #61D0FE with a 5px #FDF9E9 ring; band 1215.1x84 @ (33.9,40), #CBE8FF with a
+   4px white ring, ink #012F76 32px starting 140px in; the row carries a 0 4px 2px 25% drop shadow. The mascot keeps its mood
+   heads (talking / pointing), the fleet's own; the header speaker chip is not on the Figma page. */
+.stage.tut.l02-story .header-row{display:block;}
+.stage.l02-story{--mascot-left:calc(30px * var(--fs));--mascot-top:calc(22px * var(--fs));--mascot-size:calc(120px * var(--fs));
+  --band-top:calc(40px * var(--fs));--band-left:calc(33.9px * var(--fs));--band-w:calc(1215.1px * var(--fs));--band-h:calc(84px * var(--fs));
+  --band-border:calc(4px * var(--fs));--band-bg:#CBE8FF;--band-edge:#FFFFFF;--band-pad-l:calc(136px * var(--fs));--band-pad-r:calc(10px * var(--fs));
+  --band-font:calc(32px * var(--fs));}
+.stage.l02-story .mascot-wrap{width:calc(116.6px * var(--fs));height:calc(120px * var(--fs));}
+.stage.l02-story .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-story .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-story .prompt-band .prompt-text{color:#012F76;font-weight:700;letter-spacing:0;}
+.stage.l02-story #audioChip{display:none !important;}
+/* the frame — Figma: 1088x508 @ (97,171), 12px #5A8FEE stroke, r40, shadow 0 8px 8.8px 25%, paper #F2F7FA ruled every 44.8px
+   with 1.43px #D4E0FE lines, clipped at the corners. It sits in .slide-stage, which starts under the 140px header row. The fleet
+   card's in-card title, straddling bird and mascot band are off here. */
+.stage.tut.l02-story .slide-stage{padding:0;}
+.stage.tut.l02-story .slide-host{display:block;}
+.stage.tut.l02-story .tut-card{position:absolute;left:calc(97px * var(--fs));top:calc(171px * var(--fs) - 140px);
+  width:calc(1088px * var(--fs));height:calc(508px * var(--fs));box-sizing:border-box;flex:none;min-height:0;display:block;
+  border:calc(12px * var(--fs)) solid #5A8FEE;border-radius:calc(40px * var(--fs));overflow:hidden;
+  background-color:#F2F7FA;
+  background-image:linear-gradient(to right,#D4E0FE calc(1.43px * var(--fs)),transparent calc(1.43px * var(--fs))),
+                   linear-gradient(to bottom,#D4E0FE calc(1.43px * var(--fs)),transparent calc(1.43px * var(--fs)));
+  background-size:calc(44.816px * var(--fs)) calc(44.816px * var(--fs));
+  box-shadow:0 8px 8.8px rgba(0,0,0,.25);}
+.stage.tut.l02-story .tut-card::after{content:none;}
+.stage.tut.l02-story .tut-prompt,.stage.tut.l02-story .tut-mascot{display:none !important;}
+.stage.tut.l02-story .tut-content{position:absolute;inset:0;padding:0;display:block;}
+.stage.tut.l02-story .story-scene{position:absolute;inset:0;display:block;padding:0;gap:0;width:auto;height:auto;}
+/* the picture — Figma: 468x244 @ (310,29) of the frame = (298,17) inside its stroke; 4px #FCB717 stroke, r20, clipped. The
+   picture files (assets/Images/story_N.webp) are the Figma pictures cut to exactly this box, so they fill it edge to edge. */
+.stage.tut.l02-story .story-frame{position:absolute;left:calc(298px * var(--fs));top:calc(17px * var(--fs));
+  width:calc(468px * var(--fs));height:calc(244px * var(--fs));box-sizing:border-box;aspect-ratio:auto;max-width:none;max-height:none;
+  flex:none;margin:0;padding:0;display:block;border:calc(4px * var(--fs)) solid #FCB717;border-radius:calc(20px * var(--fs));
+  overflow:hidden;background:#000;}
+.stage.tut.l02-story .story-frame .story-img{width:100%;height:100%;max-width:none;object-fit:cover;outline:none;border-radius:0;display:block;}
+/* the sentence bar — Figma: 471x71 @ (309,305) of the frame = (297,293) inside its stroke; white, 4px #1987FC stroke, r20. The
+   Figma bar is empty; the lesson's sentence goes in it, centred, band ink, 32px on one line (the module shrinks a long line). */
+.stage.tut.l02-story .story-caption{position:absolute;left:calc(297px * var(--fs));top:calc(293px * var(--fs));
+  width:calc(471px * var(--fs));height:calc(71px * var(--fs));box-sizing:border-box;margin:0;padding:0 calc(12px * var(--fs));
+  max-width:none;flex:none;display:flex;align-items:center;justify-content:center;white-space:nowrap;
+  background:#FFFFFF;border:calc(4px * var(--fs)) solid #1987FC;border-radius:calc(20px * var(--fs));box-shadow:none;
+  font-family:var(--font-hi);font-weight:700;font-size:calc(32px * var(--fs));line-height:1.15;color:#012F76;overflow:visible;}
+/* the speaker chip — Figma: 41.16x44 @ (223,315) of the frame, i.e. 86px left of the bar and 10px below its top; #1987FC→#1565F4,
+   4px white ring, r999, shadow 0 4px 2px 25%, a 19.87px speaker icon. The fleet's own speaker glyph (its waves blink only while
+   the sentence speaks; the chip pulses from "यह बटन…" to the end of the narration and again for the "tap here" cue —
+   [L02-SPK-CUE]) is drawn at exactly that icon size: the SPK art's glyph is
+   18 units wide in a 62-unit box, so the art is laid at 62px x --fs with its own ring and shadow switched off. */
+.stage.tut.l02-story .story-caption.has-chip .tut-audio{position:absolute;left:calc(-90px * var(--fs));top:calc(6px * var(--fs));right:auto;bottom:auto;   /* -86 / +10 from the bar's outer edge = -90 / +6 from inside its 4px stroke */
+  margin:0;padding:0;width:calc(41.16px * var(--fs));height:calc(44px * var(--fs));box-sizing:border-box;display:block;
+  border:calc(4px * var(--fs)) solid #FFFFFF;border-radius:999px;background:linear-gradient(90deg,#1987FC,#1565F4);
+  box-shadow:0 4px 2px rgba(0,0,0,.25);filter:none;overflow:visible;}
+.stage.tut.l02-story .tut-audio svg{position:absolute;left:50%;top:50%;width:calc(62px * var(--fs));height:calc(60px * var(--fs));
+  margin:calc(-26px * var(--fs)) 0 0 calc(-31px * var(--fs));overflow:visible;}
+.stage.tut.l02-story .tut-audio svg rect{display:none;}
+.stage.tut.l02-story .tut-audio svg > g[filter]{filter:none;}
+/* आगे बढ़ें — Figma: 186.18x64 @ (451,399) of the frame, i.e. centred with its top 570px from the artboard top (86px above its
+   bottom); #FCB717, 4.544px white ring, r44.555, label 24px #002F76, inset highlights, shadow 0 6.06px 3.03px 25%. Disabled =
+   the fleet's disabled pill colours (#EDEDED / #C2C2C2, flat 4px #D6D6D6 drop), so the disabled→enabled fade, the tap and the
+   pop-in are as they were; the arrow art of NAV-NEXT-BTN is off on these pages. */
+.stage.tut.l02-story #navBtn{left:50% !important;right:auto !important;bottom:calc(86px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
+  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
+  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
+  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
+  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
+.stage.tut.l02-story #navBtn::before,.stage.tut.l02-story #navBtn::after{content:none !important;display:none !important;}
+.stage.tut.l02-story #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
+  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
+.stage.tut.l02-story #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
+.stage.tut.l02-story #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+
+/* ===== pages 2-10 [L02-SPK-CUE] — the speaker chip animates only for the beat it belongs to =====
+   The engine flags EVERY chip .playing for every clip, so the chip's two wave arcs used to blink through the narration
+   (the instruction VO) and the "tap here" line as well. Now they blink ONLY while the sentence itself is spoken — the chip's
+   own voice, after the tap: the module keeps .p2-speaking on the sentence bar for exactly that clip. During the narration
+   the chip is still — except while the narration says "यह बटन दबाकर सुन सकते हैं" (page 2, vo_help): from those words to
+   the end of the clip the chip PULSES, the very same spkCuePulse the "tap here" line uses (through `scale`, so the chip's
+   transform:none stillness lock stays); the module keeps .p2-chip-pulse on the chip from the audio clock at
+   data.chip_pulse_at until the clip ends. The "tap here" line (vo_tap_speaker_sentence) itself keeps the reference story
+   pages' spkCuePulse rule above, untouched — no pop anywhere. */
+.stage.tut.l02-story .story-caption:not(.p2-speaking) .tut-audio.playing .wv{animation:none !important;opacity:1 !important;}
+.stage.tut.l02-story .story-caption .tut-audio.p2-chip-pulse{animation:spkCuePulse .8s ease-in-out infinite !important;transform-origin:50% 50%;}
+
+/* ===== "page 11" [L02-FIND-FIG] — the first "find Madhav in the picture" page (G2, TAP_IN_SCENE) laid out from Figma "FLN by MJ"
+   node 110-2 ("Formative html area", a 1280x720 artboard mapped by the same --fs = 1333/1280). Stage class .l02-find (adapt.js,
+   card slide.find_fig). Header — Figma: circle 123.97x120 @ (33,30), #61D0FE with a 5px #FDF9E9 ring; band 1214.6x84 @
+   (37.4,48), #CBE8FF with a 4px white ring, ink #002F76 32px SemiBold starting 155.8px in; the row carries a 0 4px 2px 25% drop
+   shadow; the header speaker chip is not on the Figma page (the mascot tap replays the question). The mascot keeps the
+   fleet's own mood heads, as on the story pages. */
+.stage.l02-find{--fs:1.04140625;
+  --mascot-left:calc(33px * var(--fs));--mascot-top:calc(30px * var(--fs));--mascot-size:calc(120px * var(--fs));
+  --band-top:calc(48px * var(--fs));--band-left:calc(37.4px * var(--fs));--band-w:calc(1214.6px * var(--fs));--band-h:calc(84px * var(--fs));
+  --band-border:calc(4px * var(--fs));--band-bg:#CBE8FF;--band-edge:#FFFFFF;--band-pad-l:calc(151.8px * var(--fs));--band-pad-r:calc(10px * var(--fs));
+  --band-font:calc(32px * var(--fs));}
+.stage.l02-find .mascot-wrap{width:calc(123.97px * var(--fs));height:calc(120px * var(--fs));}
+.stage.l02-find .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-find .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-find .prompt-band .prompt-text{color:#002F76;font-weight:700;letter-spacing:0;}
+.stage.l02-find #audioChip{display:none !important;}
+/* the picture — Figma: box 935x442 @ (175,174), 4px #386AF6 stroke, r20, clipped; the designer's picture ("image 221",
+   assets/Images/find_madhav.webp) 951x536 @ (-16,-12) of the box = (-20,-16) inside its 4px stroke. The box sits in
+   .slide-stage, which starts under the 140px header row. The fleet's frame rules (aspect ratio, contain, yellow stroke) are off. */
+.stage.l02-find .slide-stage{padding:0;display:block;}
+.stage.l02-find .slide-host{display:block;position:absolute;inset:0;padding:0;gap:0;}
+.stage.l02-find .tis-scene{position:absolute;inset:0;display:block;padding:0;width:auto;height:auto;}
+.stage.l02-find .tis-frame{position:absolute;left:calc(175px * var(--fs));top:calc(174px * var(--fs) - 140px);
+  width:calc(935px * var(--fs)) !important;height:calc(442px * var(--fs)) !important;aspect-ratio:auto !important;max-width:none !important;
+  box-sizing:border-box;margin:0;flex:none;border:calc(4px * var(--fs)) solid #386AF6;border-radius:calc(20px * var(--fs));
+  overflow:hidden;background:#000;box-shadow:none;}
+.stage.l02-find .tis-img{position:absolute;left:calc(-20px * var(--fs));top:calc(-16px * var(--fs));
+  width:calc(951px * var(--fs)) !important;height:calc(536px * var(--fs)) !important;max-width:none;object-fit:cover !important;
+  outline:none;border-radius:0;}
+/* आगे बढ़ें — Figma: 186.18x64 @ (547,630), i.e. centred, 26px above the artboard bottom; the story pages' pill (same colours,
+   ring, radius, label; disabled look until Madhav is found, the arrow art of NAV-NEXT-BTN off) */
+.stage.l02-find #navBtn{left:50% !important;right:auto !important;bottom:calc(26px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
+  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
+  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
+  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
+  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
+.stage.l02-find #navBtn::before,.stage.l02-find #navBtn::after{content:none !important;display:none !important;}
+.stage.l02-find #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
+  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
+.stage.l02-find #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
+.stage.l02-find #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+/* [L02-FIND-HOTS] the three regions on the picture (the boy = the answer, the mother and the football = decoys) are SHAPED
+   outlines — the two silhouettes and a circle round the ball (card data.shapes, drawn by adapt.js in an SVG laid over the
+   picture at exactly the picture's box, so they scale with it). They rest under a plain WHITE stroke — no ring, no hover
+   tint, no idle pulse (the engine's 6 s hint pulse on the answer is off here). The boy's turns GREEN on the correct tap; a
+   decoy's turns RED with one small wiggle for 1 s and then goes back to WHITE (adapt.js [L02-FIND-RED-1S] restarts both on
+   every tap of it; the .18 s stroke transition below is the fade back). The stroke is a fine line — the
+   picture box's 3px (user, 2026-09-28: "fine white stroke" → 2px, then "a little more weight" → 3px; the first hand-traced
+   version was 4px), kept at that width whatever the scale; the outlines
+   themselves are traced from the picture's colours (build.py / trace_find_shapes.py) and sit 1 picture-px outside the figure.
+   The engine's rectangular hotspots stay in the DOM for its tap logic but are invisible and inert here — the outlines
+   forward the taps. Later pages' find pictures keep the fleet's green ring. */
+.stage.l02-find .tis-hot,.stage.l02-find .tis-hot:hover,.stage.l02-find .tis-hot.pulse,.stage.l02-find .tis-hot.hit,
+.stage.l02-find .tis-hot.shake,.stage.l02-find .tis-hot.tis-wrong{box-shadow:none !important;animation:none !important;pointer-events:none !important;}
+.stage.l02-find .l02-shapes{position:absolute;left:calc(-20px * var(--fs));top:calc(-16px * var(--fs));width:calc(951px * var(--fs));height:calc(536px * var(--fs));
+  overflow:visible;display:block;}
+.stage.l02-find .l02-shape{fill:none;stroke:#FFFFFF;stroke-width:calc(3px * var(--fs));stroke-linejoin:round;stroke-linecap:round;
+  vector-effect:non-scaling-stroke;pointer-events:all;cursor:pointer;transition:stroke .18s;transform-box:fill-box;transform-origin:50% 50%;}
+.stage.l02-find .l02-shape.hit{stroke:#00B132;}
+.stage.l02-find .l02-shape.wrong{stroke:#F93544;}
+body.vo-playing .stage.l02-find .l02-shape{pointer-events:none;}   /* the fleet's "no answering while a clip sounds" lock, as on the rectangles */
+@keyframes l02Wiggle{0%,100%{transform:rotate(0) translateX(0);}20%{transform:rotate(-2deg) translateX(-3px);}40%{transform:rotate(2deg) translateX(3px);}
+  60%{transform:rotate(-1.5deg) translateX(-2px);}80%{transform:rotate(1.5deg) translateX(2px);}}
+.stage.l02-find .l02-shape.l02-wiggle{animation:l02Wiggle .45s ease-in-out 1;}
+
+/* ===== G3 [L02-Q3-FIG] — the guided story question laid out from Figma "FLN by MJ" node 113-198 ("G3 guided story question",
+   a 1280x720 artboard mapped by the same --fs = 1333/1280). Stage class .l02-q3 (adapt.js, card slide.fig_q3). Header — Figma:
+   circle 116.513x120 @ (36,26), #61D0FE with a 5px #FDF9E9 ring; band 1214.103x84 @ (39.9,44), #CBE8FF with a 4px white ring,
+   ink #012F76 32px SemiBold, the text starting 139.55px in; the row carries a 0 4px 2px 25% drop shadow; no header speaker chip
+   (the mascot tap replays the question). The mascot keeps the fleet's own mood heads, as on the story and find pages. */
+.stage.l02-q3{--fs:1.04140625;
+  --mascot-left:calc(36px * var(--fs));--mascot-top:calc(26px * var(--fs));--mascot-size:calc(120px * var(--fs));
+  --band-top:calc(44px * var(--fs));--band-left:calc(39.9px * var(--fs));--band-w:calc(1214.103px * var(--fs));--band-h:calc(84px * var(--fs));
+  --band-border:calc(4px * var(--fs));--band-bg:#CBE8FF;--band-edge:#FFFFFF;--band-pad-l:calc(135.55px * var(--fs));--band-pad-r:calc(10px * var(--fs));
+  --band-font:calc(32px * var(--fs));}
+.stage.l02-q3 .mascot-wrap{width:calc(116.513px * var(--fs));height:calc(120px * var(--fs));}
+.stage.l02-q3 .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-q3 .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-q3 .prompt-band .prompt-text{color:#012F76;font-weight:700;letter-spacing:0;}
+.stage.l02-q3 #audioChip{display:none !important;}
+.stage.l02-q3 #navBtn{display:none !important;}   /* the Figma page has no pill: the question moves on by itself after the correct tap, as before */
+/* the three cards — Figma: 252x314.113 each @ y 247, x 232 / 514 / 796 (30px apart). The engine's .q-row / .opt-grid (flex-centred,
+   229px columns) become plain positioned boxes at the Figma spots; no recall picture (card data.hide_recall). The .slide-stage
+   starts under the 140px header row. */
+.stage.l02-q3 .slide-stage{padding:0;display:block;}
+.stage.l02-q3 .slide-host{display:block;position:absolute;inset:0;padding:0;gap:0;}
+.stage.l02-q3 .q-row{display:block;position:absolute;inset:0;gap:0;}
+.stage.l02-q3 .opt-grid{position:absolute;left:calc(232px * var(--fs));top:calc(247px * var(--fs) - 140px);width:auto;max-width:none;
+  display:grid;grid-template-columns:repeat(3,calc(252px * var(--fs))) !important;gap:calc(30px * var(--fs)) !important;align-items:start;align-content:start;}
+/* a card — Figma: a #D9D9D9 box 252x314.113 r13.31 (clipped) holding the white card 248.451x307.014 @ (1.77,1.77), 2.386px #D5D8DF
+   stroke (inside), r14.316 — so a 1.77px grey rim and a 5.33px grey lip under the card. The white card is the cell's ::before;
+   the engine's own cell chrome (2px #EEF3FA border, r28, padding, shadow, 230px cap, flex column) is off. */
+.stage.l02-q3 .opt-cell{position:relative;width:calc(252px * var(--fs)) !important;max-width:none !important;height:calc(314.113px * var(--fs));
+  min-height:0 !important;box-sizing:border-box;margin:0;padding:0 !important;display:block;overflow:hidden;
+  background:#D9D9D9 !important;border:0 !important;border-radius:calc(13.31px * var(--fs)) !important;box-shadow:none !important;}
+.stage.l02-q3 .opt-cell::before{content:"";position:absolute;left:calc(1.77px * var(--fs));top:calc(1.77px * var(--fs));
+  width:calc(248.451px * var(--fs));height:calc(307.014px * var(--fs));box-sizing:border-box;background:#FFFFFF;
+  border:calc(2.386px * var(--fs)) solid #D5D8DF;border-radius:calc(14.316px * var(--fs));transition:border-color .07s linear;}
+/* the picture — the Figma picture window: the white card's padding box from its top down to 194.84px (every card's picture ends
+   there), i.e. 243.679x194.84 @ (4.156,4.156) of the cell; assets/Images/q3_*.webp ARE that window (build.py cuts each picture
+   at the Figma crop), so the file fills it edge to edge. Its top corners follow the white card's inner radius (14.316 - 2.386). */
+.stage.l02-q3 .opt-cell .story-q-opt-img{position:absolute;left:calc(4.156px * var(--fs));top:calc(4.156px * var(--fs));
+  width:calc(243.679px * var(--fs)) !important;height:calc(194.84px * var(--fs)) !important;max-width:none;aspect-ratio:auto;
+  object-fit:cover;display:block;margin:0;border-radius:calc(11.93px * var(--fs)) calc(11.93px * var(--fs)) 0 0;}
+.stage.l02-q3 .opt-cell .story-q-opt-emoji{position:absolute;left:0;right:0;top:calc(40px * var(--fs));text-align:center;font-size:calc(110px * var(--fs));line-height:1;}
+/* the sentence — Figma: Baloo Bhai 2 SemiBold 24.845px #012F76, line-height normal (40px), centred, the box top at 224.84px of the
+   white card's padding box (= 228.996px of the cell). The width is the Figma text box only where the line wraps in the design
+   (adapt.js sets it from the option's label_w); the others stay on one line. The fleet's .14em side padding and its 1.44
+   line-height (html body … rules) are overridden at a higher specificity. */
+html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-opt-label{position:absolute;left:50%;top:calc(228.996px * var(--fs));
+  transform:translateX(-50%);margin:0;padding:0 !important;width:max-content;max-width:calc(243.679px * var(--fs));white-space:nowrap;
+  font-family:var(--font-hi);font-weight:700;font-size:calc(24.845px * var(--fs)) !important;line-height:calc(40px * var(--fs)) !important;
+  color:#012F76;text-align:center;}
+html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-opt-label[style*="width"]{white-space:normal;}
+/* the engine's feedback, mapped onto the white card's stroke: green on the answer (the kit's .ck-correct / .correct), red on a
+   wrong tap (the kit's transient .wg-wrong, the engine's .crossed) and the guided reveal (.opt-guided); the kit's pop / shake
+   / crown / dim run on the cell as everywhere else. The cell's own border is off, so the colours have to land here. */
+.stage.l02-q3 .opt-cell.crossed::before,.stage.l02-q3 .opt-cell.opt-dim::before,.stage.l02-q3 .opt-cell.tota-dim::before{content:"" !important;display:block !important;}   /* the fleet's "no ✕" rule (TOTA-FIXES) kills ::before on a crossed cell — that ✕ was a ::before; here ::before IS the white card */
+.stage.l02-q3 .opt-cell.correct::before,.stage.l02-q3 .opt-cell.ck-correct::before,.stage.l02-q3 .opt-cell.opt-guided::before{border-color:var(--correct,#00B132);}
+.stage.l02-q3 .opt-cell.wg-wrong::before,.stage.l02-q3 .opt-cell.crossed::before,.stage.l02-q3 .opt-cell.opt-redglow-1s::before{border-color:var(--wrong,#F93544);}
+.stage.l02-q3 .opt-cell.wg-wrong,.stage.l02-q3 .opt-cell.wg-out,.stage.l02-q3 .opt-cell.ck-correct,.stage.l02-q3 .opt-cell.correct,
+.stage.l02-q3 .opt-cell.opt-redglow-1s,.stage.l02-q3 .opt-cell.opt-guided{background:#D9D9D9 !important;border:0 !important;box-shadow:none !important;overflow:hidden !important;}
+.stage.l02-q3 .opt-cell:hover{transform:none;border-color:transparent;box-shadow:none !important;}
+
+/* ===== I1 [L02-I1-REF] — the independent story question laid out like the reference lesson's G2 (a sentence_options page:
+   bare recall picture + three sentence pills; every rule for it is the fleet's, already in this stylesheet). The one
+   difference: the reference shows its recall picture at the fleet's 315px (374.125x315 for its near-square picture), while
+   this lesson's question pages shrink theirs to 230px ([L02] rule above, the picture cards below need the room). On a
+   sentence page the pills are only 78px tall, so the picture takes the reference's exact box: 374.125x315, the designer's
+   landscape picture cropped to it around its centre (the mother and Madhav), the 4px inset yellow frame and r26 as above. */
+.stage.sent-page .story-q-stim.sq-bare .story-q-thumb{width:374.125px;height:315px;object-fit:cover;object-position:50% 50%;}
+
+/* ===== pages 2-10 [L02-SPK-132] — the speaker chip 32% larger than the Figma chip, on the same spot =====
+   The user asked for +20%, then a further +10% (1.2 x 1.1 = 1.32). Every dimension of the [L02-STORY-FIG] chip above — the
+   41.16x44 box, its 4px white ring, the 62x60 glyph art and the margins that centre it — times 1.32 (54.3312x58.08, 5.28px,
+   81.84x79.2, -34.32/-40.92); left/top move by half the growth (-6.5856 / -7.04 Figma px) so the chip's centre stays exactly
+   where the Figma chip's was (-69.42, 28). Done through real sizes, not `scale`, because the cue and narration pulses animate
+   `scale` and would override a static one. */
+.stage.tut.l02-story .story-caption.has-chip .tut-audio{left:calc(-96.5856px * var(--fs));top:calc(-1.04px * var(--fs));
+  width:calc(54.3312px * var(--fs));height:calc(58.08px * var(--fs));border-width:calc(5.28px * var(--fs));}
+.stage.tut.l02-story .tut-audio svg{width:calc(81.84px * var(--fs));height:calc(79.2px * var(--fs));margin:calc(-34.32px * var(--fs)) 0 0 calc(-40.92px * var(--fs));}
