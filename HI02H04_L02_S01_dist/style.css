@@ -2621,3 +2621,115 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.tut.l02-story .story-caption.has-chip .tut-audio{left:calc(-96.5856px * var(--fs));top:calc(-1.04px * var(--fs));
   width:calc(54.3312px * var(--fs));height:calc(58.08px * var(--fs));border-width:calc(5.28px * var(--fs));}
 .stage.tut.l02-story .tut-audio svg{width:calc(81.84px * var(--fs));height:calc(79.2px * var(--fs));margin:calc(-34.32px * var(--fs)) 0 0 calc(-40.92px * var(--fs));}
+
+/* ===== I2 [L02-BED-FIG] — "page 13" (the user's count), the independent find page (TAP_IN_SCENE), laid out from Figma "FLN by MJ"
+   node 145-439 ("Formative html area", a 1280x720 artboard mapped by the same --fs = 1333/1280). Stage class .l02-bed (adapt.js, card
+   slide.bed_fig). Header — Figma: circle 123.966x120 @ (31,28), #61D0FE with a 5px #FDF9E9 ring; band 1214.595x84 @ (35.4,46), #CBE8FF
+   with a 4px white ring, ink #002F76 32px SemiBold starting 155.8px in; the row carries a 0 4px 2px 25% drop shadow; no header speaker
+   chip (the mascot tap replays the line). The mascot keeps the fleet's own mood heads, as on the story, find and question pages. */
+.stage.l02-bed{--fs:1.04140625;
+  --mascot-left:calc(31px * var(--fs));--mascot-top:calc(28px * var(--fs));--mascot-size:calc(120px * var(--fs));
+  --band-top:calc(46px * var(--fs));--band-left:calc(35.4px * var(--fs));--band-w:calc(1214.595px * var(--fs));--band-h:calc(84px * var(--fs));
+  --band-border:calc(4px * var(--fs));--band-bg:#CBE8FF;--band-edge:#FFFFFF;--band-pad-l:calc(151.8px * var(--fs));--band-pad-r:calc(10px * var(--fs));
+  --band-font:calc(32px * var(--fs));}
+.stage.l02-bed .mascot-wrap{width:calc(123.966px * var(--fs));height:calc(120px * var(--fs));}
+.stage.l02-bed .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-bed .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-bed .prompt-band .prompt-text{color:#002F76;font-weight:700;letter-spacing:0;}
+.stage.l02-bed #audioChip{display:none !important;}
+/* the backdrop — Figma (every frame of section 189-1302: the three board pages and the P1 card question): the artboard under a copy
+   of the room ("ChatGPT Image Sep 28…", assets/Images/bed_bg.webp) 1326.582x742 @ (-23.29,-11), layer blur 4, 95% — drawn as the
+   stage's first child (adapt.js, card slide.room_bg → stage class .l02-roombg), so it lies under the header row, the picture box or
+   the cards, and the pill; the stage clips it */
+.stage.l02-roombg{--fs:1.04140625;}
+.stage.l02-roombg .l02-bed-bg{position:absolute;left:calc(-23.29px * var(--fs));top:calc(-11px * var(--fs));width:calc(1326.582px * var(--fs));height:calc(742px * var(--fs));
+  max-width:none;object-fit:cover;filter:blur(4px);opacity:.95;pointer-events:none;user-select:none;display:block;z-index:0;}
+/* the picture box — Figma: 935x442 @ (173,172), 4px #386AF6 stroke, r20, clipped, shadow 0 4px 4px 45%; the designer's room picture
+   ("image 245", assets/Images/bed_room.webp) 934x467 @ (0,-2) of the box = (-4,-6) inside its stroke. The box sits in .slide-stage,
+   which starts under the 140px header row. The fleet's frame rules (aspect ratio, contain, yellow stroke) are off. */
+.stage.l02-bed .slide-stage{padding:0;display:block;}
+.stage.l02-bed .slide-host{display:block;position:absolute;inset:0;padding:0;gap:0;}
+.stage.l02-bed .tis-scene{position:absolute;inset:0;display:block;padding:0;width:auto;height:auto;}
+.stage.l02-bed .tis-frame{position:absolute;left:calc(173px * var(--fs));top:calc(172px * var(--fs) - 140px);
+  width:calc(935px * var(--fs)) !important;height:calc(442px * var(--fs)) !important;aspect-ratio:auto !important;max-width:none !important;
+  box-sizing:border-box;margin:0;flex:none;border:calc(4px * var(--fs)) solid #386AF6;border-radius:calc(20px * var(--fs));
+  overflow:hidden;background:#000;box-shadow:0 4px 4px rgba(0,0,0,.45);}
+.stage.l02-bed .tis-img{position:absolute;left:calc(-4px * var(--fs));top:calc(-6px * var(--fs));
+  width:calc(934px * var(--fs)) !important;height:calc(467px * var(--fs)) !important;max-width:none;object-fit:cover !important;
+  outline:none;border-radius:0;}
+/* the bed's hotspot is the engine's (its tap logic, its lock while a clip sounds) but invisible — no ring, no hover tint, no idle
+   pulse, no green box on the hit: the room picture is the whole picture, as on the find page */
+.stage.l02-bed .tis-hot,.stage.l02-bed .tis-hot:hover,.stage.l02-bed .tis-hot.pulse,.stage.l02-bed .tis-hot.hit,
+.stage.l02-bed .tis-hot.shake,.stage.l02-bed .tis-hot.tis-wrong{box-shadow:none !important;animation:none !important;background:transparent !important;}
+.stage.l02-bed .tis-frame.l02-walking,.stage.l02-bed .tis-frame.l02-walking *{pointer-events:none !important;}   /* while Madhav walks, no taps */
+/* the layer over the picture (the box's padding box, 927x434): the guide, the four "?" tokens, Madhav, the table patch and the plant at
+   their Figma spots inside the stroke; none of it takes a tap — taps fall through to the bed's hotspot or to the picture (= try again) */
+.stage.l02-bed .l02-bed-layer{position:absolute;left:0;top:0;width:calc(927px * var(--fs));height:calc(434px * var(--fs));pointer-events:none;}
+.stage.l02-bed .l02-bed-layer *{pointer-events:none;}
+.stage.l02-bed .l02-bed-layer img{display:block;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;}
+/* the guide — Figma: "Vector 7" 626.47 wide @ (153.03,125.5) inside the stroke; its SVG (the dashed centre line and the arrow, #422B94 at
+   60%) bleeds 0.24% left and 0.6% top, i.e. 627.97 wide @ (151.53,124). Each board page has its own export (assets/Images/bed_guide_13/
+   14/16.svg: the whole line 260 tall; without the bottom row, cut at 243; the middle row's left part and the top only, cut at 120.612) —
+   adapt.js sets the spot and the size from card data.bed.guide */
+.stage.l02-bed .l02-bed-guide{position:absolute;}
+/* a "?" token — Figma: 104x102, 2px #F6E28B stroke, #7BA951, r900 (clipped), an inset shadow 0 2px 2px 25% on its outer edge; inside (of
+   its padding box): the ring "Ellipse 5" 94x94 @ (5,4) — a 2px #F6E28B circle — and the "?" picture ("image 238", assets/Images/bed_q.webp)
+   43x65 @ (31,18) with a 0 2px 4px 50% drop shadow. The tokens sit @ (133,67), (370,185), (580,54), (657,302) inside the stroke. */
+.stage.l02-bed .l02-bed-token{position:absolute;width:calc(104px * var(--fs));height:calc(102px * var(--fs));box-sizing:border-box;
+  border:calc(2px * var(--fs)) solid #F6E28B;background:#7BA951;border-radius:900px;overflow:hidden;}
+.stage.l02-bed .l02-bed-token::after{content:"";position:absolute;inset:calc(-2px * var(--fs));border-radius:inherit;box-shadow:inset 0 2px 2px rgba(0,0,0,.25);}
+.stage.l02-bed .l02-bed-token .l02-bed-ring{position:absolute;left:calc(5px * var(--fs));top:calc(4px * var(--fs));width:calc(94px * var(--fs));height:calc(94px * var(--fs));
+  box-sizing:border-box;border:calc(2px * var(--fs)) solid #F6E28B;border-radius:50%;display:block;}
+.stage.l02-bed .l02-bed-token .l02-bed-q{position:absolute;left:calc(31px * var(--fs));top:calc(18px * var(--fs));width:calc(43px * var(--fs));height:calc(65px * var(--fs));
+  object-fit:cover;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.stage.l02-bed .l02-bed-token.t1{left:calc(133px * var(--fs));top:calc(67px * var(--fs));}
+.stage.l02-bed .l02-bed-token.t2{left:calc(370px * var(--fs));top:calc(185px * var(--fs));}
+.stage.l02-bed .l02-bed-token.t3{left:calc(580px * var(--fs));top:calc(54px * var(--fs));}
+.stage.l02-bed .l02-bed-token.t4{left:calc(657px * var(--fs));top:calc(302px * var(--fs));}
+/* a passed token — Figma page 16: the first token shows a small Madhav ("image 247", assets/Images/bed_done.webp) 50x74 @ (27,14) of
+   its padding box, no shadow, in place of the "?"; adapt.js marks the tokens Madhav has passed (card data.bed.done at the page's start,
+   data.bed.flips as he walks) */
+.stage.l02-bed .l02-bed-token .l02-bed-done{position:absolute;left:calc(27px * var(--fs));top:calc(14px * var(--fs));width:calc(50px * var(--fs));height:calc(74px * var(--fs));
+  object-fit:cover;display:none;}
+.stage.l02-bed .l02-bed-token.done .l02-bed-q{display:none;}
+.stage.l02-bed .l02-bed-token.done .l02-bed-done{display:block;}
+/* Madhav — Figma: the yawning boy ("sprite-max-px-frames-36-rows-6-cols-6 (6) 1", an animated GIF → assets/Images/bed_boy.webp, the same
+   36 frames at 70 ms) 58x114, cover, at his spot of the page (Figma: (182,268) on page 13, (603,256) on page 14, (471,134) and mirrored
+   on page 16 — adapt.js sets left/top from data.bed.boy and the mirror from data.bed.face). adapt.js moves him along data.bed.walk with a
+   transform (a translate, and a mirror while he walks leftwards); the origin is his feet, so the mirror turns him on the spot. */
+.stage.l02-bed .l02-bed-boy{position:absolute;width:calc(58px * var(--fs));height:calc(114px * var(--fs));
+  object-fit:cover;transform-origin:50% 100%;will-change:transform;}
+/* the table patch — Figma: "Rectangle 147853", a 67.551x28.657 #B16121 r2 box turned -23.13°, centred in 73.378x52.893 @ (-34,267); it lies
+   under the plant's table and is mostly clipped by the box */
+.stage.l02-bed .l02-bed-patch{position:absolute;left:calc(-34px * var(--fs));top:calc(267px * var(--fs));width:calc(73.378px * var(--fs));height:calc(52.893px * var(--fs));
+  display:flex;align-items:center;justify-content:center;}
+.stage.l02-bed .l02-bed-patch i{display:block;width:calc(67.551px * var(--fs));height:calc(28.657px * var(--fs));background:#B16121;border-radius:2px;transform:rotate(-23.13deg);}
+/* the plant on its table — Figma: "Object" (assets/Images/bed_plant.webp) 90x130 @ (-42,183) inside the stroke, clipped by the box */
+.stage.l02-bed .l02-bed-plant{position:absolute;left:calc(-42px * var(--fs));top:calc(183px * var(--fs));width:calc(90px * var(--fs));height:calc(130px * var(--fs));}
+/* आगे बढ़ें — Figma: 186.18x64 @ (545,628), i.e. its centre 1.91px left of the artboard's, 28px above the bottom; the find page's pill (same
+   colours, ring, radius, label; the disabled look until Madhav reaches the bed, the arrow art of NAV-NEXT-BTN off) */
+.stage.l02-bed #navBtn{left:calc(638.09px * var(--fs)) !important;right:auto !important;bottom:calc(28px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
+  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
+  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
+  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
+  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
+.stage.l02-bed #navBtn::before,.stage.l02-bed #navBtn::after{content:none !important;display:none !important;}
+.stage.l02-bed #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
+  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
+.stage.l02-bed #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
+.stage.l02-bed #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+
+/* ===== P1 [L02-P1-FIG] — "page 15", the practice story question, from the same Figma section ("15 P1 Practice Story Question"): G3's
+   card layout ([L02-Q3-FIG] above, card slide.fig_q3 — header, three 252x314.113 cards @ 232/514/796 x 247, sentence, no pill) over the
+   blurred room (.l02-roombg), with the cards in YELLOW (card slide.fig_q3_yellow → stage class .l02-q3-yellow): the outer box #FCB717
+   (G3: #D9D9D9) with a 0 4px 2px 25% drop shadow, the white card's 2.386px stroke #FCB717 (G3: #D5D8DF). The engine's feedback keeps its
+   colours on the stroke (green on the answer, red on a wrong tap, the guided reveal), as on G3. */
+.stage.l02-q3.l02-q3-yellow .opt-cell,.stage.l02-q3.l02-q3-yellow .opt-cell:hover,
+.stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-out,.stage.l02-q3.l02-q3-yellow .opt-cell.ck-correct,
+.stage.l02-q3.l02-q3-yellow .opt-cell.correct,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-guided{
+  background:#FCB717 !important;box-shadow:0 4px 2px rgba(0,0,0,.25) !important;}
+.stage.l02-q3.l02-q3-yellow .opt-cell::before{border-color:#FCB717;}
+.stage.l02-q3.l02-q3-yellow .opt-cell.correct::before,.stage.l02-q3.l02-q3-yellow .opt-cell.ck-correct::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-guided::before{border-color:var(--correct,#00B132);}
+.stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong::before,.stage.l02-q3.l02-q3-yellow .opt-cell.crossed::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s::before{border-color:var(--wrong,#F93544);}

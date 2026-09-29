@@ -370,6 +370,188 @@ i1["data"]["options"] = [
 ]
 for o in i1["data"]["options"]:
     assert o["audio"] in aud and txt[o["audio"]] == o["label_hi"], "I1 pill and clip differ: " + o["label_hi"]
+# ---- [L02-BED-FIG] the bed-path board — I2 ("page 13"), I3 ("page 14") and P2 ("page 16" in the user's count) — and the P1 card
+# question ("page 15"), laid out from Figma "FLN by MJ" section 189-1302 (frames "13 I2 INDEPENDENT Tap In Scene", "14 I3 INDEPENDENT
+# Story Question", "15 P1 Practice Story Question", "16 P2 Practice Tap In Scene", 1280x720 each; user, 2026-09-29: "exact same
+# design and layout ... to the same pages as named"; page 13 first came from node 145-439, the same frame). The three board pages
+# share one design: the band "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।", a blurred copy of the room behind the whole artboard,
+# the picture box 935x442 @ (173,172) (4px #386AF6 stroke, r20, shadow 0 4px 4px 45%) holding the designer's room picture ("image 245",
+# 934x467 @ (0,-2) of the box: Madhav's room with a striped S-shaped path from the bottom left up to his bed at the top right), the dashed
+# centre guide with its arrow ("Vector 7", an SVG — a different, shorter one on each page: the part still ahead of Madhav), four "?"
+# tokens on the path, the yawning Madhav (an animated GIF, 36 frames at 70 ms) and the आगे बढ़ें pill 186.18x64 @ (545,628). What
+# changes from page to page is Madhav's spot — page 13: the start of the path; page 14: just before the first token (bottom right);
+# page 16: on the middle row just before the second token, turned to face left, and the first token now shows a small Madhav ("image
+# 247") in place of its "?" — so the three pages are the three legs of ONE journey: on each, the child taps the bed (the engine's one
+# TAP_IN_SCENE hotspot; any other tap is its gentle try-again), Madhav walks the guide to his spot on the next board page (data.bed.walk,
+# a Catmull-Rom curve through the guide's dash centres, constant speed, mirrored while he moves left; a token he passes gets the small
+# Madhav), and only then is the tap handed to the engine (its "correct" line, the lit pill, the advance); on page 16 the leg ends at the
+# bed. I3 therefore becomes a TAP_IN_SCENE page (its old question "माधव ने क्या पढ़ा?" and its clips stay on disk, unused), P2 keeps its
+# type. The band's line has no recorded clip in this lesson, so its VO is an edge-tts hi-IN-SwaraNeural placeholder (tts_clip below:
+# source mp3 in _reskin_build/, edge's silence trimmed, levelled to this lesson's clips at -15.9 LUFS, Opus 48 k mono) until the VO team
+# records it; the pages' correct / try-again lines (vo_tap_ok, vo_tap_try) are unchanged. CSS [L02-BED-FIG] (stage class .l02-bed, the
+# backdrop .l02-roombg), JS in adapt.js (card slide.bed_fig, slide.room_bg). The old I2 assets (vo_tap_chitra, scene_5) stay on disk.
+import shutil, subprocess
+from PIL import Image
+BED_IMG = os.path.join(CUR, "assets", "Images")
+def bed_fresh(dst, *srcs):
+    return os.path.exists(dst) and all(os.path.getmtime(dst) >= os.path.getmtime(s) for s in list(srcs) + [os.path.abspath(__file__)])
+def bed_webp(name, src, size=None, quality=88, lossless=False, mode="RGB"):
+    s = os.path.join(SCR, src); d = os.path.join(BED_IMG, name)
+    assert os.path.exists(s), "missing " + s
+    if bed_fresh(d, s): return
+    im = Image.open(s).convert(mode)
+    if size: im = im.resize(size, Image.LANCZOS)
+    im.save(d, "WEBP", quality=quality, method=6, lossless=lossless)
+    print("wrote", d, im.size)
+bed_webp("bed_room.webp", "bed_room_source.png")                                        # the Figma "image 245" source, 1774x887, shown at 934x467
+bed_webp("bed_bg.webp", "bed_bg_source.png", quality=80)                                # the artboard's backdrop source, 1677x938, shown blurred at 1326.6x742
+bed_webp("bed_q.webp", "bed_q_source.png", size=(172, 260), quality=92, mode="RGBA")    # the "?" ("image 238"), 1024x1536 -> 4x its 43x65 slot
+bed_webp("bed_done.webp", "bed_done_source.png", size=(200, 296), quality=92, mode="RGBA")   # the small Madhav of a passed token ("image 247"), 1024x1536 -> 4x its 50x74 slot
+bed_webp("bed_plant.webp", "bed_plant_source.png", lossless=True, mode="RGBA")          # the plant on its table ("Object"), 119x172, shown at 90x130
+def bed_boy():
+    """The Figma sprite layer is an animated GIF (36 frames, 70 ms each, transparent): the same frames as an animated WebP at
+    211x418 (the slot is 58x114 Figma px = 60x119 CSS px, so 2x is enough at any device pixel ratio the lesson runs at)."""
+    s = os.path.join(SCR, "bed_boy_source.gif"); d = os.path.join(BED_IMG, "bed_boy.webp")
+    if bed_fresh(d, s): return
+    g = Image.open(s); frames = []; durs = []
+    for i in range(g.n_frames):
+        g.seek(i); frames.append(g.convert("RGBA").resize((211, 418), Image.LANCZOS)); durs.append(int(g.info.get("duration", 70)))
+    frames[0].save(d, "WEBP", save_all=True, append_images=frames[1:], duration=durs, loop=0, quality=80, method=4)
+    print("wrote", d, len(frames), "frames")
+bed_boy()
+# the guides: page 13's SVG is the whole centre line (627.97x260 incl. the stroke's bleed), page 14's has the bottom row taken out and is
+# cut at 243 px, page 16's keeps only the middle row's left part and the top (cut at 120.612 px) — the designer's own three exports
+BED_GUIDES = {13: (627.97, 260.0), 14: (627.97, 243.0), 16: (627.97, 120.612)}
+for n in BED_GUIDES:
+    gs = os.path.join(SCR, "bed_guide_%d_source.svg" % n); gd = os.path.join(BED_IMG, "bed_guide_%d.svg" % n)
+    assert os.path.exists(gs), "missing " + gs
+    if not bed_fresh(gd, gs): shutil.copyfile(gs, gd); print("wrote", gd)
+_old_guide = os.path.join(BED_IMG, "bed_guide.svg")
+if os.path.exists(_old_guide): os.remove(_old_guide); print("removed", _old_guide)
+def tts_clip(name, text, target_i=-15.9):
+    """A placeholder VO line: edge-tts hi-IN-SwaraNeural (the voice used for every placeholder in this lesson) -> _reskin_build/<name>_source
+    ...mp3 (made once; kept), then assets/Audio/<name>.ogg: edge's leading / trailing silence found with silencedetect (-45 dB, 0.15 s) and
+    cut to 0.10 s before the speech and 0.33 s after it; two-pass loudnorm (linear) to target_i LUFS / -1.1 dBTP; a 20 ms fade-in and a
+    100 ms fade-out; Opus 64 k mono 48 k like every other clip. Registered in the card's audio / audio_text."""
+    src = os.path.join(SCR, name + "_source_edge-tts_hi-IN-SwaraNeural.mp3"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    if not os.path.exists(src):
+        subprocess.run([sys.executable, "-m", "edge_tts", "-v", "hi-IN-SwaraNeural", "-t", text, "--write-media", src], check=True)
+        print("edge-tts wrote", src)
+    aud[name] = "assets/Audio/" + name + ".ogg"; txt[name] = text
+    if bed_fresh(dst, src): return
+    out = ff("-i", src, "-af", "silencedetect=n=-45dB:d=0.15", "-f", "null", "-")
+    h, mnt, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", out).groups(); dur = int(h) * 3600 + int(mnt) * 60 + float(sec)
+    sil = re.findall(r"silence_start: ([\d.]+)(?:.*?silence_end: ([\d.]+))?", out, re.S)
+    starts = [float(a) for a, b in sil]; ends = [float(b) if b else dur for a, b in sil]
+    speech0 = ends[0] if starts and starts[0] < 0.05 else 0.0
+    speech1 = starts[-1] if starts and ends[-1] >= dur - 0.05 and starts[-1] > speech0 else dur
+    t0 = max(0.0, speech0 - 0.10); t1 = min(dur, speech1 + 0.33)
+    cut = ["-ss", "%.3f" % t0, "-t", "%.3f" % (t1 - t0), "-i", src]
+    m = json.loads((lambda o: o[o.rindex("{"):o.rindex("}") + 1])(ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:print_format=json" % target_i, "-f", "null", "-")))
+    ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:measured_I=%s:measured_TP=%s:measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true,"
+       "aresample=48000,afade=t=in:st=0:d=0.02,afade=t=out:st=%.3f:d=0.1" % (target_i, m["input_i"], m["input_tp"], m["input_lra"], m["input_thresh"], m["target_offset"], t1 - t0 - 0.1),
+       "-ac", "1", "-ar", "48000", "-c:a", "libopus", "-b:a", "64k", dst)
+    assert os.path.exists(dst), "ffmpeg did not write " + dst
+    print("wrote", dst, "speech %.2f-%.2f of %.2f s" % (speech0, speech1, dur))
+tts_clip("vo_tap_bed", "माधव को नींद आ रही है, उसे उसके पलंग तक पहुंचाइए।")
+BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
+BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
+# the one hotspot = the bed, the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's
+# padding box = 743.6-914.7 x 1.9-152 of 927x434), as % of the box
+BED_HOT = [{"x": 80, "y": 0, "w": 19, "h": 35.5, "correct": True}]
+# the guide's centre line, read off page 13's SVG: the start dot, the dash centres of the bottom row, the right U-turn, the middle row,
+# the left U-turn, the top row (a solid centre line there, y 1.5 from x 66 to 500) and the tail to the arrow's tip — in the SVG's own
+# coordinates (627.97 wide @ (151.53,124) of the box's padding box: Figma places the 626.47x250.5 vector box @ (153.03,125.5) and the
+# SVG bleeds 0.24% left / 0.6% top). A Catmull-Rom curve through them, sampled 8x, is the route every leg is cut from.
+BED_GUIDE_AT = (151.53, 124.0)
+BED_ROUTE = [(43.5, 252.0), (73.8, 246.6), (132.2, 240.5), (188.4, 240.1), (236.2, 240.3), (287.0, 240.5), (334.8, 240.7), (385.6, 240.8),
+             (433.4, 241.0), (484.2, 241.2), (532.1, 241.4),
+             (578.0, 230.5), (611.2, 200.9), (613.2, 157.4), (578.8, 129.7),
+             (526.4, 119.9), (467.3, 119.7), (405.2, 119.5), (346.0, 119.3), (283.9, 119.2), (224.8, 119.0), (162.7, 118.8), (103.5, 118.6),
+             (48.8, 110.6), (9.4, 84.1), (10.6, 30.6), (66.2, 3.9),
+             (130.0, 1.5), (200.0, 1.5), (280.0, 1.5), (360.0, 1.5), (440.0, 1.5), (500.0, 3.0),
+             (522.8, 12.1), (567.6, 29.0), (601.9, 28.9), (619.5, 24.8), (627.97, 20.0)]
+def open_catmull_rom(pts, steps=8):
+    out = []; n = len(pts)
+    for i in range(n - 1):
+        p0, p1, p2, p3 = pts[max(i - 1, 0)], pts[i], pts[i + 1], pts[min(i + 2, n - 1)]
+        for k in range(steps):
+            t = k / steps; t2 = t * t; t3 = t2 * t
+            out.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2
+                                    + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3) for j in (0, 1)))
+    out.append(pts[-1]); return out
+ROUTE = [(BED_GUIDE_AT[0] + x, BED_GUIDE_AT[1] + y) for x, y in open_catmull_rom(BED_ROUTE)]
+CUM = [0.0]
+for a, b in zip(ROUTE, ROUTE[1:]): CUM.append(CUM[-1] + ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5)
+def nearest_i(pt): return min(range(len(ROUTE)), key=lambda i: (ROUTE[i][0] - pt[0]) ** 2 + (ROUTE[i][1] - pt[1]) ** 2)
+# Madhav's 58x114 box on each Figma page (of the box's padding box); the designer stands him with his feet ~5 px under the centre line
+BOY_W, BOY_H = 58, 114
+BOY_AT = {13: (182, 268), 14: (603, 256), 16: (471, 134)}
+def feet(box): return (box[0] + BOY_W / 2, box[1] + BOY_H)
+BOY_BED = (ROUTE[-1][0] - BOY_W / 2, ROUTE[-1][1] + 5 - BOY_H)           # the journey's end: at the arrow's tip, by the bed
+# the four "?" tokens (CSS .t1..t4 = Figma "image 236", "image 235", "image 237", "image 234"), 104x102 @ these spots inside the stroke;
+# each token's place along the route is the route point nearest its centre
+BED_TOKENS = [(133, 67), (370, 185), (580, 54), (657, 302)]
+TOKEN_D = [CUM[nearest_i((x + 52, y + 51))] for x, y in BED_TOKENS]
+BED_SPEED = 260.0            # Figma px per second, every leg alike (the whole route is ~1800 px)
+def bed_leg(box_from, box_to, guide, face, done):
+    i0, i1 = nearest_i(feet(box_from)), nearest_i(feet(box_to))
+    assert i1 > i0, "a leg must run forward along the route"
+    pts = ROUTE[i0:i1 + 1]; d0 = CUM[i0]; L = CUM[i1] - d0
+    flips = sorted([{"token": k, "at": round(TOKEN_D[k] - d0, 1)} for k in range(4) if d0 < TOKEN_D[k] <= CUM[i1] and k not in done], key=lambda f: f["at"])
+    gw, gh = BED_GUIDES[guide]
+    return {"walk": [[round(x, 1), round(y, 1)] for x, y in pts], "walk_s": round(max(1.6, L / BED_SPEED), 2),
+            "boy": list(box_from), "boy_to": list(box_to), "face": face, "done": list(done), "flips": flips,
+            "guide": {"src": "assets/Images/bed_guide_%d.svg" % guide, "x": BED_GUIDE_AT[0], "y": BED_GUIDE_AT[1], "w": gw, "h": gh}}
+BED_LEGS = {
+    "I2": bed_leg(BOY_AT[13], BOY_AT[14], 13, 1, []),          # page 13 -> the spot of page 14 (before the first token)
+    "I3": bed_leg(BOY_AT[14], BOY_AT[16], 14, 1, []),          # page 14 -> the spot of page 16 (passes the first token, faces left at the end)
+    "P2": bed_leg(BOY_AT[16], BOY_BED, 16, -1, [3]),           # page 16 -> the bed (the first token already shows the small Madhav)
+}
+assert BED_LEGS["I2"]["flips"] == [] and [f["token"] for f in BED_LEGS["I3"]["flips"]] == [3] and [f["token"] for f in BED_LEGS["P2"]["flips"]] == [1, 0, 2], \
+    "the legs do not pass the tokens as the Figma pages show: %r" % {k: v["flips"] for k, v in BED_LEGS.items()}
+i3 = next(s for s in card["slides"] if s["id"] == "I3")
+assert i3["type"] == "STORY_QUESTION" and i3["phase"] == "independent", "I3 is not the independent story question any more"
+i3["type"] = "TAP_IN_SCENE"; i3["eis"] = "enactive"; i3.pop("bare_recall", None)
+i3["audio"] = {"prompt": "vo_tap_bed", "correct": "vo_tap_ok", "try_again": "vo_tap_try"}
+i3["data"] = {"signal_name": "scene_tap_first_try"}; i3["signals"] = {"on_complete": ["scene_tap_first_try"]}
+for sid, legd in BED_LEGS.items():
+    s = next(x for x in card["slides"] if x["id"] == sid)
+    assert s["type"] == "TAP_IN_SCENE", sid + " is not a tap-in-scene page"
+    s["bed_fig"] = True; s["room_bg"] = True
+    s["prompt_hi"] = BED_LINE
+    s["audio"]["prompt"] = "vo_tap_bed"
+    s["data"]["image_id"] = "bed_room"; s["data"]["alt_hi"] = BED_ALT; s["data"]["hotspots"] = BED_HOT; s["data"]["bed"] = legd
+    s["data"].pop("walk", None); s["data"].pop("walk_s", None)
+for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+# ---- [L02-P1-FIG] P1 ("page 15", the practice story question) from the same section's "15 P1 Practice Story Question": G3's card layout
+# ([L02-Q3-FIG]: header 36,26 / band 39.9,44 with the text 135.55 in, three 252x314.113 cards @ x 232/514/796, y 247, no pill) with the
+# blurred room behind the artboard and the cards in YELLOW — the outer box #FCB717 (G3: #D9D9D9) with a 0 4px 2px 25% shadow, the white
+# card's 2.386px stroke #FCB717 (G3: #D5D8DF). Band "माँ के सोते ही माधव ने क्या किया ?" over "माधव ने खाना खाया ।" (the very picture and
+# crop of G3's खाना card — the Figma source is byte-identical to q3_khana_source.png), "माधव रोने लगा ।" ("image 240", 266x199 @
+# (-8.16,-4.16) of the picture window, cover) and "माधव उठ गया ।" (353x263 @ (-107.16,-68.16), cover; the answer — story sentence T4
+# "मम्मी के सोते ही वह उठ गया।"). The question and the three sentences have no recorded clips, so all four are edge-tts placeholders
+# (tts_clip) — shown == spoken on every card; P1's try / hint / correct / reveal lines are unchanged. Card slide.fig_q3 + fig_q3_yellow +
+# room_bg (CSS .l02-q3.l02-q3-yellow, .l02-roombg). The old P1 question ("माधव किससे खेलने लगा?", vo_q_khilaune, scene_7) stays on disk.
+P1_CUTS = {
+    "p1_rona": dict(box=(266.0, 199.0), at=(-8.16, -4.16),    fill=("cover",)),
+    "p1_utha": dict(box=(353.0, 263.0), at=(-107.16, -68.16), fill=("cover",)),
+}
+for k, spec in P1_CUTS.items(): cut_q3_option(k, spec)
+p1 = next(s for s in card["slides"] if s["id"] == "P1")
+assert p1["type"] == "STORY_QUESTION" and p1["phase"] == "practice", "P1 is not the practice story question any more"
+p1["fig_q3"] = True; p1["fig_q3_yellow"] = True; p1["room_bg"] = True
+p1["prompt_hi"] = "माँ के सोते ही माधव ने क्या किया ?"
+tts_clip("vo_q_maa_sote", "माँ के सोते ही माधव ने क्या किया?")
+tts_clip("vo_p1_khana", "माधव ने खाना खाया।"); tts_clip("vo_p1_rona", "माधव रोने लगा।"); tts_clip("vo_p1_utha", "माधव उठ गया।")
+p1["audio"]["prompt"] = "vo_q_maa_sote"
+p1["data"]["hide_recall"] = True; p1["data"].pop("recall_image_id", None)
+p1["data"]["options"] = [
+    {"img": "q3_khana", "emoji": "🍛", "label_hi": "माधव ने खाना खाया ।", "audio": "vo_p1_khana"},
+    {"img": "p1_rona",  "emoji": "😢", "label_hi": "माधव रोने लगा ।",     "audio": "vo_p1_rona"},
+    {"img": "p1_utha",  "emoji": "🧒", "label_hi": "माधव उठ गया ।",       "audio": "vo_p1_utha", "correct": True},
+]
+for k in P1_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets
