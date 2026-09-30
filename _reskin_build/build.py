@@ -370,26 +370,47 @@ i1["data"]["options"] = [
 ]
 for o in i1["data"]["options"]:
     assert o["audio"] in aud and txt[o["audio"]] == o["label_hi"], "I1 pill and clip differ: " + o["label_hi"]
-# ---- [L02-BED-FIG] the bed-path board — I2 ("page 13"), I3 ("page 14") and P2 ("page 16" in the user's count) — and the P1 card
-# question ("page 15"), laid out from Figma "FLN by MJ" section 189-1302 (frames "13 I2 INDEPENDENT Tap In Scene", "14 I3 INDEPENDENT
-# Story Question", "15 P1 Practice Story Question", "16 P2 Practice Tap In Scene", 1280x720 each; user, 2026-09-29: "exact same
-# design and layout ... to the same pages as named"; page 13 first came from node 145-439, the same frame). The three board pages
-# share one design: the band "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।", a blurred copy of the room behind the whole artboard,
-# the picture box 935x442 @ (173,172) (4px #386AF6 stroke, r20, shadow 0 4px 4px 45%) holding the designer's room picture ("image 245",
-# 934x467 @ (0,-2) of the box: Madhav's room with a striped S-shaped path from the bottom left up to his bed at the top right), the dashed
-# centre guide with its arrow ("Vector 7", an SVG — a different, shorter one on each page: the part still ahead of Madhav), four "?"
-# tokens on the path, the yawning Madhav (an animated GIF, 36 frames at 70 ms) and the आगे बढ़ें pill 186.18x64 @ (545,628). What
-# changes from page to page is Madhav's spot — page 13: the start of the path; page 14: just before the first token (bottom right);
-# page 16: on the middle row just before the second token, turned to face left, and the first token now shows a small Madhav ("image
-# 247") in place of its "?" — so the three pages are the three legs of ONE journey: on each, the child taps the bed (the engine's one
-# TAP_IN_SCENE hotspot; any other tap is its gentle try-again), Madhav walks the guide to his spot on the next board page (data.bed.walk,
-# a Catmull-Rom curve through the guide's dash centres, constant speed, mirrored while he moves left; a token he passes gets the small
-# Madhav), and only then is the tap handed to the engine (its "correct" line, the lit pill, the advance); on page 16 the leg ends at the
-# bed. I3 therefore becomes a TAP_IN_SCENE page (its old question "माधव ने क्या पढ़ा?" and its clips stay on disk, unused), P2 keeps its
-# type. The band's line has no recorded clip in this lesson, so its VO is an edge-tts hi-IN-SwaraNeural placeholder (tts_clip below:
-# source mp3 in _reskin_build/, edge's silence trimmed, levelled to this lesson's clips at -15.9 LUFS, Opus 48 k mono) until the VO team
+# ---- [L02-BED-FIG] the bed-path board ("the carpet map") from Figma "FLN by MJ" section 189-1302 (frames "13 I2 INDEPENDENT Tap In
+# Scene", "14 I3 INDEPENDENT Story Question", "15 P1 Practice Story Question", "16 P2 Practice Tap In Scene", 1280x720 each; page 13 first
+# came from node 145-439, the same frame). The board: the band "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।", a blurred copy of the
+# room behind the whole artboard, the picture box 935x442 @ (173,172) (4px #386AF6 stroke, r20, shadow 0 4px 4px 45%) holding the designer's
+# room picture ("image 245", 934x467 @ (0,-2) of the box: Madhav's room with a striped S-shaped path from the bottom left up to his bed at
+# the top right), the dashed centre guide with its arrow ("Vector 7", an SVG — a shorter one on each Figma page: the part still ahead of
+# Madhav), four "?" tokens = the CHECKPOINTS on the path, the yawning Madhav (an animated GIF, 36 frames at 70 ms) and the आगे बढ़ें pill
+# 186.18x64 @ (545,628). The Figma pages show three states of the board — page 13: Madhav at the start; page 14: just before the first
+# checkpoint (bottom right); page 16: on the middle row just before the second checkpoint, turned to face left, the first checkpoint now
+# showing a small Madhav ("image 247") in place of its "?".
+# [L02-BED-JOURNEY] (user, 2026-09-29): the checkpoints' "?" PULSE; Madhav walks to the next checkpoint; when he reaches it the NEXT PAGE
+# is an MCQ in the Figma's card style (the "15 P1" frame), and after it he walks on to the next checkpoint. So the board is ONE journey
+# of five legs, interleaved with the lesson's four questions: I2 (start → checkpoint 1) · I3 · WALK2 (→ checkpoint 2) · P1 · P2
+# (→ checkpoint 3) · M1 · WALK4 (→ checkpoint 4) · M2 · WALK5 (→ the bed) · CEL. WALK2/4/5 are new slides (copies of I2 with their own
+# leg); I3 stays the story question it was and, like M1 and M2, is shown in the Figma card style (fig_q3 + fig_q3_yellow + room_bg —
+# P1's look) with its own content and clips unchanged. On a board page the child taps a pulsing "?" (any remaining checkpoint — forgiving)
+# or the bed: Madhav walks the guide to his spot before the next checkpoint (data.bed.walk, constant speed, mirrored while he moves left;
+# the checkpoint he passes on the way takes the small Madhav and stops pulsing), and only then is the tap handed to the engine's
+# TAP_IN_SCENE (its "correct" line, the lit pill, the advance to the question); any other tap is its gentle try-again. Every board page
+# fires the kit's confetti on arrival (card slide.confetti lifts the independent-phase gate on I2 and WALK2, so the five legs behave
+# alike). The band's line has no recorded clip, so its VO is an edge-tts hi-IN-SwaraNeural placeholder (tts_clip) until the VO team
 # records it; the pages' correct / try-again lines (vo_tap_ok, vo_tap_try) are unchanged. CSS [L02-BED-FIG] (stage class .l02-bed, the
-# backdrop .l02-roombg), JS in adapt.js (card slide.bed_fig, slide.room_bg). The old I2 assets (vo_tap_chitra, scene_5) stay on disk.
+# backdrop .l02-roombg), JS in adapt.js (card slide.bed_fig / room_bg). The old I2 and P2 assets (vo_tap_chitra, vo_tap_toys, scene_5/7)
+# stay on disk, unused.
+# [L02-BED-STEPS] (user, 2026-09-29, fifth request — page 13 only): on I2 Madhav walks to the FIRST checkpoint to a footsteps sound effect
+# (the user's freesound "woodwalking" clip, _reskin_build/sfx_walk_source_freesound-woodwalking-40470.mp3 -> assets/Audio/sfx_walk.ogg via
+# sfx_clip; it starts with the walk, loops if the walk outlasts it and fades out in 0.2 s as he arrives — data.bed.sfx, only leg 1 has it)
+# and stands ON the checkpoint: his feet at the disc's centre (on_token — the same "feet 5 px under the centre line" as every other spot);
+# its "?" stops pulsing under him (data.bed.reach; the small Madhav under his feet looked like a second boy, so the checkpoint takes it only
+# once he has left it — the Figma shows a passed checkpoint that way); then the page's correct flow runs as before and the question (I3)
+# comes. WALK2 therefore starts from that very spot — the "?" still resting under him (data.bed.rest: no pulse, no tap target) and taking
+# the small Madhav as he steps off it (that leg's flip) — instead of the page-14 spot before the checkpoint, so the boy carries on exactly
+# where page 13 left him. Legs 3-5 are unchanged (no footsteps; the spots before their checkpoints).
+# [L02-BED-AUTO] (user, 2026-09-29, sixth request — page 13 only): "the boy should walk towards the first checkpoint and when he reaches it
+# the आगे बढ़ें button should become enabled, and when the user taps it the next page should come with the MCQ". So on I2 nobody taps the
+# picture: Madhav sets off BY HIMSELF once the band's line has been heard (data.bed.auto / auto_ms — the line's length and a beat; the
+# picture takes no taps at all on this page — no try-again for an idle tap, no early start), the checkpoint reached brings the chime, the
+# confetti and the mascot's smile (not the
+# "शाबाश! सही जगह।" line — nothing was tapped) and lights the pill; the page then WAITS, and the pill's tap (completeSlide, success) brings
+# the question (I3). The engine's TAP_IN_SCENE still mounts the page (its hotspots stay in the card data, inert); pages 15-21 keep the
+# tap-to-walk flow and their auto-advance after the correct line.
 import shutil, subprocess
 from PIL import Image
 BED_IMG = os.path.join(CUR, "assets", "Images")
@@ -406,7 +427,7 @@ def bed_webp(name, src, size=None, quality=88, lossless=False, mode="RGB"):
 bed_webp("bed_room.webp", "bed_room_source.png")                                        # the Figma "image 245" source, 1774x887, shown at 934x467
 bed_webp("bed_bg.webp", "bed_bg_source.png", quality=80)                                # the artboard's backdrop source, 1677x938, shown blurred at 1326.6x742
 bed_webp("bed_q.webp", "bed_q_source.png", size=(172, 260), quality=92, mode="RGBA")    # the "?" ("image 238"), 1024x1536 -> 4x its 43x65 slot
-bed_webp("bed_done.webp", "bed_done_source.png", size=(200, 296), quality=92, mode="RGBA")   # the small Madhav of a passed token ("image 247"), 1024x1536 -> 4x its 50x74 slot
+bed_webp("bed_done.webp", "bed_done_source.png", size=(200, 296), quality=92, mode="RGBA")   # the small Madhav of a passed checkpoint ("image 247"), 1024x1536 -> 4x its 50x74 slot
 bed_webp("bed_plant.webp", "bed_plant_source.png", lossless=True, mode="RGBA")          # the plant on its table ("Object"), 119x172, shown at 90x130
 def bed_boy():
     """The Figma sprite layer is an animated GIF (36 frames, 70 ms each, transparent): the same frames as an animated WebP at
@@ -420,7 +441,8 @@ def bed_boy():
     print("wrote", d, len(frames), "frames")
 bed_boy()
 # the guides: page 13's SVG is the whole centre line (627.97x260 incl. the stroke's bleed), page 14's has the bottom row taken out and is
-# cut at 243 px, page 16's keeps only the middle row's left part and the top (cut at 120.612 px) — the designer's own three exports
+# cut at 243 px, page 16's keeps only the middle row's left part and the top (cut at 120.612 px) — the designer's own three exports. The
+# five legs use them as "the part still ahead": legs 1 / 2 / 3 as on the Figma pages 13 / 14 / 16, legs 4 and 5 (no Figma page) page 16's.
 BED_GUIDES = {13: (627.97, 260.0), 14: (627.97, 243.0), 16: (627.97, 120.612)}
 for n in BED_GUIDES:
     gs = os.path.join(SCR, "bed_guide_%d_source.svg" % n); gd = os.path.join(BED_IMG, "bed_guide_%d.svg" % n)
@@ -453,12 +475,29 @@ def tts_clip(name, text, target_i=-15.9):
        "-ac", "1", "-ar", "48000", "-c:a", "libopus", "-b:a", "64k", dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "speech %.2f-%.2f of %.2f s" % (speech0, speech1, dur))
+def sfx_clip(name, src, start, length):
+    """A sound effect from a clip the user gave: _reskin_build/<src> cut from `start` for `length` s, levelled the way the picture pops are
+    (mean to SFX_MEAN_DB, peak no higher than SFX_PEAK_DB — the smaller of the two gains), a 20 ms fade-in and a 60 ms fade-out, Opus 64 k
+    mono 48 k -> assets/Audio/<name>.ogg. Not a spoken line: no audio_text; the JS builds the path from the id as the engine does for the pops."""
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    assert os.path.exists(s), "missing " + s
+    if bed_fresh(dst, s): return
+    with tempfile.TemporaryDirectory() as td:
+        cut = os.path.join(td, "cut.wav")
+        ff("-ss", "%.2f" % start, "-t", "%.2f" % length, "-i", s, "-ac", "1", "-ar", "48000", cut)
+        mean, peak = sfx_levels(cut); gain = min(SFX_MEAN_DB - mean, SFX_PEAK_DB - peak)
+        ff("-i", cut, "-af", "volume=%.2fdB,afade=t=in:st=0:d=0.02,afade=t=out:st=%.2f:d=0.06" % (gain, length - 0.06), "-c:a", "libopus", "-b:a", "64k", dst)
+    assert os.path.exists(dst), "ffmpeg did not write " + dst
+    print("wrote", dst, "gain %.1f dB (mean %.1f, peak %.1f)" % (gain, mean, peak))
+# the footsteps (freesound "woodwalking", 6.19 s: twelve steps ~0.45 s apart from 0.15 s, tailing off after 5.1 s): cut 0.10-5.45 s, so the
+# first step falls with the first stride and a loop, if ever needed, keeps the cadence
+sfx_clip("sfx_walk", "sfx_walk_source_freesound-woodwalking-40470.mp3", 0.10, 5.35)
 tts_clip("vo_tap_bed", "माधव को नींद आ रही है, उसे उसके पलंग तक पहुंचाइए।")
 BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
 BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
-# the one hotspot = the bed, the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's
-# padding box = 743.6-914.7 x 1.9-152 of 927x434), as % of the box
-BED_HOT = [{"x": 80, "y": 0, "w": 19, "h": 35.5, "correct": True}]
+# the bed = the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's padding box = 743.6-914.7 x
+# 1.9-152 of 927x434), as % of the box — a tap target on every leg ("take him to his bed")
+BED_HOT = {"x": 80, "y": 0, "w": 19, "h": 35.5, "correct": True}
 # the guide's centre line, read off page 13's SVG: the start dot, the dash centres of the bottom row, the right U-turn, the middle row,
 # the left U-turn, the top row (a solid centre line there, y 1.5 from x 66 to 500) and the tail to the arrow's tip — in the SVG's own
 # coordinates (627.97 wide @ (151.53,124) of the box's padding box: Figma places the 626.47x250.5 vector box @ (153.03,125.5) and the
@@ -484,47 +523,112 @@ ROUTE = [(BED_GUIDE_AT[0] + x, BED_GUIDE_AT[1] + y) for x, y in open_catmull_rom
 CUM = [0.0]
 for a, b in zip(ROUTE, ROUTE[1:]): CUM.append(CUM[-1] + ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5)
 def nearest_i(pt): return min(range(len(ROUTE)), key=lambda i: (ROUTE[i][0] - pt[0]) ** 2 + (ROUTE[i][1] - pt[1]) ** 2)
+def at_d(d):
+    """The route point at distance d (linear between the samples)."""
+    i = 1
+    while i < len(CUM) - 1 and CUM[i] < d: i += 1
+    a, b = ROUTE[i - 1], ROUTE[i]; seg = CUM[i] - CUM[i - 1]; t = min(1.0, max(0.0, (d - CUM[i - 1]) / seg)) if seg else 0.0
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
 # Madhav's 58x114 box on each Figma page (of the box's padding box); the designer stands him with his feet ~5 px under the centre line
+# and ~80 px of path before the checkpoint he is about to reach (page 14: 84 px before the first, page 16: 77 px before the second)
 BOY_W, BOY_H = 58, 114
 BOY_AT = {13: (182, 268), 14: (603, 256), 16: (471, 134)}
 def feet(box): return (box[0] + BOY_W / 2, box[1] + BOY_H)
 BOY_BED = (ROUTE[-1][0] - BOY_W / 2, ROUTE[-1][1] + 5 - BOY_H)           # the journey's end: at the arrow's tip, by the bed
 # the four "?" tokens (CSS .t1..t4 = Figma "image 236", "image 235", "image 237", "image 234"), 104x102 @ these spots inside the stroke;
-# each token's place along the route is the route point nearest its centre
+# each token's place along the route is the route point nearest its centre; the checkpoints in walking order are the tokens by that distance
 BED_TOKENS = [(133, 67), (370, 185), (580, 54), (657, 302)]
 TOKEN_D = [CUM[nearest_i((x + 52, y + 51))] for x, y in BED_TOKENS]
+CHECKPOINTS = sorted(range(4), key=lambda k: TOKEN_D[k])          # [3, 1, 0, 2]: bottom right, middle, top left, top right
+assert CHECKPOINTS == [3, 1, 0, 2], CHECKPOINTS
+def before_token(k, tol=4.0):
+    """Madhav's box standing just before checkpoint k, the designer's way: feet 5 px under the centre line, his 58x114 box not over the
+    token's 104x102 disc beyond a touch (the Figma spots before checkpoints 1 and 2 overlap it by 4 and 3 px) — the nearest such spot
+    on the route before the token (checkpoint 3 sits in the path's corner, so he waits on the middle row just before the bend)."""
+    tx, ty = BED_TOKENS[k]; d = TOKEN_D[k] - 30.0
+    while d > TOKEN_D[k] - 400.0:
+        p = at_d(d); box = (p[0] - BOY_W / 2, p[1] + 5 - BOY_H)
+        ox = min(box[0] + BOY_W, tx + 104) - max(box[0], tx); oy = min(box[1] + BOY_H, ty + 102) - max(box[1], ty)
+        if ox <= tol or oy <= tol: return (round(box[0], 1), round(box[1], 1))
+        d -= 1.0
+    raise AssertionError("no spot before checkpoint token %d" % k)
+def on_token(k):
+    """Madhav's box standing ON checkpoint k: his feet (5 px under the centre line, as at every spot) at the disc's centre, which the route
+    runs through — he stands in the middle of the checkpoint, its small Madhav under him."""
+    x, y = BED_TOKENS[k]; return (x + 52 - BOY_W / 2, y + 51 + 5 - BOY_H)
+def face_at(box):
+    """Which way Madhav faces when he stands at `box`: the direction the route arrives with (the last 20 px)."""
+    d = CUM[nearest_i(feet(box))]; a = at_d(max(0.0, d - 20.0)); b = at_d(d)
+    return -1 if b[0] < a[0] - 0.5 else 1
+def token_hot(k):
+    x, y = BED_TOKENS[k]
+    return {"x": round(x / 927 * 100, 2), "y": round(y / 434 * 100, 2), "w": round(104 / 927 * 100, 2), "h": round(102 / 434 * 100, 2), "correct": True}
 BED_SPEED = 260.0            # Figma px per second, every leg alike (the whole route is ~1800 px)
-def bed_leg(box_from, box_to, guide, face, done):
+def bed_leg(box_from, box_to, guide, done, face=None, sfx=None, reach=None, rest=(), auto=False):
     i0, i1 = nearest_i(feet(box_from)), nearest_i(feet(box_to))
     assert i1 > i0, "a leg must run forward along the route"
     pts = ROUTE[i0:i1 + 1]; d0 = CUM[i0]; L = CUM[i1] - d0
-    flips = sorted([{"token": k, "at": round(TOKEN_D[k] - d0, 1)} for k in range(4) if d0 < TOKEN_D[k] <= CUM[i1] and k not in done], key=lambda f: f["at"])
+    # the checkpoints this leg passes (their route point within the leg, a few px of slack at its end; the JS flips whatever is left as he
+    # arrives) — not the one the leg ends ON (reach, [L02-BED-STEPS]): that keeps its "?" under him and takes the small Madhav from the next
+    # board page on
+    flips = sorted([{"token": k, "at": round(TOKEN_D[k] - d0, 1)} for k in range(4) if d0 < TOKEN_D[k] <= CUM[i1] + 6.0 and k not in done and k != reach], key=lambda f: f["at"])
     gw, gh = BED_GUIDES[guide]
-    return {"walk": [[round(x, 1), round(y, 1)] for x, y in pts], "walk_s": round(max(1.6, L / BED_SPEED), 2),
-            "boy": list(box_from), "boy_to": list(box_to), "face": face, "done": list(done), "flips": flips,
-            "guide": {"src": "assets/Images/bed_guide_%d.svg" % guide, "x": BED_GUIDE_AT[0], "y": BED_GUIDE_AT[1], "w": gw, "h": gh}}
-BED_LEGS = {
-    "I2": bed_leg(BOY_AT[13], BOY_AT[14], 13, 1, []),          # page 13 -> the spot of page 14 (before the first token)
-    "I3": bed_leg(BOY_AT[14], BOY_AT[16], 14, 1, []),          # page 14 -> the spot of page 16 (passes the first token, faces left at the end)
-    "P2": bed_leg(BOY_AT[16], BOY_BED, 16, -1, [3]),           # page 16 -> the bed (the first token already shows the small Madhav)
-}
-assert BED_LEGS["I2"]["flips"] == [] and [f["token"] for f in BED_LEGS["I3"]["flips"]] == [3] and [f["token"] for f in BED_LEGS["P2"]["flips"]] == [1, 0, 2], \
-    "the legs do not pass the tokens as the Figma pages show: %r" % {k: v["flips"] for k, v in BED_LEGS.items()}
-i3 = next(s for s in card["slides"] if s["id"] == "I3")
-assert i3["type"] == "STORY_QUESTION" and i3["phase"] == "independent", "I3 is not the independent story question any more"
-i3["type"] = "TAP_IN_SCENE"; i3["eis"] = "enactive"; i3.pop("bare_recall", None)
-i3["audio"] = {"prompt": "vo_tap_bed", "correct": "vo_tap_ok", "try_again": "vo_tap_try"}
-i3["data"] = {"signal_name": "scene_tap_first_try"}; i3["signals"] = {"on_complete": ["scene_tap_first_try"]}
-for sid, legd in BED_LEGS.items():
-    s = next(x for x in card["slides"] if x["id"] == sid)
-    assert s["type"] == "TAP_IN_SCENE", sid + " is not a tap-in-scene page"
-    s["bed_fig"] = True; s["room_bg"] = True
+    leg = {"walk": [[round(x, 1), round(y, 1)] for x, y in pts], "walk_s": round(max(1.6, L / BED_SPEED), 2),
+           "boy": [round(v, 1) for v in box_from], "boy_to": [round(v, 1) for v in box_to], "face": face if face is not None else face_at(box_from),
+           "done": list(done), "flips": flips,
+           "guide": {"src": "assets/Images/bed_guide_%d.svg" % guide, "x": BED_GUIDE_AT[0], "y": BED_GUIDE_AT[1], "w": gw, "h": gh}}
+    if sfx: leg["sfx"] = sfx                        # [L02-BED-STEPS] the footsteps heard while he walks this leg
+    if reach is not None: leg["reach"] = reach      # [L02-BED-STEPS] the checkpoint he stands on at the end (its "?" stops pulsing)
+    if rest: leg["rest"] = list(rest)               # [L02-BED-STEPS] the checkpoint he starts ON: its "?" resting (no pulse, no tap target) until he walks off it
+    if auto: leg["auto"] = True; leg["auto_ms"] = int(auto)   # [L02-BED-AUTO] he sets off by himself auto_ms after the page opens (the band's line + a beat)
+    return leg
+def clip_s(name):
+    """The length of a lesson clip (assets/Audio/<name>.ogg) in seconds, read with ffmpeg."""
+    h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"))).groups()
+    return int(h) * 3600 + int(m) * 60 + float(sec)
+# [L02-BED-AUTO] when Madhav sets off on page 13: the band's line (vo_tap_bed, ~4.2 s) and a 0.4 s beat after the page opens. A fixed
+# time from the clip's length, not the engine's isPlaying flag: the engine plays the prompt twice at mount (pre-existing), the first,
+# aborted play() clears the flag 1.2 s later while the line still sounds. (The JS still holds the walk while a replay is sounding.)
+BED_AUTO_MS = int(round(clip_s("vo_tap_bed") * 1000)) + 400
+assert 3000 <= BED_AUTO_MS <= 8000, BED_AUTO_MS
+CP1, CP2, CP3, CP4 = CHECKPOINTS
+ON_CP1 = on_token(CP1)                                                # [L02-BED-STEPS] (680, 244): feet at the first checkpoint's centre
+BEFORE_CP3, BEFORE_CP4 = before_token(CP3), before_token(CP4)
+BED_LEGS = [   # (slide id, phase, the leg)
+    ("I2",    "independent", bed_leg(BOY_AT[13], ON_CP1, 13, [], face=1, sfx="sfx_walk", reach=CP1, auto=BED_AUTO_MS)),   # page 13 -> ON checkpoint 1, by himself after the line, to the footsteps
+    ("WALK2", "independent", bed_leg(ON_CP1, BOY_AT[16], 14, [], face=1, rest=[CP1])),         # from ON checkpoint 1 (its "?" resting under him; the small Madhav as he steps off) -> before checkpoint 2 (the page-16 state)
+    ("P2",    "practice",    bed_leg(BOY_AT[16], BEFORE_CP3, 16, [CP1], face=-1)),               # -> before checkpoint 3; passes checkpoint 2
+    ("WALK4", "mastery",     bed_leg(BEFORE_CP3, BEFORE_CP4, 16, [CP1, CP2])),                   # -> before checkpoint 4; passes checkpoint 3
+    ("WALK5", "mastery",     bed_leg(BEFORE_CP4, BOY_BED, 16, [CP1, CP2, CP3])),                 # -> the bed; passes checkpoint 4
+]
+assert [(leg.get("reach"), [f["token"] for f in leg["flips"]]) for _, _, leg in BED_LEGS] == [(CP1, []), (None, [CP1]), (None, [CP2]), (None, [CP3]), (None, [CP4])], \
+    "the legs do not take the checkpoints one by one: %r" % [(leg.get("reach"), leg["flips"]) for _, _, leg in BED_LEGS]
+assert BED_LEGS[0][2]["boy_to"] == [680.0, 244.0] and BED_LEGS[1][2]["boy"] == [680.0, 244.0], (BED_LEGS[0][2]["boy_to"], BED_LEGS[1][2]["boy"])
+i2 = next(s for s in card["slides"] if s["id"] == "I2"); p2 = next(s for s in card["slides"] if s["id"] == "P2")
+assert i2["type"] == "TAP_IN_SCENE" and i2["phase"] == "independent" and p2["type"] == "TAP_IN_SCENE" and p2["phase"] == "practice"
+def board_page(s, leg):
+    s["bed_fig"] = True; s["room_bg"] = True; s["confetti"] = True
     s["prompt_hi"] = BED_LINE
     s["audio"]["prompt"] = "vo_tap_bed"
-    s["data"]["image_id"] = "bed_room"; s["data"]["alt_hi"] = BED_ALT; s["data"]["hotspots"] = BED_HOT; s["data"]["bed"] = legd
+    s["data"]["image_id"] = "bed_room"; s["data"]["alt_hi"] = BED_ALT; s["data"]["bed"] = leg
+    s["data"]["hotspots"] = [dict(BED_HOT)] + [token_hot(k) for k in range(4) if k not in leg["done"] and k not in leg.get("rest", [])]   # the bed and every "?" ahead
     s["data"].pop("walk", None); s["data"].pop("walk_s", None)
+board_page(i2, BED_LEGS[0][2]); board_page(p2, BED_LEGS[2][2])
+def insert_after(after_id, new_slide):
+    idx = card["slides"].index(next(s for s in card["slides"] if s["id"] == after_id)); card["slides"].insert(idx + 1, new_slide)
+for sid, phase, leg, after in (("WALK2", "independent", BED_LEGS[1][2], "I3"), ("WALK4", "mastery", BED_LEGS[3][2], "M1"), ("WALK5", "mastery", BED_LEGS[4][2], "M2")):
+    w = copy.deepcopy(i2); w["id"] = sid; w["phase"] = phase; board_page(w, leg); insert_after(after, w)
 for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
-# ---- [L02-P1-FIG] P1 ("page 15", the practice story question) from the same section's "15 P1 Practice Story Question": G3's card layout
+# the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
+# no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
+# toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
+# CSS object-fit contain with a small inset) instead of cropping it to the window as the P1 / G3 scene pictures are.
+for sid in ("I3", "M1", "M2"):
+    q = next(s for s in card["slides"] if s["id"] == sid)
+    assert q["type"] == "STORY_QUESTION", sid + " is not a story question any more"
+    q["fig_q3"] = True; q["fig_q3_yellow"] = True; q["fig_q3_contain"] = True; q["room_bg"] = True
+    q["data"]["hide_recall"] = True; q["data"].pop("recall_image_id", None)
+# ---- [L02-P1-FIG] P1 ("page 15" of the Figma section, the practice story question) from "15 P1 Practice Story Question": G3's card layout
 # ([L02-Q3-FIG]: header 36,26 / band 39.9,44 with the text 135.55 in, three 252x314.113 cards @ x 232/514/796, y 247, no pill) with the
 # blurred room behind the artboard and the cards in YELLOW — the outer box #FCB717 (G3: #D9D9D9) with a 0 4px 2px 25% shadow, the white
 # card's 2.386px stroke #FCB717 (G3: #D5D8DF). Band "माँ के सोते ही माधव ने क्या किया ?" over "माधव ने खाना खाया ।" (the very picture and
@@ -552,6 +656,8 @@ p1["data"]["options"] = [
     {"img": "p1_utha",  "emoji": "🧒", "label_hi": "माधव उठ गया ।",       "audio": "vo_p1_utha", "correct": True},
 ]
 for k in P1_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+_ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "I3", "WALK2", "P1", "P2", "M1", "WALK4", "M2", "WALK5", "CEL"], _ids
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets

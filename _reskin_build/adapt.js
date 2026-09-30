@@ -110,7 +110,8 @@
   // hide_header_chip) keeps a way to hear the question again — the mascot tap replays it, exactly as the chip did.
   function applyQ3(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, q3 = !!(s && s.fig_q3 === true);
-    var st = document.getElementById("stage"); if(st){ st.classList.toggle("l02-q3", q3); st.classList.toggle("l02-q3-yellow", q3 && s.fig_q3_yellow === true); }   // [L02-P1-FIG] P1's yellow cards
+    var st = document.getElementById("stage"); if(st){ st.classList.toggle("l02-q3", q3); st.classList.toggle("l02-q3-yellow", q3 && s.fig_q3_yellow === true);   // [L02-P1-FIG] the yellow cards
+      st.classList.toggle("l02-q3-contain", q3 && s.fig_q3_contain === true); }                                                                                       // [L02-BED-JOURNEY] cut-out icons shown whole
     if(!s || !(q3 || s.mascot_replay === true)) return;
     var mw = document.getElementById("mascotWrap");
     if(mw) mw.onclick = function(){ if(typeof isPlaying !== "undefined" && isPlaying) return;
@@ -134,11 +135,19 @@
   // line, the mascot's smile, the advance (fenced to this slide by build.py). The आगे बढ़ें pill is shown disabled from the start and
   // lights when he arrives; a tap on it moves on at once (the completeSlide guard below makes sure the page is left exactly once).
   // The blurred room behind the whole artboard is the stage's first child while this page is up. No taps during the walk (CSS).
-  // The board is three pages of ONE journey (Figma section 189-1302: "13 I2", "14 I3", "16 P2"): card data.bed carries each page's
-  // leg — Madhav's spot (boy), where the leg ends (boy_to: his spot on the next board page, or the bed), the leg's polyline (walk,
-  // Figma px of the box's padding box), its seconds (walk_s), which way he faces at first (face), the tokens already showing the small
-  // Madhav (done) and the ones he passes on this leg (flips: token + distance). The room backdrop (card slide.room_bg) is shared with
-  // the P1 card question of the same section.
+  // The board is ONE journey over five pages (I2, WALK2, P2, WALK4, WALK5 — a question page between each two; [L02-BED-JOURNEY] in
+  // build.py): card data.bed carries each page's leg — Madhav's spot (boy), where the leg ends (boy_to: his spot before the next
+  // checkpoint, or the bed), the leg's polyline (walk, Figma px of the box's padding box), its seconds (walk_s), which way he faces
+  // at first (face), the checkpoints already showing the small Madhav (done) and the one he passes on this leg (flips: token +
+  // distance). The room backdrop (card slide.room_bg) is shared with the card questions between the legs.
+  // [L02-BED-STEPS] a leg may carry a footsteps clip (data.bed.sfx — page 13's leg only): its own Audio element (like the engine's pops),
+  // buffered at mount, started with the walk, looped should the walk outlast it, faded out over 0.2 s as he arrives. A leg may end ON a
+  // checkpoint (page 13: the first one's centre): that one (data.bed.reach) stops pulsing under him and keeps its "?"; the next board
+  // page opens with it still resting under him (data.bed.rest — no pulse, no tap target) and flips it to the small Madhav as he steps
+  // off (that leg's first flip). Whatever else a leg flips is flipped at the latest on arrival.
+  // [L02-BED-AUTO] page 13 (data.bed.auto) is watched, not played: the picture takes no taps, Madhav walks by himself after the band's
+  // line, the checkpoint reached lights the आगे बढ़ें pill (chime, confetti, the mascot's smile — no "correct" line, nothing was tapped)
+  // and the page waits for the pill's tap; the other board pages keep the tap-to-walk and their advance after the correct line.
   var BED_IMGS = ["bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy", "p1_rona", "p1_utha"];
   function bedEl(tag, cls){ var e = document.createElement(tag); e.className = cls; return e; }
   function bedImg(cls, src){ var i = bedEl("img", cls); i.src = src; i.alt = ""; i.draggable = false; return i; }
@@ -162,14 +171,18 @@
       state.audioReplays++;
       SwiftPAL.emit("audio_replay", { slide_id: s.id, phase: s.phase, count: state.audioReplays, src: "mascot" });
       if(state.replayAudio) state.replayAudio(); else autoPlayChain(s); };
-    var frame = document.querySelector("#slideHost .tis-frame"), hot = frame ? frame.querySelector(".tis-hot.correct-hot") : null;
-    if(!frame || !hot || frame.querySelector(".l02-bed-layer")) return;
+    // [L02-BED-JOURNEY] the tap targets are the bed AND every remaining "?" checkpoint (all of them "correct" hotspots of the engine — a
+    // forgiving board: any pulsing "?" means "walk on"); the first tap on any of them starts the leg, and that very hotspot gets the tap
+    // back when Madhav arrives, so the engine's TAP_IN_SCENE runs its own correct flow
+    var frame = document.querySelector("#slideHost .tis-frame"), hots = frame ? [].slice.call(frame.querySelectorAll(".tis-hot.correct-hot")) : [];
+    if(!frame || !hots.length || frame.querySelector(".l02-bed-layer")) return;
     var layer = bedEl("div", "l02-bed-layer"), G = B.guide || {};
     var guide = bedImg("l02-bed-guide", G.src || "assets/Images/bed_guide_13.svg");
     guide.style.left = px(G.x || 151.53); guide.style.top = px(G.y || 124); guide.style.width = px(G.w || 627.97); guide.style.height = px(G.h || 260);
     layer.appendChild(guide);
     var tokens = ["t1", "t2", "t3", "t4"].map(function(t, i){
-      var tok = bedEl("div", "l02-bed-token " + t + ((B.done || []).indexOf(i) >= 0 ? " done" : "")); tok.appendChild(bedEl("i", "l02-bed-ring"));
+      var tok = bedEl("div", "l02-bed-token " + t + ((B.done || []).indexOf(i) >= 0 ? " done" : "") + ((B.rest || []).indexOf(i) >= 0 ? " reached" : ""));
+      tok.appendChild(bedEl("i", "l02-bed-ring"));
       tok.appendChild(bedImg("l02-bed-q", "assets/Images/bed_q.webp")); tok.appendChild(bedImg("l02-bed-done", "assets/Images/bed_done.webp"));
       layer.appendChild(tok); return tok; });
     var boy = bedImg("l02-bed-boy", "assets/Images/bed_boy.webp"), from = B.boy || [182, 268], face = B.face || 1;
@@ -189,28 +202,62 @@
     var resid = pts.length ? [to[0] - (from[0] + last[0] - pts[0][0]), to[1] - (from[1] + last[1] - pts[0][1])] : [0, 0];
     var flips = (B.flips || []).map(function(f){ return { token: f.token, at: f.at, done: false }; });
     var walking = false, arrived = false;
-    hot.addEventListener("click", function(e){
-      if(arrived) return;                                   // the walk is over: this is the tap handed to the engine
-      e.stopImmediatePropagation();                         // hold the engine's own handler back
-      if(walking || CARD.slides[state.idx] !== s || pts.length < 2){ if(pts.length < 2){ arrived = true; hot.click(); } return; }
+    // [L02-BED-STEPS] the leg's footsteps, if it has any: buffered now so they start with the first stride
+    var stepsSrc = B.sfx ? "assets/Audio/" + B.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg") : null, steps = null;
+    if(stepsSrc){ try{ steps = new Audio(stepsSrc); steps.preload = "auto"; steps.loop = true; }catch(err){ steps = null; } }
+    function stopSteps(fade){ var a = steps; if(!a) return; steps = null;
+      if(!fade){ try{ a.pause(); }catch(err){} return; }
+      var v0 = a.volume, t1 = null;
+      requestAnimationFrame(function ease(now){ if(t1 === null) t1 = now; var q = Math.min(1, (now - t1) / 200); a.volume = v0 * (1 - q);
+        if(q < 1) requestAnimationFrame(ease); else { try{ a.pause(); }catch(err){} } }); }
+    function startWalk(onArrive){
+      if(walking || arrived || CARD.slides[state.idx] !== s) return;
+      if(pts.length < 2){ arrived = true; onArrive(); return; }
       walking = true; frame.classList.add("l02-walking");
+      if(steps){ try{ steps.currentTime = 0; steps.play().catch(function(){}); }catch(err){} }
       var dur = (B.walk_s || 4.3) * 1000, t0 = null, lastX = pts[0][0];
       function tick(now){
-        if(CARD.slides[state.idx] !== s) return;            // the page was left mid-walk (dev jump): stop quietly
+        if(CARD.slides[state.idx] !== s){ stopSteps(false); return; }   // the page was left mid-walk (dev jump): stop quietly
         if(t0 === null) t0 = now;
         var k = Math.min(1, (now - t0) / dur), d = k * L, p = at(d);
         if(p[0] < lastX - 0.3) face = -1; else if(p[0] > lastX + 0.3) face = 1;
         lastX = p[0];
         var dx = (p[0] - pts[0][0]) + resid[0] * k, dy = (p[1] - pts[0][1]) + resid[1] * k;
         boy.style.transform = "translate(" + (dx * fs).toFixed(2) + "px," + (dy * fs).toFixed(2) + "px) scaleX(" + face + ")";
-        flips.forEach(function(f){ if(!f.done && d >= f.at && tokens[f.token]){ f.done = true; tokens[f.token].classList.add("done"); } });
+        flips.forEach(function(f){ if(!f.done && (d >= f.at || k >= 1) && tokens[f.token]){ f.done = true; tokens[f.token].classList.add("done"); } });
         if(k < 1){ requestAnimationFrame(tick); return; }
-        walking = false; arrived = true; frame.classList.remove("l02-walking");
-        if(typeof setNavActive === "function") setNavActive(true);
-        hot.click();                                        // now the engine: the "correct" line, the mascot's smile, the advance
+        walking = false; arrived = true; frame.classList.remove("l02-walking"); stopSteps(true);
+        if(typeof B.reach === "number" && tokens[B.reach]) tokens[B.reach].classList.add("reached");   // he stands on it: its "?" rests
+        if(typeof setNavActive === "function") setNavActive(true);   // the pill lights (the engine's own pill handler: completeSlide)
+        onArrive();
       }
       requestAnimationFrame(tick);
-    }, true);
+    }
+    if(B.auto === true){
+      // [L02-BED-AUTO] page 13: nobody taps the picture (CSS .l02-auto) — Madhav sets off by himself data.bed.auto_ms after the page
+      // opens (build.py: the band's line and a beat; not the engine's isPlaying flag, which the engine's double play() at mount clears
+      // early), later if a replay of the line is still sounding (10 s more at the very most); reaching the checkpoint brings the chime,
+      // the confetti and the mascot's smile and lights the pill — then the page waits for the pill's tap (the engine's completeSlide,
+      // guarded below)
+      frame.classList.add("l02-auto");
+      var mounted = performance.now(), after = B.auto_ms || 4600;
+      (function waitLine(){
+        if(CARD.slides[state.idx] !== s) return;
+        var el = performance.now() - mounted, quiet = !(typeof isPlaying !== "undefined" && isPlaying);
+        if((el >= after && quiet) || el >= after + 10000){
+          startWalk(function(){
+            try{ if(typeof sfxCorrect === "function") sfxCorrect(); if(typeof confettiCannon === "function") confettiCannon();
+                 if(typeof setSwMood === "function") setSwMood("happy"); }catch(err){} });
+          return; }
+        setTimeout(waitLine, 100);
+      })();
+      return;
+    }
+    hots.forEach(function(hot){ hot.addEventListener("click", function(e){
+      if(arrived) return;                                   // the walk is over: this is the tap handed to the engine
+      e.stopImmediatePropagation();                         // hold the engine's own handler back
+      startWalk(function(){ hot.click(); });                // then the engine: the "correct" line, the mascot's smile, the advance
+    }, true); });
   }
   // the pages' pictures are fetched once at boot (the lesson reaches them a dozen pages in), so nothing pops in late at mount
   if(typeof CARD !== "undefined" && CARD.slides && CARD.slides.some(function(x){ return x.bed_fig === true; }))

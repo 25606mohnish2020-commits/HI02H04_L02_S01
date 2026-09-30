@@ -338,6 +338,9 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-bed .tis-hot,.stage.l02-bed .tis-hot:hover,.stage.l02-bed .tis-hot.pulse,.stage.l02-bed .tis-hot.hit,
 .stage.l02-bed .tis-hot.shake,.stage.l02-bed .tis-hot.tis-wrong{box-shadow:none !important;animation:none !important;background:transparent !important;}
 .stage.l02-bed .tis-frame.l02-walking,.stage.l02-bed .tis-frame.l02-walking *{pointer-events:none !important;}   /* while Madhav walks, no taps */
+/* [L02-BED-AUTO] a page where Madhav walks by himself (page 13, data.bed.auto — JS class on the frame) takes no taps on the picture at
+   all: nothing to find, so no try-again line for an idle tap; the lit आगे बढ़ें pill is the page's one control */
+.stage.l02-bed .tis-frame.l02-auto,.stage.l02-bed .tis-frame.l02-auto *{pointer-events:none !important;}
 /* the layer over the picture (the box's padding box, 927x434): the guide, the four "?" tokens, Madhav, the table patch and the plant at
    their Figma spots inside the stroke; none of it takes a tap — taps fall through to the bed's hotspot or to the picture (= try again) */
 .stage.l02-bed .l02-bed-layer{position:absolute;left:0;top:0;width:calc(927px * var(--fs));height:calc(434px * var(--fs));pointer-events:none;}
@@ -348,27 +351,37 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
    14/16.svg: the whole line 260 tall; without the bottom row, cut at 243; the middle row's left part and the top only, cut at 120.612) —
    adapt.js sets the spot and the size from card data.bed.guide */
 .stage.l02-bed .l02-bed-guide{position:absolute;}
-/* a "?" token — Figma: 104x102, 2px #F6E28B stroke, #7BA951, r900 (clipped), an inset shadow 0 2px 2px 25% on its outer edge; inside (of
-   its padding box): the ring "Ellipse 5" 94x94 @ (5,4) — a 2px #F6E28B circle — and the "?" picture ("image 238", assets/Images/bed_q.webp)
-   43x65 @ (31,18) with a 0 2px 4px 50% drop shadow. The tokens sit @ (133,67), (370,185), (580,54), (657,302) inside the stroke. */
+/* a "?" token — Figma: 104x102, 2px #F6E28B stroke, #7BA951, r900 (clipped), an inset shadow 0 2px 2px 25% on its outer edge; inside it,
+   measured from the token's OUTER edge (Figma child coordinates): the ring "Ellipse 5" 90x90 @ (7,6) with its own 2px #F6E28B stroke,
+   i.e. a 94x94 ring @ (5,4) — its centre (52,51) IS the token's centre, the two circles are concentric — and the "?" picture ("image
+   238", assets/Images/bed_q.webp) 43x65 @ (31,18) with a 0 2px 4px 50% drop shadow. The CSS children below are positioned from inside
+   the token's 2px border, so every Figma value is written minus 2 (user, 2026-09-29: the rings looked "unaligned concentric circles" —
+   they had been placed at the raw values, 2px right and down). The tokens sit @ (133,67), (370,185), (580,54), (657,302) inside the stroke. */
 .stage.l02-bed .l02-bed-token{position:absolute;width:calc(104px * var(--fs));height:calc(102px * var(--fs));box-sizing:border-box;
   border:calc(2px * var(--fs)) solid #F6E28B;background:#7BA951;border-radius:900px;overflow:hidden;}
 .stage.l02-bed .l02-bed-token::after{content:"";position:absolute;inset:calc(-2px * var(--fs));border-radius:inherit;box-shadow:inset 0 2px 2px rgba(0,0,0,.25);}
-.stage.l02-bed .l02-bed-token .l02-bed-ring{position:absolute;left:calc(5px * var(--fs));top:calc(4px * var(--fs));width:calc(94px * var(--fs));height:calc(94px * var(--fs));
+.stage.l02-bed .l02-bed-token .l02-bed-ring{position:absolute;left:calc(3px * var(--fs));top:calc(2px * var(--fs));width:calc(94px * var(--fs));height:calc(94px * var(--fs));
   box-sizing:border-box;border:calc(2px * var(--fs)) solid #F6E28B;border-radius:50%;display:block;}
-.stage.l02-bed .l02-bed-token .l02-bed-q{position:absolute;left:calc(31px * var(--fs));top:calc(18px * var(--fs));width:calc(43px * var(--fs));height:calc(65px * var(--fs));
+.stage.l02-bed .l02-bed-token .l02-bed-q{position:absolute;left:calc(29px * var(--fs));top:calc(16px * var(--fs));width:calc(43px * var(--fs));height:calc(65px * var(--fs));
   object-fit:cover;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
 .stage.l02-bed .l02-bed-token.t1{left:calc(133px * var(--fs));top:calc(67px * var(--fs));}
 .stage.l02-bed .l02-bed-token.t2{left:calc(370px * var(--fs));top:calc(185px * var(--fs));}
 .stage.l02-bed .l02-bed-token.t3{left:calc(580px * var(--fs));top:calc(54px * var(--fs));}
 .stage.l02-bed .l02-bed-token.t4{left:calc(657px * var(--fs));top:calc(302px * var(--fs));}
-/* a passed token — Figma page 16: the first token shows a small Madhav ("image 247", assets/Images/bed_done.webp) 50x74 @ (27,14) of
-   its padding box, no shadow, in place of the "?"; adapt.js marks the tokens Madhav has passed (card data.bed.done at the page's start,
-   data.bed.flips as he walks) */
-.stage.l02-bed .l02-bed-token .l02-bed-done{position:absolute;left:calc(27px * var(--fs));top:calc(14px * var(--fs));width:calc(50px * var(--fs));height:calc(74px * var(--fs));
+/* a passed token — Figma page 16: the first token shows a small Madhav ("image 247", assets/Images/bed_done.webp) 50x74 @ (27,14) from
+   the token's outer edge (= (25,12) inside its 2px border), no shadow, in place of the "?"; adapt.js marks the tokens Madhav has passed
+   (card data.bed.done at the page's start, data.bed.flips as he walks) */
+.stage.l02-bed .l02-bed-token .l02-bed-done{position:absolute;left:calc(25px * var(--fs));top:calc(12px * var(--fs));width:calc(50px * var(--fs));height:calc(74px * var(--fs));
   object-fit:cover;display:none;}
 .stage.l02-bed .l02-bed-token.done .l02-bed-q{display:none;}
 .stage.l02-bed .l02-bed-token.done .l02-bed-done{display:block;}
+/* [L02-BED-JOURNEY] the checkpoints' "?" pulse (user, 2026-09-29) — the token as a whole breathes 1 ↔ 1.08 about its centre every 1.2 s
+   (the speaker chip's cue pulse is the same idea); a checkpoint Madhav has passed (the small Madhav) is still */
+@keyframes l02TokenPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.stage.l02-bed .l02-bed-token:not(.done){animation:l02TokenPulse 1.2s ease-in-out infinite;transform-origin:50% 50%;will-change:transform;}
+/* [L02-BED-STEPS] the checkpoint Madhav stands ON at a leg's end (page 13: the first one; JS class "reached" on arrival) rests — its "?"
+   stays, still, under him; it takes the small Madhav from the next board page on */
+.stage.l02-bed .l02-bed-token.reached{animation:none;transform:none;}
 /* Madhav — Figma: the yawning boy ("sprite-max-px-frames-36-rows-6-cols-6 (6) 1", an animated GIF → assets/Images/bed_boy.webp, the same
    36 frames at 70 ms) 58x114, cover, at his spot of the page (Figma: (182,268) on page 13, (603,256) on page 14, (471,134) and mirrored
    on page 16 — adapt.js sets left/top from data.bed.boy and the mirror from data.bed.face). adapt.js moves him along data.bed.walk with a
@@ -409,3 +422,9 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-q3.l02-q3-yellow .opt-cell::before{border-color:#FCB717;}
 .stage.l02-q3.l02-q3-yellow .opt-cell.correct::before,.stage.l02-q3.l02-q3-yellow .opt-cell.ck-correct::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-guided::before{border-color:var(--correct,#00B132);}
 .stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong::before,.stage.l02-q3.l02-q3-yellow .opt-cell.crossed::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s::before{border-color:var(--wrong,#F93544);}
+/* [L02-BED-JOURNEY] the same card page with TWO options (M2, "खेलना / सोना"): the two cards keep the Figma size and 30px gap, centred on the
+   artboard like the three (which span 232..1048 about 640) — so they start at 373 */
+.stage.l02-q3 .opt-grid.cols-2{left:calc(373px * var(--fs));grid-template-columns:repeat(2,calc(252px * var(--fs))) !important;}
+/* [L02-BED-JOURNEY] I3 / M1 / M2 (card slide.fig_q3_contain): their option pictures are the lesson's cut-out icons on a transparent ground,
+   so the picture window shows each icon whole, centred, with a 10px inset on the white card, instead of cropping it to the window */
+.stage.l02-q3.l02-q3-contain .opt-cell .story-q-opt-img{object-fit:contain;padding:calc(10px * var(--fs));box-sizing:border-box;}
