@@ -718,6 +718,15 @@ index_html = f"""<!doctype html>
 </html>
 """
 
+# ---- [L02-MIC-CHIP] every speaker chip (header #audioChip, landing #sgVo, story-page SPK_SVG) carries the microphone glyph
+#      instead of the reference's speaker + two wave arcs; the chip itself (circle, ring, shadow, size, position) is untouched.
+_MIC_GLYPH = ('<path d="M31 18a2.5 2.5 0 0 1 2.5 2.5v6.5a2.5 2.5 0 0 1-5 0v-6.5A2.5 2.5 0 0 1 31 18Z" fill="white"/><path d="M26.7 26.5a4.3 4.3 0 0 0 8.6 0" stroke="white" st'
+              'roke-width="1.5" stroke-linecap="round" fill="none"/><path d="M31 30.8V33M28.7 33.6h4.6" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>')
+_SPK_GLYPH = re.compile(r'<path d="M29\.8466 .*?33\.3868 21\.5044Z" fill="white"/>')
+assert len(_SPK_GLYPH.findall(index_html)) == 2 and len(_SPK_GLYPH.findall(app_js)) == 1, "speaker glyph anchors changed"
+index_html = _SPK_GLYPH.sub(lambda m: _MIC_GLYPH, index_html)
+app_js     = _SPK_GLYPH.sub(lambda m: _MIC_GLYPH, app_js)
+
 wr(os.path.join(CUR, "style.css"), style_css)
 wr(os.path.join(CUR, "app.js"), app_js)
 wr(os.path.join(CUR, "index.html"), index_html)
