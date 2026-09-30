@@ -718,14 +718,27 @@ index_html = f"""<!doctype html>
 </html>
 """
 
-# ---- [L02-MIC-CHIP] every speaker chip (header #audioChip, landing #sgVo, story-page SPK_SVG) carries the microphone glyph
-#      instead of the reference's speaker + two wave arcs; the chip itself (circle, ring, shadow, size, position) is untouched.
-_MIC_GLYPH = ('<path d="M31 18a2.5 2.5 0 0 1 2.5 2.5v6.5a2.5 2.5 0 0 1-5 0v-6.5A2.5 2.5 0 0 1 31 18Z" fill="white"/><path d="M26.7 26.5a4.3 4.3 0 0 0 8.6 0" stroke="white" st'
-              'roke-width="1.5" stroke-linecap="round" fill="none"/><path d="M31 30.8V33M28.7 33.6h4.6" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>')
+# ---- [L02-MIC-CHIP] every speaker chip (header #audioChip, landing #sgVo, story-page SPK_SVG) carries the microphone
+#      glyph of the supplied icon instead of the reference's speaker + two wave arcs; the chip itself (circle, ring, shadow,
+#      size, position) is untouched. The glyph is scaled to the disc each chip actually shows: the header/landing SVG's own
+#      44px-tall rect, and the story page's CSS disc (.stage.tut.l02-story .tut-audio: 44px chip - 2x4px ring = 36px; that
+#      rule also hides every <rect> inside the SVG, so the glyph is <path>s only).
+def _mic_glyph(s, cx=31, cy=26):
+    """Microphone glyph of the supplied icon, in the chip SVG's 62x60 space, centred on the disc centre (cx,cy).
+    Icon units (77px icon, 61px disc, origin = disc centre): capsule 11.5 wide x 22.2 tall (top at -15.2), U-arc r 8.25
+    centred 1.75 below centre with a 2px stroke, stem down to +15, base 8 wide (+round caps) at +15. s = chip disc height / 61."""
+    f = lambda v: ("%.2f" % v).rstrip("0").rstrip(".")
+    X = lambda x: f(cx + s * x); Y = lambda y: f(cy + s * y); L = lambda v: f(s * v)
+    return ('<path d="M%s %sa%s %s 0 0 1 %s %sv%sa%s %s 0 0 1-%s 0v-%sA%s %s 0 0 1 %s %sZ" fill="white"/>'
+            % (X(0), Y(-15.2), L(5.75), L(5.75), L(5.75), L(5.75), L(10.7), L(5.75), L(5.75), L(11.5), L(10.7), L(5.75), L(5.75), X(0), Y(-15.2))
+            + '<path d="M%s %sa%s %s 0 0 0 %s 0" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
+            % (X(-8.25), Y(1.75), L(8.25), L(8.25), L(16.5), L(2))
+            + '<path d="M%s %sV%sM%s %sH%s" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
+            % (X(0), Y(10), Y(15), X(-4), Y(15), X(4), L(2)))
 _SPK_GLYPH = re.compile(r'<path d="M29\.8466 .*?33\.3868 21\.5044Z" fill="white"/>')
 assert len(_SPK_GLYPH.findall(index_html)) == 2 and len(_SPK_GLYPH.findall(app_js)) == 1, "speaker glyph anchors changed"
-index_html = _SPK_GLYPH.sub(lambda m: _MIC_GLYPH, index_html)
-app_js     = _SPK_GLYPH.sub(lambda m: _MIC_GLYPH, app_js)
+index_html = _SPK_GLYPH.sub(lambda m: _mic_glyph(44 / 61), index_html)   # header + landing chips
+app_js     = _SPK_GLYPH.sub(lambda m: _mic_glyph(36 / 61), app_js)       # story-page chip
 
 wr(os.path.join(CUR, "style.css"), style_css)
 wr(os.path.join(CUR, "app.js"), app_js)
