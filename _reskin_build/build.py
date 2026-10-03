@@ -116,6 +116,7 @@ for b in scripts:
     label = b["id"] or "ENGINE (2026.07.16i-r4-unified + STORY_READ_PAGE)"
     js_parts.append("/* ===== <script id=\"%s\"> ===== */\n%s\n;" % (label, b["inner"].strip("\n")))
 js_parts.append(rd(os.path.join(SCR, "adapt.js")).strip("\n") + "\n;")
+js_parts.append(rd(os.path.join(SCR, "sent_q_page.js")).strip("\n") + "\n;")   # [L02-G3-REF] the reference page-5 behaviours, card-driven (slide.sent_ref)
 app_js = ("/* HI02H04_L02_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order\n"
           "   (the reference-lesson-only scripts are left out; STORY_READ_PAGE is this lesson's own tutorial module). */\n\n"
           + "\n\n".join(js_parts) + "\n")
@@ -427,21 +428,51 @@ def cut_q3_option(key, spec):
     print("wrote", dst, "crop", tuple(round(v, 1) for v in crop))
     return True
 for k, spec in Q3_CUTS.items(): cut_q3_option(k, spec)
+# NOTE 2026-10-03: G3 has since moved to the reference's page-5 layout ([L02-G3-REF] right below); the Q3 cuts above stay for P1 (q3_khana).
+# ---- [L02-G3-REF] (2026-10-03, user request) G3 ("page 11" in the user's count, ?slide=10) is now laid out — and behaves — like page 5
+# (G2, ?slide=4) of the DEPLOYED reference lesson https://hi-02-h04-l01-s01-dun.vercel.app/ (byte-identical to Suresh's live
+# HI02H04_L01_S01.html of 2026-10-02, 892806 bytes — NOT the frozen bak110 this build reads: the page-5 behaviours live in its
+# P2-BIRD-POP-JS / P5-CORRECT-SFX-JS / P6-PROMPT-IDLE-CSS blocks, which this build skips because they also script the reference's
+# story and train pages, so they are ported by hand for this one page in _reskin_build/sent_q_page.js + adapt.css [L02-G3-REF],
+# card-driven by slide.sent_ref). The reference page = the engine's own sentence_options + bare_recall + hide_header_chip + hide_nav
+# STORY_QUESTION (the layout I1 already has, [L02-I1-REF] below): the bare 374.125x315 picture over three 344x78 white pills.
+# Content (user): the picture = the user's PNG of the boy on the rug building with blocks (_reskin_build/q3_khel_source.png,
+# 1671x941) cut to the reference picture's 1411:1188 shape — the full height, the window at columns KHEL_X0 .. KHEL_X0 + 1118 (the
+# teddy, the car, the blocks and the boy; the stacking rings and the toy bin at the right fall outside) -> assets/Images/q3_khel.webp
+# 1411x1188 (the CSS yellow inset frame of this lesson's recall pictures stands in for the frame the reference bakes into its PNG);
+# band "माधव किससे खेल रहा है?"; options खिलौनों से (the answer) / बर्तनों से / किताबों से. Lines — all edge-tts hi-IN-SwaraNeural
+# placeholders via tts_clip (further down, where it is defined), like the lesson's other placeholders: the question vo_q_khel, the
+# option words vo_opt_khilono_se / _bartano_se / _kitabo_se, and the praise line vo_ok_khel "शाबाश! माधव खिलौनों से खेल रहा है।" (the
+# reference's शाबाश line carries the answer sentence and the correct pill's words light with it). try_again = the lesson's RECORDED
+# vo_q_hint ("चित्र को ध्यान से देखिए, फिर सही उत्तर चुनिए।"; the reference's try line also asks to look at the picture) and reveal = the
+# recorded vo_q_reveal ("यह रहा सही जवाब।"; the reference's reveal clip is not even shipped — a silent beat there). No audio.hint, as on
+# the reference card (the 2nd wrong tap's line is replaced by the read-out anyway). The correct tap's scene sound = sfx_pop_7 (the
+# toys sound of story page 8, cut from the user's own track; 2 s, like the reference's scene sounds). G3's Figma card layout
+# ([L02-Q3-FIG] above: fig_q3, three picture+sentence cards, vo_q_khana + vo_opt_*) is gone from G3; q3_kitab / q3_khilone are now
+# unused (on disk), vo_q_khana / vo_opt_* stay registered.
 g3 = next(s for s in card["slides"] if s["id"] == "G3")
 assert g3["type"] == "STORY_QUESTION", "G3 is not the guided story question any more"
-g3["fig_q3"] = True
-g3["prompt_hi"] = "कहानी में माधव ने सबसे पहले क्या किया ?"
-g3["audio"]["prompt"] = "vo_q_khana"
-g3["data"]["hide_recall"] = True
-g3["data"].pop("recall_image_id", None)
-# label_w = the Figma text box width (px), only where the sentence wraps in the design (the third card breaks after खिलौनों);
-# the others stay on one line whatever the font's exact advance widths. The Figma spells खिलोनों; the story (T7) and the
-# recorded word say खिलौनों, so the sentence uses the story's spelling.
+g3.pop("fig_q3", None)
+g3["sent_ref"] = True; g3["hide_header_chip"] = True; g3["hide_nav"] = True; g3["bare_recall"] = True; g3["sentence_options"] = True
+g3["prompt_hi"] = "माधव किससे खेल रहा है?"
+g3["audio"] = {"prompt": "vo_q_khel", "try_again": "vo_q_hint", "reveal": "vo_q_reveal", "correct": "vo_ok_khel"}
+g3["data"]["recall_image_id"] = "q3_khel"; g3["data"]["hide_recall"] = False
 g3["data"]["options"] = [
-    {"img": "q3_khana",   "emoji": "🍛", "label_hi": "माधव ने खाना खाया ।",        "audio": "vo_opt_khana", "correct": True},
-    {"img": "q3_kitab",   "emoji": "📖", "label_hi": "माधव ने किताब पढ़ी ।",        "audio": "vo_opt_book"},
-    {"img": "q3_khilone", "emoji": "🧸", "label_hi": "माधव ने खिलौनों से खेला ।",  "audio": "vo_opt_toys", "label_w": 175},
+    {"label_hi": "खिलौनों से", "audio": "vo_opt_khilono_se", "correct": True},
+    {"label_hi": "बर्तनों से", "audio": "vo_opt_bartano_se"},
+    {"label_hi": "किताबों से", "audio": "vo_opt_kitabo_se"},
 ]
+g3["data"]["correct_sfx"] = {"src": "sfx_pop_7", "hold_ms": 2000, "vol": 1.0}
+g3["data"]["prompt_idle_ms"] = 5000
+KHEL_SRC = os.path.join(SCR, "q3_khel_source.png"); KHEL_DST = os.path.join(CUR, "assets", "Images", "q3_khel.webp"); KHEL_X0 = 201
+assert os.path.exists(KHEL_SRC), "missing " + KHEL_SRC
+if not os.path.exists(KHEL_DST) or os.path.getmtime(KHEL_DST) < os.path.getmtime(KHEL_SRC):
+    from PIL import Image
+    im = Image.open(KHEL_SRC).convert("RGB"); W, H = im.size; w = int(round(H * 1411 / 1188)); x0 = max(0, min(KHEL_X0, W - w))
+    im.crop((x0, 0, x0 + w, H)).resize((1411, 1188), Image.LANCZOS).save(KHEL_DST, "WEBP", quality=88, method=6)
+    print("wrote", KHEL_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
+card["assets"]["image"]["q3_khel"] = "assets/Images/q3_khel.webp"
+card.setdefault("_emoji_fallback", {})["q3_khel"] = "🧸"
 for k in Q3_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 # ---- [L02-I1-REF] I1 (the independent story question, the user's "page 12") laid out like the reference lesson's G2
 # (https://hi-02-h04-l01-s01-dun.vercel.app/?slide=4, byte-identical to the local reference this lesson was built on; user,
@@ -729,6 +760,21 @@ def clip_s(name):
     """The length of a lesson clip (assets/Audio/<name>.ogg) in seconds, read with ffmpeg."""
     h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"))).groups()
     return int(h) * 3600 + int(m) * 60 + float(sec)
+# ---- [L02-G3-REF] G3's lines and the word timings its pills light up with (see the G3 block above; tts_clip and clip_s exist by now)
+tts_clip("vo_q_khel", "माधव किससे खेल रहा है?")
+tts_clip("vo_opt_khilono_se", "खिलौनों से")
+tts_clip("vo_opt_bartano_se", "बर्तनों से")
+tts_clip("vo_opt_kitabo_se", "किताबों से")
+tts_clip("vo_ok_khel", "शाबाश! माधव खिलौनों से खेल रहा है।")
+# word start times (+ the end of the last word) per clip, measured like the story pages' (word_times_for: the envelope method, cached in
+# word_times.json): each option's two words; for the praise line only its sentence part — the correct pill's two words follow
+# "खिलौनों से" inside "शाबाश! माधव खिलौनों से खेल रहा है।" (the reference's table for its शाबाश line covers the sentence part alone)
+G3_WT = {}
+for _o in g3["data"]["options"]: G3_WT[_o["audio"]] = word_times_for(_o["audio"], _o["label_hi"].split())
+_ok_words = "शाबाश! माधव खिलौनों से खेल रहा है।".split(); _ok_t = word_times_for("vo_ok_khel", _ok_words)
+G3_WT["vo_ok_khel"] = _ok_t[2:5]     # खिलौनों starts, से starts, से ends (= खेल starts)
+g3["data"]["word_times_by_audio"] = G3_WT
+g3["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_khel") * 1000))   # the picture's pop-and-hold lasts the repeated question (the reference: its line's length)
 # [L02-BED-AUTO] when Madhav sets off on page 13: the band's line (vo_tap_bed, ~4.2 s) and a 0.4 s beat after the page opens. A fixed
 # time from the clip's length, not the engine's isPlaying flag: the engine plays the prompt twice at mount (pre-existing), the first,
 # aborted play() clears the flag 1.2 s later while the line still sounds. (The JS still holds the walk while a replay is sounding.)

@@ -178,5 +178,67 @@
    0.81
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_khilono_se": {
+  "words": [
+   "खिलौनों",
+   "से"
+  ],
+  "md5": "ce407cc4f320c8bf1abaee0546a91d32",
+  "times": [
+   0.09,
+   0.7,
+   0.9
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_bartano_se": {
+  "words": [
+   "बर्तनों",
+   "से"
+  ],
+  "md5": "e4b47e304ba1cecd67bd28f07d53d419",
+  "times": [
+   0.09,
+   0.72,
+   0.91
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_kitabo_se": {
+  "words": [
+   "किताबों",
+   "से"
+  ],
+  "md5": "243fb78702a2b4b6105641c57def7ff3",
+  "times": [
+   0.09,
+   0.69,
+   0.86
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_ok_khel": {
+  "words": [
+   "शाबाश!",
+   "माधव",
+   "खिलौनों",
+   "से",
+   "खेल",
+   "रहा",
+   "है।"
+  ],
+  "md5": "3f051a847bd93d74a87d1d3d3e2d8161",
+  "times": [
+   0.09,
+   0.82,
+   1.75,
+   2.41,
+   2.83,
+   3.12,
+   3.62,
+   3.97
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
 }

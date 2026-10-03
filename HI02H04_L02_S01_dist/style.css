@@ -2766,3 +2766,32 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.tut.l02-story .story-caption.has-chip .tut-audio.p2-rec-done{filter:grayscale(1);}   /* this chip's shadow is its box-shadow (kept) */
 .stage.tut .story-caption.p2-cue .tut-audio.p2-rec-done,
 .stage.tut.l02-story .story-caption .tut-audio.p2-rec-done.p2-chip-pulse{animation:none !important;}
+
+/* ===== G3 [L02-G3-REF] (2026-10-03) — "page 11" in the user's count (?slide=10) laid out and behaving like page 5 (G2) of the deployed
+   reference lesson hi-02-h04-l01-s01-dun.vercel.app. The LAYOUT is the engine's own sentence_options + bare_recall + hide_header_chip
+   page (every rule already in this stylesheet; I1 uses the same, [L02-I1-REF] above: the 374.125x315 picture, the three 344x78 pills).
+   The BEHAVIOURS are ported in sent_q_page.js (card slide.sent_ref; stage class .l02-sentq); these are the rules they need, copied
+   value for value from the reference's #P2-BIRD-POP-CSS / #P6-PROMPT-IDLE-CSS / NAV-NEXT-BTN [P5-NO-NAV] blocks, scoped to the page. */
+/* slide.hide_nav -> .stage.no-nav (the live reference's mountSlide sets it; sent_q_page.js does here): no आगे art on the page at all */
+.stage.no-nav #navBtn{display:none !important;}
+/* the correct tap: the recall picture pops out and holds 2 s (p2BirdPop above) while the page's sound plays */
+.stage.l02-sentq .story-q-stim .story-q-thumb.p2-pop{animation:p2BirdPop 2s ease-in-out 1 both;transform-origin:50% 50%;will-change:transform;}
+/* each time the question repeats after 5 s of inactivity the picture shows a very small silent pop-and-hold for the length of the
+   line (--sentq-pop, set by the module from the clip's length; the reference's 3.2 s = its line): out to 1.045 in the first 6.25%,
+   settled at 1.03 by 10%, held to 86%, eased back. The correct tap's own pop keeps priority where the two meet. */
+@keyframes p6PromptPop{
+  0%{transform:scale(1);animation-timing-function:cubic-bezier(.2,.8,.3,1);}
+  6.25%{transform:scale(1.045);animation-timing-function:ease-in-out;}
+  10%{transform:scale(1.03);animation-timing-function:linear;}
+  86%{transform:scale(1.03);animation-timing-function:ease-in-out;}
+  100%{transform:scale(1);}
+}
+.stage.l02-sentq .story-q-stim .story-q-thumb.p6-pop:not(.p2-pop){animation:p6PromptPop var(--sentq-pop,3.2s) ease-in-out 1 both;transform-origin:50% 50%;will-change:transform;}
+/* the pills' words light up one by one while their line speaks (dark-orange text + the tiny pop, as on the story pages); the pill is a
+   flex box, so its words sit in one inline wrapper (.p2-words) — flex would drop the spaces between separate word boxes */
+.stage.l02-sentq .sent-opt .so-pill .p2-words{display:inline;}
+.stage.l02-sentq .sent-opt .so-pill .p2-word{display:inline-block;border-radius:10px;padding:0 .12em;margin:0 -.12em;transform-origin:50% 60%;}
+.stage.l02-sentq .sent-opt .so-pill .p2-word.on{color:#E86A00;animation:p2WordPop .28s ease-out 1;}
+/* the read-out after the second wrong tap: the pill whose line is speaking lifts very slightly (springy), eased back at its end */
+.stage.l02-sentq .sent-opt .so-pill{transition:transform .28s ease;}
+.stage.l02-sentq .sent-opt .so-pill.p6-say{transform:scale(1.05);transition:transform .32s cubic-bezier(.34,1.6,.6,1);}
