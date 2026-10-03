@@ -126,21 +126,19 @@ body.tota-landing-in .start-gate .sg-frame{animation:totaIconReveal .52s cubic-b
 .stage.tut.l02-story .tut-audio svg g[filter] > rect{display:none;}   /* the art's own disc + ring only — the sound-wave bars inside .mic-wave stay ([L02-READ-ALOUD] below) */
 .stage.tut.l02-story .tut-audio svg > g[filter]{filter:none;}
 /* आगे बढ़ें — Figma: 186.18x64 @ (451,399) of the frame, i.e. centred with its top 570px from the artboard top (86px above its
-   bottom); #FCB717, 4.544px white ring, r44.555, label 24px #002F76, inset highlights, shadow 0 6.06px 3.03px 25%. Disabled =
-   the fleet's disabled pill colours (#EDEDED / #C2C2C2, flat 4px #D6D6D6 drop), so the disabled→enabled fade, the tap and the
-   pop-in are as they were; the arrow art of NAV-NEXT-BTN is off on these pages. */
-.stage.tut.l02-story #navBtn{left:50% !important;right:auto !important;bottom:calc(86px * var(--fs)) !important;transform:translateX(-50%);
-  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
-  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
-  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
-  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
-  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
-  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
-.stage.tut.l02-story #navBtn::before,.stage.tut.l02-story #navBtn::after{content:none !important;display:none !important;}
-.stage.tut.l02-story #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
-  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
-.stage.tut.l02-story #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
-.stage.tut.l02-story #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+   bottom). [L02-NEXT-ART] (2026-10-03, user request: "replace the आगे बढ़ें button wherever present with these buttons" — the two
+   SVGs handed over are, byte for byte, the fleet's btn-next.svg / btn-next-disabled.svg): the CSS text pill is gone and the fleet's
+   NAV-NEXT-BTN art draws the button instead — the disabled grey pill + grey arrow until आगे बढ़ें lights, then the yellow pill +
+   navy arrow fading in over .3 s, the tap as before — at the art's own 170x62 (x --fs, undistorted) on the Figma pill's centre
+   (bottom 86 + 1 = 87px: where the 64px pill's centre was). The label stays as the accessible name only (font-size 0, as on
+   every fleet page). The art's canvas is the box plus its 14px shadow margin x --fs (the fleet's -17px insets = 14 + the 3px
+   border at scale 1) and the 40x28 arrow scales with it, so the pill lands exactly on the box; the base .nav-btn hover / press
+   lifts (translateX(-50%) translateY…) apply as on every page. Same on the find page and the board pages below. */
+.stage.tut.l02-story #navBtn{left:50% !important;right:auto !important;bottom:calc(87px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(170px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(62px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;margin:0;border-width:3px;}
+.stage.tut.l02-story #navBtn::before,.stage.tut.l02-story #navBtn::after{left:calc(-14px * var(--fs) - 3px);right:calc(-14px * var(--fs) - 3px);
+  top:calc(-14px * var(--fs) - 3px);bottom:calc(-14px * var(--fs) - 3px);background-size:calc(40px * var(--fs)) calc(28px * var(--fs)),100% 100%;}
 
 /* ===== pages 2-10 [L02-SPK-CUE] — the speaker chip animates only for the beat it belongs to =====
    The engine flags EVERY chip .playing for every clip, so the chip's two wave arcs used to blink through the narration
@@ -183,20 +181,14 @@ body.tota-landing-in .start-gate .sg-frame{animation:totaIconReveal .52s cubic-b
 .stage.l02-find .tis-img{position:absolute;left:calc(-20px * var(--fs));top:calc(-16px * var(--fs));
   width:calc(951px * var(--fs)) !important;height:calc(536px * var(--fs)) !important;max-width:none;object-fit:cover !important;
   outline:none;border-radius:0;}
-/* आगे बढ़ें — Figma: 186.18x64 @ (547,630), i.e. centred, 26px above the artboard bottom; the story pages' pill (same colours,
-   ring, radius, label; disabled look until Madhav is found, the arrow art of NAV-NEXT-BTN off) */
-.stage.l02-find #navBtn{left:50% !important;right:auto !important;bottom:calc(26px * var(--fs)) !important;transform:translateX(-50%);
-  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
-  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
-  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
-  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
-  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
-  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
-.stage.l02-find #navBtn::before,.stage.l02-find #navBtn::after{content:none !important;display:none !important;}
-.stage.l02-find #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
-  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
-.stage.l02-find #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
-.stage.l02-find #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+/* आगे बढ़ें — Figma: 186.18x64 @ (547,630), i.e. centred, 26px above the artboard bottom. [L02-NEXT-ART]: the fleet's next-button
+   art (NAV-NEXT-BTN, disabled until Madhav is found) at its own 170x62 x --fs on that pill's centre (bottom 26 + 1), as on the
+   story pages above */
+.stage.l02-find #navBtn{left:50% !important;right:auto !important;bottom:calc(27px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(170px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(62px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;margin:0;border-width:3px;}
+.stage.l02-find #navBtn::before,.stage.l02-find #navBtn::after{left:calc(-14px * var(--fs) - 3px);right:calc(-14px * var(--fs) - 3px);
+  top:calc(-14px * var(--fs) - 3px);bottom:calc(-14px * var(--fs) - 3px);background-size:calc(40px * var(--fs)) calc(28px * var(--fs)),100% 100%;}
 /* [L02-FIND-HOTS] the three regions on the picture (the boy = the answer, the mother and the football = decoys) are SHAPED
    outlines — the two silhouettes and a circle round the ball (card data.shapes, drawn by adapt.js in an SVG laid over the
    picture at exactly the picture's box, so they scale with it). They rest under a plain WHITE stroke — no ring, no hover
@@ -395,20 +387,14 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-bed .l02-bed-patch i{display:block;width:calc(67.551px * var(--fs));height:calc(28.657px * var(--fs));background:#B16121;border-radius:2px;transform:rotate(-23.13deg);}
 /* the plant on its table — Figma: "Object" (assets/Images/bed_plant.webp) 90x130 @ (-42,183) inside the stroke, clipped by the box */
 .stage.l02-bed .l02-bed-plant{position:absolute;left:calc(-42px * var(--fs));top:calc(183px * var(--fs));width:calc(90px * var(--fs));height:calc(130px * var(--fs));}
-/* आगे बढ़ें — Figma: 186.18x64 @ (545,628), i.e. its centre 1.91px left of the artboard's, 28px above the bottom; the find page's pill (same
-   colours, ring, radius, label; the disabled look until Madhav reaches the bed, the arrow art of NAV-NEXT-BTN off) */
-.stage.l02-bed #navBtn{left:calc(638.09px * var(--fs)) !important;right:auto !important;bottom:calc(28px * var(--fs)) !important;transform:translateX(-50%);
-  width:calc(186.18px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(64px * var(--fs)) !important;
-  box-sizing:border-box;padding:0 !important;display:flex !important;align-items:center;justify-content:center;
-  font-family:var(--font-hi);font-weight:700;font-size:calc(24px * var(--fs)) !important;line-height:1.15 !important;white-space:nowrap;
-  color:#C2C2C2 !important;background:#EDEDED !important;border:calc(4.544px * var(--fs)) solid #FFFFFF !important;
-  border-radius:calc(44.555px * var(--fs)) !important;box-shadow:0 4px 0 #D6D6D6 !important;opacity:1 !important;overflow:visible !important;
-  transition:background .3s ease,color .3s ease,box-shadow .3s ease;}
-.stage.l02-bed #navBtn::before,.stage.l02-bed #navBtn::after{content:none !important;display:none !important;}
-.stage.l02-bed #navBtn.active{color:#002F76 !important;background:#FCB717 !important;
-  box-shadow:0 6.06px 3.03px rgba(0,0,0,.25),inset 4.544px 9.088px 12.117px rgba(255,255,255,.25),inset -4.544px -4.544px 13.632px rgba(116,60,0,.19) !important;}
-.stage.l02-bed #navBtn.active:hover{transform:translateX(-50%) translateY(-2px);}
-.stage.l02-bed #navBtn.active:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.20) !important;}
+/* आगे बढ़ें — Figma: 186.18x64 @ (545,628), i.e. its centre 1.91px left of the artboard's, 28px above the bottom. [L02-NEXT-ART]: the
+   fleet's next-button art (NAV-NEXT-BTN, disabled until Madhav reaches the checkpoint / the bed) at its own 170x62 x --fs on that
+   pill's centre (bottom 28 + 1), as on the story pages */
+.stage.l02-bed #navBtn{left:calc(638.09px * var(--fs)) !important;right:auto !important;bottom:calc(29px * var(--fs)) !important;transform:translateX(-50%);
+  width:calc(170px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(62px * var(--fs)) !important;
+  box-sizing:border-box;padding:0 !important;margin:0;border-width:3px;}
+.stage.l02-bed #navBtn::before,.stage.l02-bed #navBtn::after{left:calc(-14px * var(--fs) - 3px);right:calc(-14px * var(--fs) - 3px);
+  top:calc(-14px * var(--fs) - 3px);bottom:calc(-14px * var(--fs) - 3px);background-size:calc(40px * var(--fs)) calc(28px * var(--fs)),100% 100%;}
 
 /* ===== P1 [L02-P1-FIG] — "page 15", the practice story question, from the same Figma section ("15 P1 Practice Story Question"): G3's
    card layout ([L02-Q3-FIG] above, card slide.fig_q3 — header, three 252x314.113 cards @ 232/514/796 x 247, sentence, no pill) over the

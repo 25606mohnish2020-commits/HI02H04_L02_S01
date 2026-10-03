@@ -2,12 +2,11 @@
      section 19-13 (CSS: [L02-STORY-FIG], stage class .l02-story): the header band ("आइए कहानी पढ़ें।") with the mascot
      circle, the grid frame, the 468x244 picture in its yellow frame, the sentence in the white / blue-stroke bar under it
      with the small mic chip to its left (slide.caption_chip moves the frame's chip there), and आगे बढ़ें inside the
-     frame. Beat order: the narration speaks first and alone — page 2 only (vo_help); pages 3-10 have no narration
-     clip any more ([L02-NO-READ-INSTR], their "इस वाक्य को पढ़िए।" was removed) and open silently, straight into the beats
-     below (the chip stays still during the narration — CSS [L02-SPK-CUE]; the one exception: while the narration says
-     "यह बटन दबाकर सुन सकते हैं" — page 2's vo_help, from data.chip_pulse_at (set by the build, read off the audio clock) to
-     the end of the clip — the chip PULSES, the same pulse the cue uses) → 4 s later ONLY the chip PULSES with the cue line
-     and ONLY the chip takes the tap.
+     frame. Beat order: a narration (card audio.prompt) would speak first and alone — but no story page has one any more:
+     pages 3-10 lost their "इस वाक्य को पढ़िए।" ([L02-NO-READ-INSTR]) and page 2 its "आप खुद कहानी पढ़ने की कोशिश करिए…"
+     (vo_help, [L02-NO-HELP-VO] 2026-10-03, together with the chip pulse that was timed to its "यह बटन…" words through
+     data.chip_pulse_at — the code below still honours both fields for a card that has them) — so every page opens silently,
+     straight into the beats below → 4 s later ONLY the chip PULSES with the cue line and ONLY the chip takes the tap.
      [L02-READ-ALOUD] (2026-10-03; the reference lesson's [P2-READ-ALOUD] rev 2 + [STORY-CUE-VO], value for value): the cue
      line is the re-recorded vo_tap_speaker_sentence_story (the user's vo_1.wav — tap the mic and READ the sentence), so the
      FIRST tap on the chip no longer speaks the sentence: it starts a REC_MS (12 s) read-aloud beat — whatever is speaking

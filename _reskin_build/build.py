@@ -137,16 +137,20 @@ for n, s in enumerate(story, 1):
 # "जहाँ मदद चाहिए," (2.73-3.72 s) · the comma pause · "यह बटन दबाकर सुन सकते हैं।" from 3.9 s. Only the clips listed here
 # pulse; vo_read_instr has no such line.
 CHIP_PULSE_AT = {"vo_help": 3.9}
+# [L02-NO-READ-INSTR] pages 3-10 (T2..T9) all narrated the same "इस वाक्य को पढ़िए।" (vo_read_instr) on every landing; the
+# user asked for it to go. Those pages now open silently and run straight into their beats (picture pop → "tap here" cue).
+# [L02-NO-HELP-VO] (2026-10-03, user request) page 2 (T1) loses its narration as well — "आप खुद कहानी पढ़ने की कोशिश करिए। जहाँ
+# मदद चाहिए, यह बटन दबाकर सुन सकते हैं।" (vo_help) — and with it the chip pulse that was timed to its "यह बटन…" words
+# ([L02-SPK-CUE]: CHIP_PULSE_AT is applied AFTER this removal, so no page carries data.chip_pulse_at any more; the module's
+# pulse code stays for a card that has a narration). Every story page now opens silently into the same beat (the "tap the
+# mic" cue 4 s in) and the header mascot takes no tap there (nothing to repeat). Both clips stay registered in assets (unused).
+for s in story:
+    if (s.get("audio") or {}).get("prompt") in ("vo_read_instr", "vo_help"):
+        del s["audio"]["prompt"]
+        if not s["audio"]: del s["audio"]
 for s in story:
     clip = (s.get("audio") or {}).get("prompt")
     if clip in CHIP_PULSE_AT: s["data"]["chip_pulse_at"] = CHIP_PULSE_AT[clip]
-# [L02-NO-READ-INSTR] pages 3-10 (T2..T9) all narrated the same "इस वाक्य को पढ़िए।" (vo_read_instr) on every landing; the
-# user asked for it to go. Those pages now open silently and run straight into their beats (picture pop → "tap here" cue);
-# page 2 keeps vo_help. The clip stays registered in assets (unused) so nothing else about the card changes.
-for s in story:
-    if (s.get("audio") or {}).get("prompt") == "vo_read_instr":
-        del s["audio"]["prompt"]
-        if not s["audio"]: del s["audio"]
 t8 = story[-1]; t9 = copy.deepcopy(t8)
 t8["data"]["words"] = [{"text": w} for w in ["खेलते-खेलते", "उसे", "नींद", "आ", "गई"]]
 t8["data"]["whole_audio"] = "vo_story_8a"
