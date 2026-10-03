@@ -2851,7 +2851,7 @@ const SlideModules = {
      pages 3-10 lost their "इस वाक्य को पढ़िए।" ([L02-NO-READ-INSTR]) and page 2 its "आप खुद कहानी पढ़ने की कोशिश करिए…"
      (vo_help, [L02-NO-HELP-VO] 2026-10-03, together with the chip pulse that was timed to its "यह बटन…" words through
      data.chip_pulse_at — the code below still honours both fields for a card that has them) — so every page opens silently,
-     straight into the beats below → 4 s later (2 s on page 2: data.cue_delay_ms, [L02-T1-CUE-2S] 2026-10-03) ONLY the chip
+     straight into the beats below → 4 s later (1 s on page 2: data.cue_delay_ms, [L02-T1-CUE-2S] 2026-10-03) ONLY the chip
      PULSES with the cue line "इस बटन पर टैप करिए और वाक्य पढ़िए।" and ONLY the chip takes the tap.
      [L02-READ-ALOUD] (2026-10-03; the reference lesson's [P2-READ-ALOUD] rev 2 + [STORY-CUE-VO], value for value): the cue
      line is the re-recorded vo_tap_speaker_sentence_story (the user's vo_1.wav — tap the mic and READ the sentence), so the
@@ -3029,11 +3029,11 @@ const SlideModules = {
       // [L02-NO-READ-INSTR] a page without a narration clip (pages 3-10: their "इस वाक्य को पढ़िए।" was removed from the card)
       // opens silently and runs straight into the same beat — the "tap here" cue 4 s in
       const promptSrc = audioFor(slide, "prompt") || null;
-      // [L02-T1-CUE-2S] the cue comes data.cue_delay_ms after the page opens (page 2: 2 s — the user's request; the others keep the
-      // reference's 4 s); the chip pulse is the cue's own, for exactly as long as the line plays, so it is in sync with the VO
+      // [L02-T1-CUE-2S] the cue comes data.cue_delay_ms after the page opens (page 2: 1 s — the user's request, 2 s at first; the
+      // others keep the reference's 4 s); the chip pulse is the cue's own, for exactly as long as the line plays, so it is in sync with the VO
       const cueDelay = (typeof d.cue_delay_ms === "number" && d.cue_delay_ms >= 0) ? d.cue_delay_ms : 4000;
       const afterNarration = ()=>{ cancelAnimationFrame(pulseRaf); setChipPulse(false); setSwMood("point"); if(!alive()) return;
-        scheduleCue(cueDelay);   // 4 s after the page opens (the reference spacing; 2 s on page 2, [L02-T1-CUE-2S]) — the picture's pop itself comes after the sentence
+        scheduleCue(cueDelay);   // 4 s after the page opens (the reference spacing; 1 s on page 2, [L02-T1-CUE-2S]) — the picture's pop itself comes after the sentence
       };
       const narrate = ()=>{
         if(!alive()) return;

@@ -597,13 +597,14 @@ vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_sour
 # the recording's words, as the user gave them on 2026-10-03 ("इस बटन पर टैप करिए और वाक्य पढिए"; the lesson's spelling पढ़िए, as in
 # vo_read_instr) — so the clip has its audio_text entry like every other line of the card after all
 txt["vo_tap_speaker_sentence_story"] = "इस बटन पर टैप करिए और वाक्य पढ़िए।"
-# ---- [L02-T1-CUE-2S] (2026-10-03, user request) page 2 (T1) speaks that cue 2 s after it opens — "once the page opens and after 2
-# seconds the VO should be played along with the same button animation in sync with the VO" — instead of the 4 s every story page
-# waits (the reference spacing, kept on pages 3-10). The chip pulse is the cue's own (.p2-cue for exactly as long as the line plays,
-# settling at the end of a breath), so it is in sync by construction. Card data.cue_delay_ms, read by story_read_page.js (default 4000).
-# "Opens" = the module's mount: the phase gate before page 2 closes BEFORE it mounts the slide (phaseBlurTransition), so the 2 s run
-# from the moment the child sees the page. The idle repeat (5 s of silence) is unchanged.
-story[0]["data"]["cue_delay_ms"] = 2000
+# ---- [L02-T1-CUE-2S] (2026-10-03, user request) page 2 (T1) speaks that cue shortly after it opens — "once the page opens and after
+# N seconds the VO should be played along with the same button animation in sync with the VO": first 2 s, then (later the same day)
+# 1 s — instead of the 4 s every story page waits (the reference spacing, kept on pages 3-10). The chip pulse is the cue's own
+# (.p2-cue for exactly as long as the line plays, settling at the end of a breath), so it is in sync by construction. Card
+# data.cue_delay_ms, read by story_read_page.js (default 4000). "Opens" = the module's mount: the phase gate before page 2 closes
+# BEFORE it mounts the slide (phaseBlurTransition), so the second runs from the moment the child sees the page. The idle repeat
+# (5 s of silence) is unchanged.
+story[0]["data"]["cue_delay_ms"] = 1000
 BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
 BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
 # the bed = the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's padding box = 743.6-914.7 x
