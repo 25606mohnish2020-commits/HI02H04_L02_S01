@@ -796,6 +796,13 @@ def story_cut(n, src, top):
     im.crop((0, top, W, top + h)).resize((1380, 708), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
     print("wrote", d, "rows %d-%d of %d" % (top, top + h, H))
 story_cut(5, "story_5_source.png", STORY5_TOP)
+# ---- [L02-T6-PIC] (2026-10-03, user request) page 7 (T6, "उसने किताब पढ़ी।") shows the user's new picture — the boy sitting cross-legged
+# on the rug reading a rocket picture book, other books and toys scattered around him (_reskin_build/story_6_source.png, 1672x941) —
+# in place of the designer's story_6. Same cut as T5: full width at 1380:708 = 858 of the 941 rows; the 83 rows dropped are taken from
+# the top (blurred wall and ceiling) so every scattered book on the floor stays in frame (rows 83-941). The alt text
+# "माधव एक किताब पढ़ रहा है, बाकी किताबें बिखरी हैं।" describes this picture as well, so the card is unchanged.
+STORY6_TOP = 83
+story_cut(6, "story_6_source.png", STORY6_TOP)
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for k in aud:
