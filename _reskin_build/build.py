@@ -474,38 +474,46 @@ if not os.path.exists(KHEL_DST) or os.path.getmtime(KHEL_DST) < os.path.getmtime
 card["assets"]["image"]["q3_khel"] = "assets/Images/q3_khel.webp"
 card.setdefault("_emoji_fallback", {})["q3_khel"] = "🧸"
 for k in Q3_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
-# ---- [L02-I1-REF] I1 (the independent story question, the user's "page 12") laid out like the reference lesson's G2
-# (https://hi-02-h04-l01-s01-dun.vercel.app/?slide=4, byte-identical to the local reference this lesson was built on; user,
-# 2026-09-28): the bare recall picture 374.125x315 at the top, three white sentence pills 344x78 with the 3px #386AF6 stroke
-# in a 1104px row (the engine's sentence_options + bare_recall + hide_header_chip page — CSS .sent-page / .sent-opts, all
-# already in this lesson's stylesheet), the आगे pill below. Band "चित्र में मम्मी क्या कर रही है ?" (user). Content, from this
-# lesson's own recorded clips: the question clip is vo_q_sulaya ("माँ ने माधव को क्या कराने की कोशिश की?", the old G3 question
-# that this band re-words), the picture is the designer's story picture 2 (the mother putting Madhav to sleep, story_2 —
-# cropped by CSS to the reference's picture box), and the pills are STORY SENTENCES with their own recorded clips: the answer
-# "माधव की माँ उसे सुलाने लगी।" (vo_story_2) against two sentences about Madhav (vo_story_5, vo_story_7) — the reference's
-# "choose the sentence for the picture" mechanic, shown == spoken. Try / hint / correct / reveal lines are I1's, unchanged.
-# The old I1 question ("माधव ने दीवार पर क्या बनाया?", vo_q_chitra, scene_5, opt_drawing) is dropped; its clips stay on disk.
+# ---- [L02-I1-FIG] (2026-10-03, user request) I1 (the independent story question, the user's "page 12", ?slide=11) is laid out from
+# Figma "FLN by MJ" node 113-198 ("G3 guided story question", 1280x720) — the card layout G3 carried from 2026-09-28 until earlier
+# today ([L02-Q3-FIG] above: card slide.fig_q3, stage class .l02-q3, CSS block in adapt.css, applyQ3 in adapt.js — the band, no
+# header chip (the mascot tap replays the question), NO आगे pill (the Figma page has none; .l02-q3 #navBtn{display:none}, and the
+# card's hide_nav keeps it off through sent_q_page.js's .no-nav as well), three picture+sentence cards 252x314.113 @ x 232/514/796,
+# y 247, grey #D9D9D9 box -> white card with the #D5D8DF inside stroke, picture window 243.679x194.84, sentence Baloo 700 24.845px).
+# The frame's content comes with it: band "कहानी में माधव ने सबसे पहले क्या किया ?", cards खाना खाया / किताब पढ़ी / खिलौनों से खेला (the
+# Figma pictures cut at the Figma crop: q3_khana / q3_kitab / q3_khilone, Q3_CUTS above; the Figma spells खिलोनों, the story's खिलौनों
+# is used), the engine's shuffle kept. VOs "accordingly" = the lesson's own RECORDED clips for this question, as G3 used them:
+# prompt vo_q_khana ("माधव और माँ ने सबसे पहले क्या किया?" — the recording re-words the band; told the user, a TTS of the exact band
+# words was offered, not made), the option words vo_opt_khana / vo_opt_book / vo_opt_toys (खाना / किताब / खिलौने), and I1's own
+# try / hint / correct / reveal lines, unchanged. Interactions = the engine's tap-to-answer as on every card question (kit wrong beat
+# + try line, hint rung, reveal with the pointing hand after three, confetti + praise + advance on the answer; [L02-I1-CONFETTI]
+# below keeps the confetti on this independent page). The reference-G2 look I1 had since 2026-09-28 ([L02-I1-REF]: the bare story_2
+# picture over three sentence pills vo_story_2 / _5 / _7, band "चित्र में मम्मी क्या कर रही है ?", prompt vo_q_sulaya) is gone from I1;
+# those clips and story_2 stay on disk / registered.
 i1 = next(s for s in card["slides"] if s["id"] == "I1")
 assert i1["type"] == "STORY_QUESTION" and i1["phase"] == "independent", "I1 is not the independent story question any more"
-i1["prompt_hi"] = "चित्र में मम्मी क्या कर रही है ?"
-i1["sentence_options"] = True
+i1["prompt_hi"] = "कहानी में माधव ने सबसे पहले क्या किया ?"
+i1["fig_q3"] = True
+i1.pop("sentence_options", None)
 i1["hide_header_chip"] = True
+i1["hide_nav"] = True           # no आगे on this page, disabled or lit (the Figma page has none)
 i1["bare_recall"] = True
-i1["mascot_replay"] = True      # the header chip is off (as on the reference page): the mascot tap replays the question instead (adapt.js)
+i1["mascot_replay"] = True      # the header chip is off: the mascot tap replays the question (adapt.js applyQ3 wires it for fig_q3 pages anyway)
 # [L02-I1-CONFETTI] the animation kit fires its confetti on guided / practice / mastery slides only, so an independent-phase
 # question gets none; the user wants the same confetti here on the correct tap (2026-09-28). This flag lifts the kit's phase
 # gate for THIS slide alone (adapt.js); I2 and I3 stay as they are.
 i1["confetti"] = True
-i1["audio"]["prompt"] = "vo_q_sulaya"
-i1["data"]["recall_image_id"] = "story_2"
-i1["data"]["hide_recall"] = False
+i1["audio"]["prompt"] = "vo_q_khana"
+i1["data"]["hide_recall"] = True
+i1["data"].pop("recall_image_id", None)
+# label_w = the Figma text box width (px), only where the sentence wraps in the design (the third card breaks after खिलौनों)
 i1["data"]["options"] = [
-    {"label_hi": "माधव की माँ उसे सुलाने लगी।", "audio": "vo_story_2", "correct": True},
-    {"label_hi": "उसने दीवार पर चित्र बनाए।",   "audio": "vo_story_5"},
-    {"label_hi": "वह खिलौनों से खेलने लगा।",    "audio": "vo_story_7"},
+    {"img": "q3_khana",   "emoji": "🍛", "label_hi": "माधव ने खाना खाया ।",        "audio": "vo_opt_khana", "correct": True},
+    {"img": "q3_kitab",   "emoji": "📖", "label_hi": "माधव ने किताब पढ़ी ।",        "audio": "vo_opt_book"},
+    {"img": "q3_khilone", "emoji": "🧸", "label_hi": "माधव ने खिलौनों से खेला ।",  "audio": "vo_opt_toys", "label_w": 175},
 ]
 for o in i1["data"]["options"]:
-    assert o["audio"] in aud and txt[o["audio"]] == o["label_hi"], "I1 pill and clip differ: " + o["label_hi"]
+    assert o["audio"] in aud and o["img"] in Q3_CUTS, "I1 option asset missing: " + o["label_hi"]
 # ---- [L02-BED-FIG] the bed-path board ("the carpet map") from Figma "FLN by MJ" section 189-1302 (frames "13 I2 INDEPENDENT Tap In
 # Scene", "14 I3 INDEPENDENT Story Question", "15 P1 Practice Story Question", "16 P2 Practice Tap In Scene", 1280x720 each; page 13 first
 # came from node 145-439, the same frame). The board: the band "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।", a blurred copy of the
