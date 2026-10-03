@@ -778,6 +778,24 @@ g1 = next(s for s in card["slides"] if s["id"] == "G1")
 assert g1["type"] == "STORY_QUESTION", "G1 is not the guided picture question any more"
 card["slides"].remove(g1)
 assert [s["id"] for s in card["slides"][8:11]] == ["T9", "G2", "G3"], "after the removal the guided phase must open with G2"
+# ---- [L02-T5-PIC] (2026-10-03, user request) page 6 (T5, "उसने दीवार पर चित्र बनाए।") shows the user's new picture — the boy drawing a
+# car, a sun, flowers and stars on the wall with a green crayon, the crayon box by his feet (_reskin_build/story_5_source.png,
+# 1447x1087) — in place of the designer's story_5. Cut like the other story pictures: the picture's full width at the 1380:708 aspect
+# of story_1..9.webp (the 468x244 bar fills it with object-fit cover), the window placed so the boy is whole — his hair and his feet
+# with a small margin (rows STORY5_TOP .. STORY5_TOP + 742 of 1087; the picture frames at the top and the crayons on the floor are
+# trimmed, nothing of the boy is) — resized to 1380x708 and encoded like every other picture here (WEBP q88). The alt text
+# "माधव क्रेयॉन से दीवार पर चित्र बना रहा है।" describes this picture as well, so the card is unchanged. Remade when the source is newer.
+STORY5_TOP = 171
+def story_cut(n, src, top):
+    s = os.path.join(SCR, src); d = os.path.join(CUR, "assets", "Images", "story_%d.webp" % n)
+    assert os.path.exists(s), "missing " + s
+    if os.path.exists(d) and os.path.getmtime(d) >= os.path.getmtime(s): return
+    from PIL import Image
+    im = Image.open(s).convert("RGB"); W, H = im.size; h = int(round(W * 708 / 1380))
+    top = max(0, min(top, H - h))
+    im.crop((0, top, W, top + h)).resize((1380, 708), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
+    print("wrote", d, "rows %d-%d of %d" % (top, top + h, H))
+story_cut(5, "story_5_source.png", STORY5_TOP)
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for k in aud:
