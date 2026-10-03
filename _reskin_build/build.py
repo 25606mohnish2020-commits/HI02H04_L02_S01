@@ -791,6 +791,8 @@ assert 3000 <= BED_AUTO_MS <= 8000, BED_AUTO_MS
 CP1, CP2, CP3, CP4 = CHECKPOINTS
 ON_CP1 = on_token(CP1)                                                # [L02-BED-STEPS] (680, 244): feet at the first checkpoint's centre
 BEFORE_CP3, BEFORE_CP4 = before_token(CP3), before_token(CP4)
+# NOTE 2026-10-03 [L02-I2-FIG]: the I2 leg below is no longer shown — page 13 is a card question now (block further down); the
+# journey starts on WALK2 as before, with Madhav already on checkpoint 1.
 BED_LEGS = [   # (slide id, phase, the leg)
     ("I2",    "independent", bed_leg(BOY_AT[13], ON_CP1, 13, [], face=1, sfx="sfx_walk", reach=CP1, auto=BED_AUTO_MS)),   # page 13 -> ON checkpoint 1, by himself after the line, to the footsteps
     ("WALK2", "independent", bed_leg(ON_CP1, BOY_AT[16], 14, [], face=1, rest=[CP1])),         # from ON checkpoint 1 (its "?" resting under him; the small Madhav as he steps off) -> before checkpoint 2 (the page-16 state)
@@ -810,7 +812,7 @@ def board_page(s, leg):
     s["data"]["image_id"] = "bed_room"; s["data"]["alt_hi"] = BED_ALT; s["data"]["bed"] = leg
     s["data"]["hotspots"] = [dict(BED_HOT)] + [token_hot(k) for k in range(4) if k not in leg["done"] and k not in leg.get("rest", [])]   # the bed and every "?" ahead
     s["data"].pop("walk", None); s["data"].pop("walk_s", None)
-board_page(i2, BED_LEGS[0][2]); board_page(p2, BED_LEGS[2][2])
+board_page(p2, BED_LEGS[2][2])   # [L02-I2-FIG] I2 is no longer a board page (its leg stays computed for the continuity assertions above; WALK2 still opens with Madhav ON checkpoint 1)
 def insert_after(after_id, new_slide):
     idx = card["slides"].index(next(s for s in card["slides"] if s["id"] == after_id)); card["slides"].insert(idx + 1, new_slide)
 for sid, phase, leg, after in (("WALK2", "independent", BED_LEGS[1][2], "I3"), ("WALK4", "mastery", BED_LEGS[3][2], "M1"), ("WALK5", "mastery", BED_LEGS[4][2], "M2")):
@@ -853,6 +855,44 @@ p1["data"]["options"] = [
     {"img": "p1_utha",  "emoji": "🧒", "label_hi": "माधव उठ गया ।",       "audio": "vo_p1_utha", "correct": True},
 ]
 for k in P1_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+# ---- [L02-I2-FIG] (2026-10-03, user request) I2 (the independent find page until now, the user's "page 13", ?slide=12) is laid out from
+# Figma "FLN by MJ" node 233-25 — the 113-198 card design ([L02-Q3-FIG]: fig_q3 / .l02-q3 / applyQ3; band, no header chip, NO आगे pill,
+# three 252x314.113 cards @ x 232/514/796, y 247) with this frame's content: band "आखिर में माधव कहाँ सोया ?" over the cards खिलोनों के
+# बीच / पलंग पर / कुर्सी पर (the boy asleep among his toys / in his bed / in the green armchair). The user supplied the frame as a 1x PNG
+# export (1280x720, _reskin_build/i2_frame_233-25_source.png; the Figma server was not reachable), so the three pictures are cut from it
+# at the card windows measured on the export (244x195 each; they will look a little softer than the 3x cards of the other pages until
+# the designer's pictures are exported at full size — told the user). The question is the lesson's OWN: the original card's M1 asked
+# exactly this ("आख़िर में माधव कहाँ सोया?", vo_q_kahan, answer खिलौनों के बीच — he fell asleep playing, T8/T9), so the VOs are its RECORDED
+# clips: vo_q_kahan + the option words vo_opt_toys / vo_opt_bed / vo_opt_chair ("खिलौने" / "बिस्तर" / "कुर्सी" — बिस्तर for the card's पलंग
+# पर, told the user) and the question pages' try / hint / correct / reveal lines. The Figma spells खिलोनों; the story's खिलौनों is used.
+# I2's bed-board layout, its line (vo_tap_bed), footsteps (sfx_walk) and find lines (vo_tap_ok / vo_tap_try) are gone from this page
+# (the clips stay registered — the other board pages still use vo_tap_bed / vo_tap_ok / vo_tap_try; sfx_walk is now unused, on disk).
+# Interactions = the engine's card question as on I1 (kit wrong beat + try line, hint rung, reveal with the pointing hand, confetti +
+# praise + advance; slide.confetti keeps the confetti on this independent page). M1 still asks the same question with the icon cards.
+I2_SRC = os.path.join(SCR, "i2_frame_233-25_source.png")
+I2_WINS = {"i2_toys": (236, 251, 480, 446), "i2_bed": (518, 251, 762, 446), "i2_chair": (800, 251, 1044, 446)}   # the picture windows on the export
+assert os.path.exists(I2_SRC), "missing " + I2_SRC
+for _k, _box in I2_WINS.items():
+    _dst = os.path.join(CUR, "assets", "Images", _k + ".webp")
+    if not os.path.exists(_dst) or os.path.getmtime(_dst) < os.path.getmtime(I2_SRC):
+        from PIL import Image
+        Image.open(I2_SRC).convert("RGB").crop(_box).save(_dst, "WEBP", quality=92, method=6); print("wrote", _dst, _box)
+    card["assets"]["image"][_k] = "assets/Images/" + _k + ".webp"
+card.setdefault("_emoji_fallback", {}).update({"i2_toys": "🧸", "i2_bed": "🛏️", "i2_chair": "🪑"})
+assert i2["type"] == "TAP_IN_SCENE" and "bed" not in i2["data"], "I2 should still be the untouched find card here"
+i2["type"] = "STORY_QUESTION"; i2["eis"] = "iconic"
+for _k in ("bed_fig", "room_bg", "find_fig"): i2.pop(_k, None)
+i2["fig_q3"] = True; i2["hide_header_chip"] = True; i2["hide_nav"] = True; i2["bare_recall"] = True; i2["mascot_replay"] = True; i2["confetti"] = True
+i2["prompt_hi"] = "आखिर में माधव कहाँ सोया ?"
+i2["audio"] = {"prompt": "vo_q_kahan", "try_again": "vo_q_try", "hint": "vo_q_hint", "correct": "vo_q_correct", "reveal": "vo_q_reveal"}
+i2["data"] = {"stim_hi": "प्रश्न सुनिए", "options": [
+    {"img": "i2_toys",  "emoji": "🧸", "label_hi": "खिलौनों के बीच ।", "audio": "vo_opt_toys", "correct": True},
+    {"img": "i2_bed",   "emoji": "🛏️", "label_hi": "पलंग पर ।",        "audio": "vo_opt_bed"},
+    {"img": "i2_chair", "emoji": "🪑", "label_hi": "कुर्सी पर ।",       "audio": "vo_opt_chair"},
+], "signal_name": "story_question_first_try", "mastery": False, "hide_recall": True}
+i2["signals"] = {"on_complete": ["story_question_first_try"]}
+for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
+    assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
 assert _ids[_ids.index("I1"):] == ["I1", "I2", "I3", "WALK2", "P1", "P2", "M1", "WALK4", "M2", "WALK5", "CEL"], _ids
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
