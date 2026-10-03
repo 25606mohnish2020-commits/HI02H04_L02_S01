@@ -1,0 +1,182 @@
+{
+ "vo_story_1": {
+  "words": [
+   "दोपहर",
+   "का",
+   "खाना",
+   "हो",
+   "चुका",
+   "था।"
+  ],
+  "md5": "50025ef409c66385cbd28b94ad607b30",
+  "times": [
+   0.14,
+   0.87,
+   1.07,
+   1.55,
+   1.73,
+   2.07,
+   2.23
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "_about": "[L02-READ-ALOUD] word start times (s) in each story clip, then the end of the last word (the reference's WORD_TIMES rule). Keyed by clip id; md5 + words say which recording / sentence an entry belongs to (a stale entry is re-measured by build.py). measure_word_times.py writes the aligned times; 'measured': 'hand' marks a hand-corrected entry.",
+ "vo_story_2": {
+  "words": [
+   "माधव",
+   "की",
+   "माँ",
+   "उसे",
+   "सुलाने",
+   "लगी।"
+  ],
+  "md5": "555bd9c9909abb07d866cdee855162f1",
+  "times": [
+   0.27,
+   1.02,
+   1.3,
+   1.79,
+   2.35,
+   3.04,
+   3.29
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_3": {
+  "words": [
+   "पर",
+   "माधव",
+   "को",
+   "नींद",
+   "नहीं",
+   "आ",
+   "रही",
+   "थी।"
+  ],
+  "md5": "335ae1e1b9c88f707d98ceb964be25aa",
+  "times": [
+   0.26,
+   0.56,
+   1.03,
+   1.21,
+   1.49,
+   1.78,
+   1.97,
+   2.23,
+   2.44
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_4": {
+  "words": [
+   "मम्मी",
+   "के",
+   "सोते",
+   "ही",
+   "वह",
+   "उठ",
+   "गया।"
+  ],
+  "md5": "26e6a7f571bfb648083538c5e89edbb3",
+  "times": [
+   0.29,
+   0.76,
+   1.05,
+   1.45,
+   1.77,
+   2.03,
+   2.28,
+   2.58
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_5": {
+  "words": [
+   "उसने",
+   "दीवार",
+   "पर",
+   "चित्र",
+   "बनाए।"
+  ],
+  "md5": "6e3ef957315f20ffd5072ba60d927da9",
+  "times": [
+   0.24,
+   0.74,
+   1.23,
+   1.46,
+   1.66,
+   2.15
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_6": {
+  "words": [
+   "उसने",
+   "किताब",
+   "पढ़ी।"
+  ],
+  "md5": "08c0276412ba93eaa70f509719a5bc80",
+  "times": [
+   0.21,
+   0.62,
+   1.03,
+   1.36
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_7": {
+  "words": [
+   "वह",
+   "खिलौनों",
+   "से",
+   "खेलने",
+   "लगा।"
+  ],
+  "md5": "6b169e9ee10796c1ec1aebea27393834",
+  "times": [
+   0.24,
+   0.68,
+   1.27,
+   1.39,
+   1.94,
+   2.11
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_8a": {
+  "words": [
+   "खेलते-खेलते",
+   "उसे",
+   "नींद",
+   "आ",
+   "गई"
+  ],
+  "md5": "0519e53df14b7f974aa0cabfcf369384",
+  "times": [
+   0.25,
+   0.97,
+   1.32,
+   1.71,
+   1.89,
+   2.14
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_story_8b": {
+  "words": [
+   "और",
+   "वह",
+   "सो",
+   "गया।"
+  ],
+  "md5": "24d17a9ba17ac8e8912b95ad73cb3ac0",
+  "times": [
+   0.05,
+   0.42,
+   0.64,
+   0.72,
+   0.81
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ }
+}

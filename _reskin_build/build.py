@@ -6,7 +6,14 @@ app.js      = kit core + engine (+ STORY_READ_PAGE module, landing caption) + pa
 """
 import re, json, os, sys
 
-REF = r"C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001\HI02H04_L01_S01\HI02H04_L01_S01.html"
+# The reference is FROZEN (2026-10-03): the snapshot this dist was built from on 2026-09-30 (Suresh's HI02H04_L01_S01.html.bak110,
+# 14:24 that day — it rebuilds the committed index.html / app.js / style.css byte for byte), copied here. The live file keeps
+# changing (read-aloud, standard SFX, background music, the station pages, chips 10% larger…), and the user asked for the
+# read-aloud beat ONLY with everything else exactly as it was — so that beat is ported by hand (story_read_page.js, adapt.css,
+# [L02-READ-ALOUD] below) and the base never moves on its own. To take a later reference change on purpose, point REF at a
+# newer snapshot (REF_LIVE) deliberately and review the diff.
+REF_LIVE = r"C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001\HI02H04_L01_S01\HI02H04_L01_S01.html"
+REF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reference_HI02H04_L01_S01_2026-09-30_bak110.html")
 ROOT = r"C:\Users\25606\OneDrive\FLN @ CG\Bindu's File\HI02H04_L02_S01_dist-20260926T152741Z-1-001"
 CUR = os.path.join(ROOT, "HI02H04_L02_S01_dist")
 BACKUP_INDEX = os.path.join(ROOT, "_backup_before_reskin", "index.html")
@@ -227,6 +234,72 @@ for n, s in enumerate(story + [t9], 1):
     if n in SFX_CUT and SFX_CUT[n][1] != pop_s: s["data"]["pop_sfx_s"] = SFX_CUT[n][1]
     else: s["data"].pop("pop_sfx_s", None)
     print("sfx_pop_%d.ogg" % n, "<-", " + ".join(SFX_SOURCES[n]), "| regenerated:" if made else "| up to date", made or "")
+# ---- [L02-READ-ALOUD] word times (2026-10-03): after the read-aloud beat the sentence speaks with the word being said lit in time
+# with the recording — the reference's rule (its WORD_TIMES tables: each word's start in the recording, then the end of the last word;
+# word k is lit while times[k] <= currentTime < times[k+1]; story_read_page.js). The reference measured its tables by hand on the
+# recordings' energy envelopes. Here the times come from _reskin_build/word_times.json; a clip or sentence with no up-to-date entry there
+# is measured on the spot by the envelope-only method below (the words' syllable shares of the speech span, each gap pulled to the
+# nearest clear energy dip) — checked against the reference's own hand tables on its seven timed recordings: 0.13 s mean error on the
+# word starts, worst 0.5 s where a slowly spoken first word has a word-internal closure (बच्चे) or two vowel-final/-initial words meet
+# without any dip. On 2026-10-03 every entry is from this method. _reskin_build/measure_word_times.py (speech-recognition alignment,
+# faster-whisper) is meant to refine them but could not be run yet (the model download stalled on this network) — once it has been
+# validated with --validate, run it and rebuild. An entry carries the clip's md5 and its words; a hand-corrected entry survives as
+# long as those are unchanged (set "measured": "hand" to say so).
+import hashlib, struct
+WT_PATH = os.path.join(SCR, "word_times.json")
+def _syllables(word):
+    """Devanagari syllable count: base letters (consonants, independent vowels) not killed by a following virama."""
+    n = 0
+    for i, c in enumerate(word):
+        o = ord(c); base = (0x0904 <= o <= 0x0914) or (0x0915 <= o <= 0x0939) or (0x0958 <= o <= 0x095F)
+        if base and not (i + 1 < len(word) and ord(word[i + 1]) == 0x094D): n += 1
+    return max(1, n)
+def _envelope_db(path, sr=16000, hop=0.005, win=0.020):
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"], capture_output=True)
+    x = struct.unpack("<%df" % (len(r.stdout) // 4), r.stdout); h, w = int(sr * hop), int(sr * win)
+    e = [10 * math.log10(sum(v * v for v in x[i:i + w]) / w + 1e-12) for i in range(0, max(1, len(x) - w), h)]
+    return [sum(e[max(0, i - 2):min(len(e), i + 3)]) / (min(len(e), i + 3) - max(0, i - 2)) for i in range(len(e))], hop
+def measure_word_times_envelope(path, words):
+    """Word starts + the end of the last word (s) from the energy envelope alone: the speech span (first / last 20 ms window within
+    38 dB of the peak and 12 dB over the floor), then one boundary per gap — the expected place is word k's syllable share of what is
+    left of the span, the deepest dip within ±45% of the shorter neighbour's share wins when it is ≥ 3 dB deep (the boundary sits where
+    the energy comes back, 6 dB over the dip), else the expected place; each word keeps at least 80 ms."""
+    env, hop = _envelope_db(path); n = len(env); T = lambda i: round(i * hop, 2)
+    peak = max(env); floor = sorted(env)[max(0, int(0.05 * n))]; thr = max(floor + 12, peak - 38)
+    on = next(i for i in range(n) if env[i] > thr); off = next(i for i in range(n - 1, -1, -1) if env[i] > thr)
+    w = [_syllables(x) + 0.5 for x in words]; bounds = [on]; last = on
+    for k in range(len(words) - 1):
+        rest = sum(w[k:]); p = last + (off - last) * w[k] / rest; half = 0.45 * (off - last) * min(w[k], w[k + 1]) / rest
+        minw = int(max(0.08, 0.05 * _syllables(words[k])) / hop)
+        lo, hi = max(last + minw, int(p - half)), min(off - int(0.08 / hop), int(p + half))
+        ch = max(last + minw, int(p))
+        if hi > lo:
+            best = min(range(lo, hi + 1), key=lambda i: env[i] + 4.0 * abs(i - p) / max(1, half))
+            before = max(env[max(0, best - int(0.12 / hop)):best] or [env[best]]); after = max(env[best:min(n, best + int(0.12 / hop))] or [env[best]])
+            if min(before, after) - env[best] >= 3:
+                rise = best
+                for i in range(best, min(n, best + int(0.12 / hop))):
+                    if env[i] >= env[best] + 6: rise = i; break
+                ch = max(rise, last + minw)
+        bounds.append(ch); last = ch
+    bounds.append(off + int(0.02 / hop))
+    return [T(i) for i in bounds]
+def word_times_for(clip, words):
+    cache = json.load(open(WT_PATH, encoding="utf-8")) if os.path.exists(WT_PATH) else {}
+    p = os.path.join(CUR, aud[clip]); md5 = hashlib.md5(open(p, "rb").read()).hexdigest()
+    e = cache.get(clip)
+    if isinstance(e, dict) and e.get("words") == words and e.get("md5") == md5 and len(e.get("times") or []) == len(words) + 1:
+        return e["times"]
+    times = measure_word_times_envelope(p, words)
+    cache[clip] = {"words": words, "md5": md5, "times": times, "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"}
+    cache["_about"] = ("[L02-READ-ALOUD] word start times (s) in each story clip, then the end of the last word (the reference's WORD_TIMES rule). "
+                       "Keyed by clip id; md5 + words say which recording / sentence an entry belongs to (a stale entry is re-measured by build.py). "
+                       "measure_word_times.py writes the aligned times; 'measured': 'hand' marks a hand-corrected entry.")
+    with open(WT_PATH, "w", encoding="utf-8", newline="\n") as f: json.dump(cache, f, ensure_ascii=False, indent=1)
+    print("word_times.json:", clip, "measured by the envelope fallback:", times)
+    return times
+for s in story + [t9]:
+    s["data"]["word_times"] = word_times_for(s["data"]["whole_audio"], [w["text"] for w in s["data"]["words"]])
 # ---- [L02-FIND-FIG] "page 11" (the user's count) = the first "find Madhav in the picture" page, G2 (TAP_IN_SCENE), laid out
 # from Figma "FLN by MJ" node 110-2 ("Formative html area", 1280x720): the header band + mascot circle, the picture box
 # 935x442 @ (175,174) with a 4px #386AF6 stroke and r20 holding the designer's picture ("image 221", a bedroom scene with
@@ -493,6 +566,30 @@ def sfx_clip(name, src, start, length):
 # first step falls with the first stride and a loop, if ever needed, keeps the cadence
 sfx_clip("sfx_walk", "sfx_walk_source_freesound-woodwalking-40470.mp3", 0.10, 5.35)
 tts_clip("vo_tap_bed", "माधव को नींद आ रही है, उसे उसके पलंग तक पहुंचाइए।")
+# ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
+# every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
+# cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,
+# made from the user's vo_1.wav; the same 3.4 s recording handed over again as "vo_1 (1).wav", kept as
+# _reskin_build/vo_tap_speaker_sentence_story_source_vo_1.wav) encoded exactly as the reference encoded it: ffmpeg libvorbis -q:a 5
+# = Vorbis 24 kHz mono, nominal 50 kb/s, the same 28565-byte file (the fleet's generic lines are Vorbis; the lesson's own
+# recordings Opus). No level change (the recording is -17.7 LUFS; the fleet's old cue line -18.4). The words of the recording were
+# not supplied in writing, so — as in the reference, which lists this clip by path only — it is registered in assets.audio without
+# an audio_text entry. story_read_page.js prefers this id for the cue; the FIRST chip tap then starts the 12 s read-aloud beat
+# (the mic glyph dissolves into the chip art's sound wave, the words pace evenly, nothing speaks), after which the chip is greyed
+# out for good and the sentence speaks with its words lit in time with the recording (data.word_times below). CSS: adapt.css
+# [L02-READ-ALOUD]; the chip art gets the .mic classes and the .mic-wave bars in _mic_glyph. The old cue vo_tap_speaker_sentence
+# stays registered, unused.
+def vorbis_clip(name, src, q=5):
+    """A fleet-style generic line from a recording the user gave: _reskin_build/<src> -> assets/Audio/<name>.ogg as the reference
+    makes them (libvorbis -q:a q, no trim, no level change). Remade only when the source is newer."""
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    assert os.path.exists(s), "missing " + s
+    aud[name] = "assets/Audio/" + name + ".ogg"
+    if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(s): return
+    ff("-i", s, "-c:a", "libvorbis", "-q:a", str(q), dst)
+    assert os.path.exists(dst), "ffmpeg did not write " + dst
+    print("wrote", dst, os.path.getsize(dst), "bytes")
+vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_source_vo_1.wav")
 BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
 BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
 # the bed = the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's padding box = 743.6-914.7 x
@@ -726,15 +823,25 @@ index_html = f"""<!doctype html>
 def _mic_glyph(s, cx=31, cy=26):
     """Microphone glyph of the supplied icon, in the chip SVG's 62x60 space, centred on the disc centre (cx,cy).
     Icon units (77px icon, 61px disc, origin = disc centre): capsule 11.5 wide x 22.2 tall (top at -15.2), U-arc r 8.25
-    centred 1.75 below centre with a 2px stroke, stem down to +15, base 8 wide (+round caps) at +15. s = chip disc height / 61."""
+    centred 1.75 below centre with a 2px stroke, stem down to +15, base 8 wide (+round caps) at +15. s = chip disc height / 61.
+    [L02-READ-ALOUD] (2026-10-03) each part carries class="mic" and the glyph is followed by the chip art's sound wave — the
+    reference's <g class="mic-wave"> (five white level bars 2.2 wide, 8/14/18/14/8 tall, 3.5 apart, centred on the disc centre;
+    invisible until the read-aloud beat, CSS) — scaled by kb = this mic's height / the reference mic's (21.75 units), so the wave
+    has the weight of the mic it replaces (kb = 1.00 on the 44-unit header / landing discs, 0.82 on the story page's 36-unit disc)."""
     f = lambda v: ("%.2f" % v).rstrip("0").rstrip(".")
     X = lambda x: f(cx + s * x); Y = lambda y: f(cy + s * y); L = lambda v: f(s * v)
-    return ('<path d="M%s %sa%s %s 0 0 1 %s %sv%sa%s %s 0 0 1-%s 0v-%sA%s %s 0 0 1 %s %sZ" fill="white"/>'
+    mic = ('<path class="mic" d="M%s %sa%s %s 0 0 1 %s %sv%sa%s %s 0 0 1-%s 0v-%sA%s %s 0 0 1 %s %sZ" fill="white"/>'
             % (X(0), Y(-15.2), L(5.75), L(5.75), L(5.75), L(5.75), L(10.7), L(5.75), L(5.75), L(11.5), L(10.7), L(5.75), L(5.75), X(0), Y(-15.2))
-            + '<path d="M%s %sa%s %s 0 0 0 %s 0" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
+            + '<path class="mic" d="M%s %sa%s %s 0 0 0 %s 0" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
             % (X(-8.25), Y(1.75), L(8.25), L(8.25), L(16.5), L(2))
-            + '<path d="M%s %sV%sM%s %sH%s" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
+            + '<path class="mic" d="M%s %sV%sM%s %sH%s" stroke="white" stroke-width="%s" stroke-linecap="round" fill="none"/>'
             % (X(0), Y(10), Y(15), X(-4), Y(15), X(4), L(2)))
+    kb = (30.2 * s) / 21.75
+    bars = []
+    for xc, h in ((24.0, 8.0), (27.5, 14.0), (31.0, 18.0), (34.5, 14.0), (38.0, 8.0)):
+        w, hh = 2.2 * kb, h * kb
+        bars.append('<rect x="%s" y="%s" width="%s" height="%s" rx="%s"/>' % (f(cx + (xc - 31) * kb - w / 2), f(cy - hh / 2), f(w), f(hh), f(w / 2)))
+    return mic + '<g class="mic-wave" fill="white">' + "".join(bars) + '</g>'
 _SPK_GLYPH = re.compile(r'<path d="M29\.8466 .*?33\.3868 21\.5044Z" fill="white"/>')
 assert len(_SPK_GLYPH.findall(index_html)) == 2 and len(_SPK_GLYPH.findall(app_js)) == 1, "speaker glyph anchors changed"
 index_html = _SPK_GLYPH.sub(lambda m: _mic_glyph(44 / 61), index_html)   # header + landing chips

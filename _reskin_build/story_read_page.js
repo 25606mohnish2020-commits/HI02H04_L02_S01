@@ -1,24 +1,34 @@
   /* STORY_READ_PAGE (HI02H04_L02 — चित्र-संकेत की सहायता से वाक्य पठन), pages 2-10 laid out from Figma "FLN by MJ"
      section 19-13 (CSS: [L02-STORY-FIG], stage class .l02-story): the header band ("आइए कहानी पढ़ें।") with the mascot
      circle, the grid frame, the 468x244 picture in its yellow frame, the sentence in the white / blue-stroke bar under it
-     with the small speaker chip to its left (slide.caption_chip moves the frame's chip there), and आगे बढ़ें inside the
-     frame. Beat order, unchanged: the narration speaks first and alone — page 2 only (vo_help); pages 3-10 have no narration
+     with the small mic chip to its left (slide.caption_chip moves the frame's chip there), and आगे बढ़ें inside the
+     frame. Beat order: the narration speaks first and alone — page 2 only (vo_help); pages 3-10 have no narration
      clip any more ([L02-NO-READ-INSTR], their "इस वाक्य को पढ़िए।" was removed) and open silently, straight into the beats
-     below (the speaker chip stays still — its wave arcs do
-     NOT blink for the narration, CSS [L02-SPK-CUE]; the one exception: while the narration says "यह बटन दबाकर सुन सकते हैं"
-     — page 2's vo_help, from data.chip_pulse_at (set by the build, read off the audio clock) to the end of the clip — the chip
-     PULSES, the same pulse the cue uses) → 4 s later ONLY the speaker chip PULSES with the "tap here to hear the sentence"
-     line (vo_tap_speaker_sentence) and ONLY the chip takes the tap → the child taps it → the sentence speaks (only now the
-     chip's wave arcs blink: .p2-speaking on the bar for the length of the clip), the word being said turning dark orange
-     with a tiny pop, in time with the clip → the clip ends → the picture pops out and holds (2 s, [L02-POP-AFTER-SENTENCE];
-     5 s on pages 2, 4, 5 and 10, data.pop_ms, [L02-POP-5S]) with its own sound (data.pop_sfx, [L02-POP-SFX]: starts with the pop,
-     stops with it) → only then आगे बढ़ें lights up (the disabled pill was there from the start). With no tap the cue (pulse +
-     line) repeats after 5 s of silence. A tap on the header mascot repeats the narration (the Figma page has no straddling
-     bird), its pulse included.
-     data:{image_id, alt_hi, emoji, words:[{text}], whole_audio, chip_pulse_at?, pop_sfx?, pop_ms?, pop_sfx_s?}; audio:{prompt}. */
+     below (the chip stays still during the narration — CSS [L02-SPK-CUE]; the one exception: while the narration says
+     "यह बटन दबाकर सुन सकते हैं" — page 2's vo_help, from data.chip_pulse_at (set by the build, read off the audio clock) to
+     the end of the clip — the chip PULSES, the same pulse the cue uses) → 4 s later ONLY the chip PULSES with the cue line
+     and ONLY the chip takes the tap.
+     [L02-READ-ALOUD] (2026-10-03; the reference lesson's [P2-READ-ALOUD] rev 2 + [STORY-CUE-VO], value for value): the cue
+     line is the re-recorded vo_tap_speaker_sentence_story (the user's vo_1.wav — tap the mic and READ the sentence), so the
+     FIRST tap on the chip no longer speaks the sentence: it starts a REC_MS (12 s) read-aloud beat — whatever is speaking
+     stops, the white mic glyph inside the chip dissolves away and the chip art's sound wave bounces in its place (.p2-rec,
+     CSS [L02-READ-ALOUD]), and the sentence's words light one by one at an even pace over the 12 s (wordPace: the same
+     .p2-word.on orange as the word sync, one word at a time), while nothing speaks (the cue and its idle repeat wait, the
+     header mascot's narration replay is ignored, आगे बढ़ें stays disabled). When the beat is over the wave goes, the mic
+     returns, the chip is disabled for good (.p2-rec-done: greyed, not tappable) and the sentence speaks exactly as a tap did
+     before: the word being said turning dark orange with a tiny pop, in time with the recording (data.word_times — each
+     word's start and the end of the last word, measured on the clip by the build like the reference's WORD_TIMES tables; a
+     page without them falls back to the words' character shares) → the clip ends → the picture pops out and holds (2 s,
+     [L02-POP-AFTER-SENTENCE]; 5 s on pages 2, 4, 5 and 10, data.pop_ms, [L02-POP-5S]) with its own sound (data.pop_sfx,
+     [L02-POP-SFX]: starts with the pop, stops with it) → only then आगे बढ़ें lights up (the disabled pill was there from the
+     start). With no tap the cue (pulse + line) repeats after 5 s of silence. A tap on the header mascot repeats the
+     narration (the Figma page has no straddling bird), its pulse included — never during the beat. Taps during the beat,
+     and on the disabled chip, do nothing.
+     data:{image_id, alt_hi, emoji, words:[{text}], whole_audio, word_times?, chip_pulse_at?, pop_sfx?, pop_ms?, pop_sfx_s?}; audio:{prompt}. */
   STORY_READ_PAGE: {
     mount(host, slide){
       const d = slide.data || {};
+      const REC_MS = 12000;                           // [L02-READ-ALOUD] the read-aloud beat: the sound wave plays and the words pace over these ms (the reference's REC_MS)
       const wrap = document.createElement("div"); wrap.className = "story-scene story-read-page";
       const fb = String(d.emoji || "📖").replace(/'/g,"");
       const words = (d.words || []).map(w => (w && w.text) || "").filter(Boolean);
@@ -33,9 +43,12 @@
       const frame = wrap.querySelector(".story-frame"), cap = wrap.querySelector(".story-caption");
       const wordEls = [...cap.querySelectorAll(".p2-word")];
       const wholeSrc = d.whole_audio ? ("assets/Audio/" + d.whole_audio + "." + AUDIO_EXT) : null;
-      const cueSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio["vo_tap_speaker_sentence"]) || null;
+      // [L02-READ-ALOUD] the cue line: the re-recorded "tap the mic and read the sentence" (vo_tap_speaker_sentence_story), else the fleet's old "tap here" line
+      const cueSrc = (CARD.assets && CARD.assets.audio && (CARD.assets.audio["vo_tap_speaker_sentence_story"] || CARD.assets.audio["vo_tap_speaker_sentence"])) || null;
       const alive = ()=> CARD.slides[state.idx] === slide && host.isConnected;
+      const stillMode = ()=> !!(window.FLNMotion && FLNMotion.still && FLNMotion.still());
       let heard = false, cueOn = false, cueTimer = 0, syncRaf = 0;
+      let recOn = false, recDone = false, recTimer = 0;   // [L02-READ-ALOUD] the beat runs / the chip has had its one tap
       state.ownsAudio = true; setNavActive(false);
       $("navBtn").onclick = ()=>{ if(!$("navBtn").disabled){ stopPopSfx(); completeSlide(true); } };   // a pop sound still running ends with the page
       // wordsOff also drops .p2-speaking: it runs at the start of every clip (narration or sentence) and at the sentence's end,
@@ -43,26 +56,55 @@
       const wordsOff = ()=>{ cancelAnimationFrame(syncRaf); wordEls.forEach(w => w.classList.remove("on")); cap.classList.remove("p2-speaking");
         const c = cap.querySelector(".tut-audio"); if(c) c.classList.remove("p2-chip-pulse"); };   // and the narration pulse, if a clip cut it short
       const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); };
-      const scheduleCue = (ms)=>{ clearTimeout(cueTimer); if(heard) return; cueTimer = setTimeout(runCue, ms); };
+      const scheduleCue = (ms)=>{ clearTimeout(cueTimer); if(heard || recOn || recDone) return; cueTimer = setTimeout(runCue, ms); };
       const runCue = ()=>{
-        if(!alive() || heard) return;
+        if(!alive() || heard || recOn || recDone) return;              // [L02-READ-ALOUD] the child is reading, or has read: no cue any more
         if(isPlaying){ scheduleCue(1500); return; }                    // never talk over a running clip
         setCue(true);
         play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(5000); });   // again after 5 s with no tap
       };
-      // word-by-word highlight from the audio clock: each word's share of the clip is its character count (+ a beat)
+      // word-by-word highlight from the audio clock. With data.word_times (the reference's WORD_TIMES rule: word k is .on while
+      // times[k] <= currentTime < times[k+1], off at the end of the last word; the loop stops when the clip ends or is cut) the words
+      // follow the recording; without them each word's share of the clip is its character count (+ a beat).
+      const wordTimes = (Array.isArray(d.word_times) && d.word_times.length === wordEls.length + 1 && d.word_times.every(t => typeof t === "number")) ? d.word_times : null;
       const syncWords = (a)=>{
         if(!a || !wordEls.length) return;
+        let cur = -1;
+        const show = (i)=>{ if(i !== cur){ if(cur >= 0) wordEls[cur].classList.remove("on"); if(i >= 0) wordEls[i].classList.add("on"); cur = i; } };
+        if(wordTimes){
+          const tick = ()=>{
+            if(currentAudio !== a || a.ended || (a.paused && a.currentTime > 0)){ show(-1); return; }   // the clip ended, or a tap cut it
+            const t = a.currentTime; let i = -1;
+            for(let k = 0; k < wordEls.length; k++){ if(t >= wordTimes[k] && t < wordTimes[k + 1]){ i = k; break; } }
+            show(i);
+            if(t >= wordTimes[wordTimes.length - 1]){ show(-1); return; }
+            syncRaf = requestAnimationFrame(tick);
+          };
+          syncRaf = requestAnimationFrame(tick); return;
+        }
         const weights = wordEls.map(w => Math.max(1, (w.textContent || "").replace(/[।,!?\-]/g, "").length + 1.5));
         const total = weights.reduce((s, x)=> s + x, 0);
         const bounds = []; let acc = 0; weights.forEach(x => { acc += x; bounds.push(acc / total); });
-        let cur = -1;
         const tick = ()=>{
           if(currentAudio !== a || a.ended) return;
           const dur = (isFinite(a.duration) && a.duration > 0) ? a.duration : (0.45 * wordEls.length + 0.5);
           const f = Math.min(0.999, a.currentTime / Math.max(0.1, dur - 0.25));
           let i = bounds.findIndex(b => f < b); if(i < 0) i = wordEls.length - 1;
-          if(i !== cur){ cur = i; wordEls.forEach((w, k)=> w.classList.toggle("on", k === i)); }
+          show(i);
+          syncRaf = requestAnimationFrame(tick);
+        };
+        syncRaf = requestAnimationFrame(tick);
+      };
+      // [L02-READ-ALOUD] pace the words over ms with no audio: word k is .on for its equal share of ms (the same .on look as the word sync)
+      const wordPace = (ms)=>{
+        wordsOff();
+        if(!wordEls.length || !(ms > 0)) return;
+        let cur = -1; const t0 = performance.now(), slot = ms / wordEls.length;
+        const tick = ()=>{
+          const t = performance.now() - t0;
+          if(t >= ms || !alive()){ wordEls.forEach(w => w.classList.remove("on")); return; }
+          const i = Math.min(wordEls.length - 1, Math.floor(t / slot));
+          if(i !== cur){ if(cur >= 0) wordEls[cur].classList.remove("on"); wordEls[i].classList.add("on"); cur = i; }
           syncRaf = requestAnimationFrame(tick);
         };
         syncRaf = requestAnimationFrame(tick);
@@ -101,14 +143,38 @@
         });
         syncWords(currentAudio);
       };
-      state.replayAudio = speakSentence;   // the speaker chip beside the pill (slide.caption_chip) speaks the sentence
+      const chipEl = ()=> cap.querySelector(".tut-audio") || $("slideHost").querySelector(".tut-card .tut-audio");
+      // [L02-READ-ALOUD] the FIRST tap on the chip starts the read-aloud beat (nothing speaks; the mic glyph dissolves into the
+      // sound wave, the words pace over REC_MS), then the chip is disabled for good and the sentence speaks as a tap did before;
+      // later taps do nothing. The chip is captured now: should the page be left during the beat, the timer touches nothing live.
+      const startRec = ()=>{
+        if(!alive() || recOn || recDone) return;
+        recOn = true;
+        clearTimeout(cueTimer); setCue(false);
+        cancelAnimationFrame(pulseRaf); setChipPulse(false);
+        try{ stopNudge(); }catch(e){}
+        stopAudio();                                                      // the cue / the narration stops: the child reads now
+        const chip = chipEl();
+        if(chip && !stillMode()) chip.classList.add("p2-rec");
+        SwiftPAL.emit("read_aloud_started", { slide_id: slide.id, phase: slide.phase, ms: REC_MS });
+        wordPace(REC_MS);
+        clearTimeout(recTimer);
+        recTimer = setTimeout(()=>{
+          recOn = false;
+          cancelAnimationFrame(syncRaf); wordEls.forEach(w => w.classList.remove("on"));
+          if(chip){ chip.classList.remove("p2-rec"); chip.classList.add("p2-rec-done"); chip.setAttribute("aria-disabled", "true"); }
+          if(!alive()) return;
+          recDone = true;
+          speakSentence();                                                // the sentence with its word sync, then the pop and आगे बढ़ें as before
+        }, REC_MS);
+      };
+      state.replayAudio = ()=>{ if(recOn || recDone) return; startRec(); };   // the chip beside the pill (slide.caption_chip): its one tap starts the beat
       // [L02-SPK-CUE] the narration's "यह बटन दबाकर सुन सकते हैं" beat: from the moment the clip reaches data.chip_pulse_at
       // (seconds, measured on the clip by the build — 3.9 s into vo_help, where "यह बटन" starts) to the end of the clip the
       // speaker chip pulses, the same pulse as the cue. It is timed from the audio clock, so it lands on the words however late
       // the clip started; it stops with the clip, or at once when another clip cuts the narration short.
       const chipPulseAt = (typeof d.chip_pulse_at === "number") ? d.chip_pulse_at : null;
       let pulseRaf = 0;
-      const chipEl = ()=> cap.querySelector(".tut-audio") || $("slideHost").querySelector(".tut-card .tut-audio");
       const setChipPulse = (on)=>{ const c = chipEl(); if(c) c.classList.toggle("p2-chip-pulse", on); };
       const armChipPulse = (a)=>{ cancelAnimationFrame(pulseRaf); setChipPulse(false); if(chipPulseAt === null || !a) return;
         const tick = ()=>{ if(currentAudio !== a || a.ended || !alive()){ setChipPulse(false); return; }
@@ -129,10 +195,12 @@
         play(promptSrc, afterNarration);
         armChipPulse(currentAudio);
       };
-      // the header mascot repeats the narration on a tap (never while the chip cue is speaking), as the straddling bird did;
-      // on a page with no narration there is nothing to repeat, so the mascot takes no tap there
+      // the header mascot repeats the narration on a tap (never while the chip cue is speaking, never during the read-aloud beat, and
+      // not while the sentence that follows the beat is still speaking — the chip is disabled by then, so a cut sentence could not be
+      // asked for again and the pop / आगे बढ़ें would never come), as the straddling bird did; on a page with no narration there is
+      // nothing to repeat, so the mascot takes no tap there
       const mw = $("mascotWrap");
-      if(mw){ mw.onclick = promptSrc ? ()=>{ if(cueOn) return; SwiftPAL.emit("audio_replay", { slide_id: slide.id, phase: slide.phase, src: "mascot" }); narrate(); } : null; }
+      if(mw){ mw.onclick = promptSrc ? ()=>{ if(cueOn || recOn || (recDone && !heard)) return; SwiftPAL.emit("audio_replay", { slide_id: slide.id, phase: slide.phase, src: "mascot" }); narrate(); } : null; }
       // the sentence sits on ONE line in the Figma bar: the type (the bar's 32px) is shrunk only for a line that would not fit
       const fitCaption = ()=>{ if(!alive()) return; let fs = parseFloat(getComputedStyle(cap).fontSize) || 32, guard = 16;
         while(guard-- > 0 && fs > 20 && cap.scrollWidth > cap.clientWidth + 1){ fs -= 1; cap.style.fontSize = fs + "px"; } };
@@ -140,4 +208,3 @@
       narrate();
     }
   },
-
