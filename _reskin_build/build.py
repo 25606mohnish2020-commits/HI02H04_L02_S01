@@ -577,8 +577,8 @@ tts_clip("vo_tap_bed", "माधव को नींद आ रही है, �
 # _reskin_build/vo_tap_speaker_sentence_story_source_vo_1.wav) encoded exactly as the reference encoded it: ffmpeg libvorbis -q:a 5
 # = Vorbis 24 kHz mono, nominal 50 kb/s, the same 28565-byte file (the fleet's generic lines are Vorbis; the lesson's own
 # recordings Opus). No level change (the recording is -17.7 LUFS; the fleet's old cue line -18.4). The words of the recording were
-# not supplied in writing, so — as in the reference, which lists this clip by path only — it is registered in assets.audio without
-# an audio_text entry. story_read_page.js prefers this id for the cue; the FIRST chip tap then starts the 12 s read-aloud beat
+# not supplied in writing at first (the reference lists this clip by path only); the user gave them later the same day — see the
+# audio_text line below. story_read_page.js prefers this id for the cue; the FIRST chip tap then starts the 12 s read-aloud beat
 # (the mic glyph dissolves into the chip art's sound wave, the words pace evenly, nothing speaks), after which the chip is greyed
 # out for good and the sentence speaks with its words lit in time with the recording (data.word_times below). CSS: adapt.css
 # [L02-READ-ALOUD]; the chip art gets the .mic classes and the .mic-wave bars in _mic_glyph. The old cue vo_tap_speaker_sentence
@@ -594,6 +594,16 @@ def vorbis_clip(name, src, q=5):
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, os.path.getsize(dst), "bytes")
 vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_source_vo_1.wav")
+# the recording's words, as the user gave them on 2026-10-03 ("इस बटन पर टैप करिए और वाक्य पढिए"; the lesson's spelling पढ़िए, as in
+# vo_read_instr) — so the clip has its audio_text entry like every other line of the card after all
+txt["vo_tap_speaker_sentence_story"] = "इस बटन पर टैप करिए और वाक्य पढ़िए।"
+# ---- [L02-T1-CUE-2S] (2026-10-03, user request) page 2 (T1) speaks that cue 2 s after it opens — "once the page opens and after 2
+# seconds the VO should be played along with the same button animation in sync with the VO" — instead of the 4 s every story page
+# waits (the reference spacing, kept on pages 3-10). The chip pulse is the cue's own (.p2-cue for exactly as long as the line plays,
+# settling at the end of a breath), so it is in sync by construction. Card data.cue_delay_ms, read by story_read_page.js (default 4000).
+# "Opens" = the module's mount: the phase gate before page 2 closes BEFORE it mounts the slide (phaseBlurTransition), so the 2 s run
+# from the moment the child sees the page. The idle repeat (5 s of silence) is unchanged.
+story[0]["data"]["cue_delay_ms"] = 2000
 BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
 BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
 # the bed = the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's padding box = 743.6-914.7 x
