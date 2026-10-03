@@ -75,6 +75,28 @@ eng = eng.replace(needle, 'tutorial:"आइए कहानी पढ़ें�
 needle = '()=> setTimeout(()=>completeSlide(true), 900)); }'
 assert eng.count(needle) == 1, "TAP_IN_SCENE completion anchor not unique"
 eng = eng.replace(needle, '()=> setTimeout(()=>{ if(CARD.slides[state.idx] === slide) completeSlide(true); }, 900)); }   // [L02-FIND-FIG] only its own slide', 1)
+# 3f. [L02-FIND-HINTS] TAP_IN_SCENE's wrong-tap line escalates when the page's data carries hint_seq (clip ids): the n-th miss speaks the
+#     n-th line, the last line repeats on every later miss, and when the last line is reached the kit's nudge hand (the tapping hand with
+#     its ripple, #nudgeHand, placed by the engine's own pointNudgeAt) points at the answer — its drawn outline (adapt.js data-hot) if the
+#     page has one, else the hotspot itself — until the answer is tapped (stopNudge). A page without hint_seq runs exactly as before.
+needle = '''      const miss = ()=>{ if(done) return; sfxWrongSoft(); setSwMood("tryagain"); play(audioFor(slide,"try_again")||null,()=>{}); };'''
+assert eng.count(needle) == 1, "TAP_IN_SCENE miss anchor not unique"
+eng = eng.replace(needle, '''      // [L02-FIND-HINTS] data.hint_seq (clip ids): the n-th miss speaks the n-th line, the last line repeats; when the last line is
+      // reached the kit's nudge hand points at the answer (its outline from adapt.js if drawn, else the hotspot) until it is tapped.
+      let misses = 0, pointed = false;
+      const seq = Array.isArray(d.hint_seq) ? d.hint_seq : [];
+      const pointAtAnswer = ()=>{ const hot = frame.querySelector(".tis-hot.correct-hot"); if(!hot) return;
+        const i = [...frame.querySelectorAll(".tis-hot")].indexOf(hot), el = frame.querySelector('.l02-shape[data-hot="' + i + '"]') || hot;
+        pointed = true; pointNudgeAt(el); state.nudgeUsed = true; SwiftPAL.emit("nudge_invoked", { slide_id: slide.id, phase: slide.phase }); };
+      const miss = ()=>{ if(done) return; sfxWrongSoft();
+        if(!seq.length){ setSwMood("tryagain"); play(audioFor(slide,"try_again")||null,()=>{}); return; }
+        const k = Math.min(++misses, seq.length) - 1, last = k === seq.length - 1;
+        state.attempts = misses; state.scaffoldLevel = Math.max(state.scaffoldLevel, last ? 3 : (k ? 2 : 1));
+        setSwMood(k ? "hint" : "tryagain"); if(last) pointAtAnswer();
+        play("assets/Audio/" + seq[k] + "." + AUDIO_EXT, ()=>{}); };''', 1)
+needle = '''if(h.correct){ done=true; hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");'''
+assert eng.count(needle) == 1, "TAP_IN_SCENE correct anchor not unique"
+eng = eng.replace(needle, '''if(h.correct){ done=true; if(pointed) stopNudge(); hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");''', 1)   # [L02-FIND-HINTS] the hand goes with the find
 # 3e. [L02-Q10-FIG] the same fence on the tap-to-answer questions' two delayed completions (700 ms after the "correct" line: the
 #     correct tap, and the tap on the revealed answer) — on "page 10" the lit आगे बढ़ें pill may already have moved the lesson on.
 for needle, fixed in [
@@ -330,6 +352,12 @@ g2["prompt_hi"] = "इस चित्र में माधव कहाँ �
 # the shared vo_tap_try ("फिर से देखिए, तस्वीर में ढूँढिए।").
 g2["audio"]["try_again"] = "vo_tap_try_madhav"
 aud["vo_tap_try_madhav"] = "assets/Audio/vo_tap_try_madhav.ogg"; txt["vo_tap_try_madhav"] = "ध्यान से देखिए और माधव को पहचानिए।"
+# [L02-FIND-HINTS] (user, 2026-10-03) the wrong taps on this page get three escalating lines instead of the same try-again line every
+# time: 1st miss "ध्यान से देखिए और माधव को पहचानिए।" (= vo_tap_try_madhav above), 2nd "माधव एक लड़का है, चित्र में लड़के को पहचानिए।", 3rd and
+# every later one "यह माधव है, इसपर टैप कीजिए।" with the kit's nudge hand (the tapping hand with its ripple) on Madhav until he is tapped.
+# Engine patch 3f (TAP_IN_SCENE reads data.hint_seq); the two new lines are edge-tts hi-IN-SwaraNeural placeholders made by tts_clip
+# below (levelled like vo_tap_try_madhav, -15.5 LUFS). Only G2 carries hint_seq: I2/P2 and the board pages keep their one try line.
+g2["data"]["hint_seq"] = ["vo_tap_try_madhav", "vo_hint2_madhav", "vo_hint3_madhav"]
 # [L02-FIND-HOTS] three tappable regions drawn on the picture: the boy (the answer), the mother and the football (decoys).
 # The engine's hotspots are rectangles (% of the box) and carry its tap logic (confetti / shake + try-again line, the "any
 # clip playing = no taps" lock); on this page they are invisible and inert, and a SHAPED outline is drawn for each instead
@@ -605,6 +633,9 @@ txt["vo_tap_speaker_sentence_story"] = "इस बटन पर टैप कर
 # BEFORE it mounts the slide (phaseBlurTransition), so the second runs from the moment the child sees the page. The idle repeat
 # (5 s of silence) is unchanged.
 story[0]["data"]["cue_delay_ms"] = 1000
+# [L02-FIND-HINTS] the find page's 2nd and 3rd wrong-tap lines (see the G2 block above); made like the other placeholders here
+tts_clip("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।", target_i=-15.5)
+tts_clip("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।", target_i=-15.5)
 BED_LINE = "माधव को नींद आ रही है , उसे उसके पलंग तक पहुंचाइए ।"      # the Figma band line, spaced as the designer wrote it
 BED_ALT = "माधव का कमरा: माधव जम्हाई ले रहा है, एक घुमावदार रास्ता ऊपर दाएँ उसके पलंग तक जाता है।"
 # the bed = the room picture's top right (picture px 1420-1745 x 15-300 at 934/1774 from (-4,-6) of the box's padding box = 743.6-914.7 x

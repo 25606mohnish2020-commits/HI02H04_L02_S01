@@ -181,14 +181,10 @@ body.tota-landing-in .start-gate .sg-frame{animation:totaIconReveal .52s cubic-b
 .stage.l02-find .tis-img{position:absolute;left:calc(-20px * var(--fs));top:calc(-16px * var(--fs));
   width:calc(951px * var(--fs)) !important;height:calc(536px * var(--fs)) !important;max-width:none;object-fit:cover !important;
   outline:none;border-radius:0;}
-/* आगे बढ़ें — Figma: 186.18x64 @ (547,630), i.e. centred, 26px above the artboard bottom. [L02-NEXT-ART]: the fleet's next-button
-   art (NAV-NEXT-BTN, disabled until Madhav is found) at its own 170x62 x --fs on that pill's centre (bottom 26 + 1), as on the
-   story pages above */
-.stage.l02-find #navBtn{left:50% !important;right:auto !important;bottom:calc(27px * var(--fs)) !important;transform:translateX(-50%);
-  width:calc(170px * var(--fs)) !important;min-width:0 !important;max-width:none !important;height:calc(62px * var(--fs)) !important;
-  box-sizing:border-box;padding:0 !important;margin:0;border-width:3px;}
-.stage.l02-find #navBtn::before,.stage.l02-find #navBtn::after{left:calc(-14px * var(--fs) - 3px);right:calc(-14px * var(--fs) - 3px);
-  top:calc(-14px * var(--fs) - 3px);bottom:calc(-14px * var(--fs) - 3px);background-size:calc(40px * var(--fs)) calc(28px * var(--fs)),100% 100%;}
+/* [L02-FIND-NO-NEXT] (user, 2026-10-03) no आगे बढ़ें on this page — neither the disabled nor the enabled button: the page moves on
+   by itself after the "correct" line. (Until then the fleet's next-button art sat centred 27px x --fs above the bottom, as on the
+   story pages, disabled until Madhav was found.) The engine hides the pill at mount; this keeps it hidden whatever else runs. */
+.stage.l02-find #navBtn{display:none !important;}
 /* [L02-FIND-HOTS] the three regions on the picture (the boy = the answer, the mother and the football = decoys) are SHAPED
    outlines — the two silhouettes and a circle round the ball (card data.shapes, drawn by adapt.js in an SVG laid over the
    picture at exactly the picture's box, so they scale with it). They rest under a plain WHITE stroke — no ring, no hover

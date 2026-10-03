@@ -3152,12 +3152,24 @@ const SlideModules = {
       img.src = "assets/Images/" + d.image_id + "." + IMG_EXT; img.alt = d.alt_hi || "";
       frame.appendChild(img);
       let done = false;
-      const miss = ()=>{ if(done) return; sfxWrongSoft(); setSwMood("tryagain"); play(audioFor(slide,"try_again")||null,()=>{}); };
+      // [L02-FIND-HINTS] data.hint_seq (clip ids): the n-th miss speaks the n-th line, the last line repeats; when the last line is
+      // reached the kit's nudge hand points at the answer (its outline from adapt.js if drawn, else the hotspot) until it is tapped.
+      let misses = 0, pointed = false;
+      const seq = Array.isArray(d.hint_seq) ? d.hint_seq : [];
+      const pointAtAnswer = ()=>{ const hot = frame.querySelector(".tis-hot.correct-hot"); if(!hot) return;
+        const i = [...frame.querySelectorAll(".tis-hot")].indexOf(hot), el = frame.querySelector('.l02-shape[data-hot="' + i + '"]') || hot;
+        pointed = true; pointNudgeAt(el); state.nudgeUsed = true; SwiftPAL.emit("nudge_invoked", { slide_id: slide.id, phase: slide.phase }); };
+      const miss = ()=>{ if(done) return; sfxWrongSoft();
+        if(!seq.length){ setSwMood("tryagain"); play(audioFor(slide,"try_again")||null,()=>{}); return; }
+        const k = Math.min(++misses, seq.length) - 1, last = k === seq.length - 1;
+        state.attempts = misses; state.scaffoldLevel = Math.max(state.scaffoldLevel, last ? 3 : (k ? 2 : 1));
+        setSwMood(k ? "hint" : "tryagain"); if(last) pointAtAnswer();
+        play("assets/Audio/" + seq[k] + "." + AUDIO_EXT, ()=>{}); };
       (d.hotspots || []).forEach(h => {
         const hs = document.createElement("button"); hs.className = "tis-hot" + (h.correct ? " correct-hot" : "");
         hs.style.left=h.x+"%"; hs.style.top=h.y+"%"; hs.style.width=h.w+"%"; hs.style.height=h.h+"%";
         hs.onclick = (e)=>{ e.stopPropagation(); if(done) return;
-          if(h.correct){ done=true; hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");
+          if(h.correct){ done=true; if(pointed) stopNudge(); hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");
             SwiftPAL.emit(d.signal_name || "scene_tap_first_try", {slide_id:slide.id, phase:slide.phase, correct:true});
             play(audioFor(slide,"correct")||null, ()=> setTimeout(()=>{ if(CARD.slides[state.idx] === slide) completeSlide(true); }, 900)); }   // [L02-FIND-FIG] only its own slide
           else { hs.classList.add("shake"); miss(); } };
@@ -4757,10 +4769,12 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
 /* ===== L02-FIND-FIG-JS =====
    "page 11" (the "find Madhav in the picture" page, G2 — card slide.find_fig; the first guided page now that G1 is gone) is
    laid out from Figma "FLN by MJ" node 110-2 (CSS [L02-FIND-FIG], stage class .l02-find): the header speaker chip is off, so
-   the mascot tap replays the question exactly as the chip did (state.replayAudio, else the slide's VO chain); the आगे बढ़ें
-   pill (which TAP_IN_SCENE hides) is shown in its disabled look from the start and lights on the correct tap. The page still
-   moves on by itself after the "correct" line, as before; a tap on the lit pill moves on at once instead, and the guard on
-   completeSlide makes sure the page is left exactly once (the module's own delayed call is also fenced to its slide by build.py). */
+   the mascot tap replays the question exactly as the chip did (state.replayAudio, else the slide's VO chain). The page moves on
+   by itself after the "correct" line, as the engine's TAP_IN_SCENE always did; [L02-FIND-NO-NEXT] (user, 2026-10-03) there is NO
+   आगे बढ़ें on this page any more — the engine hides the pill at mount and nothing shows it again (until then the pill was shown
+   in its disabled look and lit on the correct tap). The guard on completeSlide (below) still makes sure the page is left exactly
+   once (the module's own delayed call is also fenced to its slide by build.py). The wrong-tap lines escalate (card
+   data.hint_seq, engine patch [L02-FIND-HINTS] in build.py): the engine finds the answer's outline by its data-hot index. */
 (function(){
   var orig = window.mountSlide; if(typeof orig !== "function") return;
   function applyFind(idx){
@@ -4768,14 +4782,11 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     var st = document.getElementById("stage"); if(st) st.classList.toggle("l02-find", find);
     if(!find) return;
     s._l02Left = false;
-    var nb = document.getElementById("navBtn"); if(nb){ nb.style.display = ""; nb.textContent = "आगे बढ़ें"; }
     var mw = document.getElementById("mascotWrap");
     if(mw) mw.onclick = function(){ if(typeof isPlaying !== "undefined" && isPlaying) return;
       state.audioReplays++;
       SwiftPAL.emit("audio_replay", { slide_id: s.id, phase: s.phase, count: state.audioReplays, src: "mascot" });
       if(state.replayAudio) state.replayAudio(); else autoPlayChain(s); };
-    document.querySelectorAll("#slideHost .tis-hot.correct-hot").forEach(function(h){
-      h.addEventListener("click", function(){ if(CARD.slides[state.idx] === s) setNavActive(true); }); });
     // [L02-FIND-HOTS] the shaped outlines (card data.shapes: the two silhouettes and the ball's circle, in the picture's own
     // pixel space) drawn in an SVG over the picture. Each outline is the tap target for one of the engine's rectangular
     // hotspots (data-hot = its index): a tap is forwarded to that rectangle, so the engine's own logic runs unchanged
@@ -4792,6 +4803,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       d.shapes.forEach(function(sh){
         var hot = hots[sh.hot]; if(!hot) return;
         var path = document.createElementNS(NS, "path"); path.setAttribute("d", sh.d); path.setAttribute("class", "l02-shape");
+        path.setAttribute("data-hot", String(sh.hot));   // [L02-FIND-HINTS] the engine points its nudge hand at the answer's outline
         var mirror = function(){
           path.classList.toggle("hit", hot.classList.contains("hit"));
           path.classList.toggle("wrong", hot.classList.contains("shake")); };

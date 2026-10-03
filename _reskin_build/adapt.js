@@ -46,10 +46,12 @@
 /* ===== L02-FIND-FIG-JS =====
    "page 11" (the "find Madhav in the picture" page, G2 — card slide.find_fig; the first guided page now that G1 is gone) is
    laid out from Figma "FLN by MJ" node 110-2 (CSS [L02-FIND-FIG], stage class .l02-find): the header speaker chip is off, so
-   the mascot tap replays the question exactly as the chip did (state.replayAudio, else the slide's VO chain); the आगे बढ़ें
-   pill (which TAP_IN_SCENE hides) is shown in its disabled look from the start and lights on the correct tap. The page still
-   moves on by itself after the "correct" line, as before; a tap on the lit pill moves on at once instead, and the guard on
-   completeSlide makes sure the page is left exactly once (the module's own delayed call is also fenced to its slide by build.py). */
+   the mascot tap replays the question exactly as the chip did (state.replayAudio, else the slide's VO chain). The page moves on
+   by itself after the "correct" line, as the engine's TAP_IN_SCENE always did; [L02-FIND-NO-NEXT] (user, 2026-10-03) there is NO
+   आगे बढ़ें on this page any more — the engine hides the pill at mount and nothing shows it again (until then the pill was shown
+   in its disabled look and lit on the correct tap). The guard on completeSlide (below) still makes sure the page is left exactly
+   once (the module's own delayed call is also fenced to its slide by build.py). The wrong-tap lines escalate (card
+   data.hint_seq, engine patch [L02-FIND-HINTS] in build.py): the engine finds the answer's outline by its data-hot index. */
 (function(){
   var orig = window.mountSlide; if(typeof orig !== "function") return;
   function applyFind(idx){
@@ -57,14 +59,11 @@
     var st = document.getElementById("stage"); if(st) st.classList.toggle("l02-find", find);
     if(!find) return;
     s._l02Left = false;
-    var nb = document.getElementById("navBtn"); if(nb){ nb.style.display = ""; nb.textContent = "आगे बढ़ें"; }
     var mw = document.getElementById("mascotWrap");
     if(mw) mw.onclick = function(){ if(typeof isPlaying !== "undefined" && isPlaying) return;
       state.audioReplays++;
       SwiftPAL.emit("audio_replay", { slide_id: s.id, phase: s.phase, count: state.audioReplays, src: "mascot" });
       if(state.replayAudio) state.replayAudio(); else autoPlayChain(s); };
-    document.querySelectorAll("#slideHost .tis-hot.correct-hot").forEach(function(h){
-      h.addEventListener("click", function(){ if(CARD.slides[state.idx] === s) setNavActive(true); }); });
     // [L02-FIND-HOTS] the shaped outlines (card data.shapes: the two silhouettes and the ball's circle, in the picture's own
     // pixel space) drawn in an SVG over the picture. Each outline is the tap target for one of the engine's rectangular
     // hotspots (data-hot = its index): a tap is forwarded to that rectangle, so the engine's own logic runs unchanged
@@ -81,6 +80,7 @@
       d.shapes.forEach(function(sh){
         var hot = hots[sh.hot]; if(!hot) return;
         var path = document.createElementNS(NS, "path"); path.setAttribute("d", sh.d); path.setAttribute("class", "l02-shape");
+        path.setAttribute("data-hot", String(sh.hot));   // [L02-FIND-HINTS] the engine points its nudge hand at the answer's outline
         var mirror = function(){
           path.classList.toggle("hit", hot.classList.contains("hit"));
           path.classList.toggle("wrong", hot.classList.contains("shake")); };
