@@ -117,6 +117,7 @@ for b in scripts:
     js_parts.append("/* ===== <script id=\"%s\"> ===== */\n%s\n;" % (label, b["inner"].strip("\n")))
 js_parts.append(rd(os.path.join(SCR, "adapt.js")).strip("\n") + "\n;")
 js_parts.append(rd(os.path.join(SCR, "sent_q_page.js")).strip("\n") + "\n;")   # [L02-G3-REF] the reference page-5 behaviours, card-driven (slide.sent_ref)
+js_parts.append(rd(os.path.join(SCR, "bgm_duck.js")).strip("\n") + "\n;")      # [L02-BGM-DUCK] the background-music bed — LAST, so its mountSlide wrapper is outermost (card bgm)
 app_js = ("/* HI02H04_L02_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order\n"
           "   (the reference-lesson-only scripts are left out; STORY_READ_PAGE is this lesson's own tutorial module). */\n\n"
           + "\n\n".join(js_parts) + "\n")
@@ -949,6 +950,26 @@ for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for k in aud:
     assert os.path.exists(os.path.join(CUR, aud[k])), "missing audio " + aud[k]
+# ---- [L02-BGM-DUCK] (2026-10-04, user request) "From Page 1 T1 to Page 17 M2 apply this music in the background in a low volume and such
+# that it doesn't make disturbance, and whenever any VO or any sound effect is played on any page the volume of this background music should
+# be reduced to the minimal level; rest keep everything exactly the same." The user's Downloads\Standard Background Music 2.mp3 (4:00, 256 kbps
+# stereo 48 k, -16.2 LUFS) — the very track the deployed reference lesson HI02H04_L01_S01 runs under its pages since 2026-10-02 ([BGM-DUCK]) —
+# is copied to _reskin_build/bgm_standard_2_source.mp3 and re-encoded like the reference's bed (libmp3lame 128 kbps, 48 k stereo; the
+# reference's file: 128 kbps, -16.6 LUFS) to assets/Audio/bgm_standard_2.mp3 (remade only when the source is newer: the mp3 is NOT a
+# registered clip — it is the bed's own element, so the ogg churn rule does not apply). The behaviour is _reskin_build/bgm_duck.js, the
+# reference's block ported with the range taken from the card: `card.bgm` = {src, first = 0 (T1), last = the index of M2, landing: True (the
+# user's "Page 1" is the landing — the bed starts there, or on the first tap where the browser refuses autoplay), base 0.13, duck 0.03}.
+# The celebration (the slide after M2) has no bed. The block is appended LAST to app.js (its mountSlide wrapper must be outermost).
+# Nothing else changes: no caller, no VO, no sfx, no timing — the ducking wraps HTMLMediaElement.play and the WebAudio source nodes.
+BGM_SRC = os.path.join(SCR, "bgm_standard_2_source.mp3"); BGM_DST = os.path.join(CUR, "assets", "Audio", "bgm_standard_2.mp3")
+assert os.path.exists(BGM_SRC), "missing " + BGM_SRC
+if not os.path.exists(BGM_DST) or os.path.getmtime(BGM_DST) < os.path.getmtime(BGM_SRC):
+    ff("-y", "-i", BGM_SRC, "-vn", "-c:a", "libmp3lame", "-b:a", "128k", "-ar", "48000", "-ac", "2", BGM_DST)
+    assert os.path.exists(BGM_DST), "ffmpeg did not write " + BGM_DST
+    print("wrote", BGM_DST, os.path.getsize(BGM_DST), "bytes")
+_ids = [s["id"] for s in card["slides"]]
+assert _ids[0] == "T1" and _ids[-2] == "M2" and _ids[-1] == "CEL", "the bed's range T1..M2 does not fit the slide order: %r" % _ids
+card["bgm"] = {"src": "assets/Audio/bgm_standard_2.mp3", "first": 0, "last": _ids.index("M2"), "landing": True, "base": 0.13, "duck": 0.03}
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----
