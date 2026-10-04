@@ -555,6 +555,15 @@ for o in i1["data"]["options"]:
 # "शाबाश! सही जगह।" line — nothing was tapped) and lights the pill; the page then WAITS, and the pill's tap (completeSlide, success) brings
 # the question (I3). The engine's TAP_IN_SCENE still mounts the page (its hotspots stay in the card data, inert); pages 15-21 keep the
 # tap-to-walk flow and their auto-advance after the correct line.
+# [L02-NO-WALK2] (user, 2026-10-04): "Remove Page 15 WALK 2 along with the VOs and the sound effects permanently; rest keep everything
+# exactly the same." The WALK2 board page (the user's page 15: Madhav ON checkpoint 1 -> before checkpoint 2) is no longer inserted into
+# the card, so the lesson runs … I2 · I3 · P1 · P2 · M1 · WALK4 · M2 · WALK5 · CEL (21 slides). Its leg is still computed below (the
+# continuity assertions on the legs hold as before) but no slide carries it. WALK2 had no clip of its own: its line (vo_tap_bed), correct
+# and try-again lines (vo_tap_ok / vo_tap_try) are the other board pages' (P2 / WALK4 / WALK5; the find page G2 shares the last two) and
+# its only sounds were the engine's chime + confetti on arrival — so no asset leaves the dist. P2, WALK4 and WALK5 are untouched: the board
+# now first appears on P2 exactly as it did (Madhav before checkpoint 2, checkpoint 1 already showing the small Madhav).
+# [L02-NO-BOARD] (user, 2026-10-04, later the same day): P2, WALK4 and WALK5 were then removed as well — see the block after the legs. No
+# board page is left; vo_tap_bed and sfx_walk leave the dist with them.
 import shutil, subprocess
 from PIL import Image
 BED_IMG = os.path.join(CUR, "assets", "Images")
@@ -633,10 +642,15 @@ def sfx_clip(name, src, start, length):
         ff("-i", cut, "-af", "volume=%.2fdB,afade=t=in:st=0:d=0.02,afade=t=out:st=%.2f:d=0.06" % (gain, length - 0.06), "-c:a", "libopus", "-b:a", "64k", dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "gain %.1f dB (mean %.1f, peak %.1f)" % (gain, mean, peak))
-# the footsteps (freesound "woodwalking", 6.19 s: twelve steps ~0.45 s apart from 0.15 s, tailing off after 5.1 s): cut 0.10-5.45 s, so the
-# first step falls with the first stride and a loop, if ever needed, keeps the cadence
-sfx_clip("sfx_walk", "sfx_walk_source_freesound-woodwalking-40470.mp3", 0.10, 5.35)
-tts_clip("vo_tap_bed", "माधव को नींद आ रही है, उसे उसके पलंग तक पहुंचाइए।")
+# the footsteps (freesound "woodwalking", 6.19 s: twelve steps ~0.45 s apart from 0.15 s, tailing off after 5.1 s) were cut 0.10-5.45 s
+# by sfx_clip("sfx_walk", "sfx_walk_source_freesound-woodwalking-40470.mp3", 0.10, 5.35), and the board's band line was
+# tts_clip("vo_tap_bed", "माधव को नींद आ रही है, उसे उसके पलंग तक पहुंचाइए।").
+# [L02-NO-BOARD] (user, 2026-10-04): with the last board pages removed (see the block after the legs), neither clip is made, registered
+# or shipped any more — a copy still in the dist is deleted here; the sources stay in _reskin_build/ like every other source.
+for _gone in ("vo_tap_bed", "sfx_walk"):
+    _p = os.path.join(CUR, "assets", "Audio", _gone + ".ogg")
+    if os.path.exists(_p): os.remove(_p); print("removed", _p)
+    aud.pop(_gone, None); txt.pop(_gone, None)
 # ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
 # every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
 # cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,
@@ -783,19 +797,21 @@ _ok_words = "शाबाश! माधव खिलौनों से खे�
 G3_WT["vo_ok_khel"] = _ok_t[2:5]     # खिलौनों starts, से starts, से ends (= खेल starts)
 g3["data"]["word_times_by_audio"] = G3_WT
 g3["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_khel") * 1000))   # the picture's pop-and-hold lasts the repeated question (the reference: its line's length)
-# [L02-BED-AUTO] when Madhav sets off on page 13: the band's line (vo_tap_bed, ~4.2 s) and a 0.4 s beat after the page opens. A fixed
-# time from the clip's length, not the engine's isPlaying flag: the engine plays the prompt twice at mount (pre-existing), the first,
-# aborted play() clears the flag 1.2 s later while the line still sounds. (The JS still holds the walk while a replay is sounding.)
-BED_AUTO_MS = int(round(clip_s("vo_tap_bed") * 1000)) + 400
-assert 3000 <= BED_AUTO_MS <= 8000, BED_AUTO_MS
+# [L02-BED-AUTO] when Madhav set off on page 13: the band's line (vo_tap_bed, ~4.2 s) and a 0.4 s beat after the page opened — a fixed
+# time from the clip's length (BED_AUTO_MS = clip_s("vo_tap_bed") * 1000 + 400 ≈ 4600), not the engine's isPlaying flag: the engine plays
+# the prompt twice at mount (pre-existing), the first, aborted play() clears the flag 1.2 s later while the line still sounds. (The JS
+# still holds the walk while a replay is sounding.) [L02-NO-BOARD]: the clip is no longer shipped, so the (unshown) leg 1 below carries no
+# auto timing any more.
 CP1, CP2, CP3, CP4 = CHECKPOINTS
 ON_CP1 = on_token(CP1)                                                # [L02-BED-STEPS] (680, 244): feet at the first checkpoint's centre
 BEFORE_CP3, BEFORE_CP4 = before_token(CP3), before_token(CP4)
-# NOTE 2026-10-03 [L02-I2-FIG]: the I2 leg below is no longer shown — page 13 is a card question now (block further down); the
-# journey starts on WALK2 as before, with Madhav already on checkpoint 1.
-BED_LEGS = [   # (slide id, phase, the leg)
-    ("I2",    "independent", bed_leg(BOY_AT[13], ON_CP1, 13, [], face=1, sfx="sfx_walk", reach=CP1, auto=BED_AUTO_MS)),   # page 13 -> ON checkpoint 1, by himself after the line, to the footsteps
-    ("WALK2", "independent", bed_leg(ON_CP1, BOY_AT[16], 14, [], face=1, rest=[CP1])),         # from ON checkpoint 1 (its "?" resting under him; the small Madhav as he steps off) -> before checkpoint 2 (the page-16 state)
+# NOTE 2026-10-03 [L02-I2-FIG]: the I2 leg below is no longer shown — page 13 is a card question now (block further down).
+# NOTE 2026-10-04 [L02-NO-WALK2] + [L02-NO-BOARD]: NO leg is shown any more — the WALK2 page was removed in the morning, P2 / WALK4 / WALK5
+# later the same day. The five legs stay computed as the record of the board's geometry (the assertions below still check that they take
+# the checkpoints one by one); no slide carries any of them.
+BED_LEGS = [   # (slide id, phase, the leg) — all unshown since [L02-NO-BOARD]
+    ("I2",    "independent", bed_leg(BOY_AT[13], ON_CP1, 13, [], face=1, sfx="sfx_walk", reach=CP1)),   # page 13 -> ON checkpoint 1, by himself after the line, to the footsteps
+    ("WALK2", "independent", bed_leg(ON_CP1, BOY_AT[16], 14, [], face=1, rest=[CP1])),         # from ON checkpoint 1 -> before checkpoint 2 (the page-16 state)
     ("P2",    "practice",    bed_leg(BOY_AT[16], BEFORE_CP3, 16, [CP1], face=-1)),               # -> before checkpoint 3; passes checkpoint 2
     ("WALK4", "mastery",     bed_leg(BEFORE_CP3, BEFORE_CP4, 16, [CP1, CP2])),                   # -> before checkpoint 4; passes checkpoint 3
     ("WALK5", "mastery",     bed_leg(BEFORE_CP4, BOY_BED, 16, [CP1, CP2, CP3])),                 # -> the bed; passes checkpoint 4
@@ -805,18 +821,18 @@ assert [(leg.get("reach"), [f["token"] for f in leg["flips"]]) for _, _, leg in 
 assert BED_LEGS[0][2]["boy_to"] == [680.0, 244.0] and BED_LEGS[1][2]["boy"] == [680.0, 244.0], (BED_LEGS[0][2]["boy_to"], BED_LEGS[1][2]["boy"])
 i2 = next(s for s in card["slides"] if s["id"] == "I2"); p2 = next(s for s in card["slides"] if s["id"] == "P2")
 assert i2["type"] == "TAP_IN_SCENE" and i2["phase"] == "independent" and p2["type"] == "TAP_IN_SCENE" and p2["phase"] == "practice"
-def board_page(s, leg):
-    s["bed_fig"] = True; s["room_bg"] = True; s["confetti"] = True
-    s["prompt_hi"] = BED_LINE
-    s["audio"]["prompt"] = "vo_tap_bed"
-    s["data"]["image_id"] = "bed_room"; s["data"]["alt_hi"] = BED_ALT; s["data"]["bed"] = leg
-    s["data"]["hotspots"] = [dict(BED_HOT)] + [token_hot(k) for k in range(4) if k not in leg["done"] and k not in leg.get("rest", [])]   # the bed and every "?" ahead
-    s["data"].pop("walk", None); s["data"].pop("walk_s", None)
-board_page(p2, BED_LEGS[2][2])   # [L02-I2-FIG] I2 is no longer a board page (its leg stays computed for the continuity assertions above; WALK2 still opens with Madhav ON checkpoint 1)
-def insert_after(after_id, new_slide):
-    idx = card["slides"].index(next(s for s in card["slides"] if s["id"] == after_id)); card["slides"].insert(idx + 1, new_slide)
-for sid, phase, leg, after in (("WALK2", "independent", BED_LEGS[1][2], "I3"), ("WALK4", "mastery", BED_LEGS[3][2], "M1"), ("WALK5", "mastery", BED_LEGS[4][2], "M2")):
-    w = copy.deepcopy(i2); w["id"] = sid; w["phase"] = phase; board_page(w, leg); insert_after(after, w)
+# [L02-NO-BOARD] (user, 2026-10-04, after [L02-NO-WALK2] the same day): "Remove Pages 16 P2, 18 WALK4 and 20 WALK5 along with the VOs and
+# the sound effects permanently; rest keep everything exactly the same." So NO board page is built any more: P2 (the lesson's own practice
+# tap-in-scene, which had become board leg 3) is removed from the card, and WALK4 / WALK5 (legs 4 and 5 — deep copies of the old I2 that
+# were inserted after M1 / M2) are not made. The lesson now runs … I1 · I2 · I3 · P1 · M1 · M2 · CEL (18 slides); the phase gates fall on
+# I3 → P1 and P1 → M1. Until today a board page was dressed by board_page(s, leg): bed_fig / room_bg / confetti flags, prompt_hi BED_LINE,
+# audio.prompt vo_tap_bed, image bed_room + alt BED_ALT, data.bed = the leg, hotspots = BED_HOT (the bed) + token_hot(k) for every "?"
+# ahead. Their line vo_tap_bed and the footsteps sfx_walk are no longer made, registered or shipped (removed above); their correct /
+# try-again lines vo_tap_ok / vo_tap_try stay — the find page G2 speaks them. The board's pictures (bed_room, bed_q, bed_done, bed_plant,
+# bed_boy and the three guide SVGs) stay on disk and registered like every other retired asset of this lesson, and bed_bg is still the
+# blurred-room backdrop (room_bg) of the card questions I3, P1, M1 and M2. The board's JS (adapt.js applyBed, card slide.bed_fig) and CSS
+# [L02-BED-FIG] stay, dormant — no slide sets bed_fig.
+card["slides"].remove(p2)
 for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
@@ -866,7 +882,8 @@ for k in P1_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 # clips: vo_q_kahan + the option words vo_opt_toys / vo_opt_bed / vo_opt_chair ("खिलौने" / "बिस्तर" / "कुर्सी" — बिस्तर for the card's पलंग
 # पर, told the user) and the question pages' try / hint / correct / reveal lines. The Figma spells खिलोनों; the story's खिलौनों is used.
 # I2's bed-board layout, its line (vo_tap_bed), footsteps (sfx_walk) and find lines (vo_tap_ok / vo_tap_try) are gone from this page
-# (the clips stay registered — the other board pages still use vo_tap_bed / vo_tap_ok / vo_tap_try; sfx_walk is now unused, on disk).
+# (vo_tap_ok / vo_tap_try stay registered — the find page G2 speaks them; vo_tap_bed and sfx_walk left the dist with the last board
+# pages, [L02-NO-BOARD] 2026-10-04).
 # Interactions = the engine's card question as on I1 (kit wrong beat + try line, hint rung, reveal with the pointing hand, confetti +
 # praise + advance; slide.confetti keeps the confetti on this independent page). M1 still asks the same question with the icon cards.
 I2_SRC = os.path.join(SCR, "i2_frame_233-25_source.png")
@@ -894,7 +911,7 @@ i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
-assert _ids[_ids.index("I1"):] == ["I1", "I2", "I3", "WALK2", "P1", "P2", "M1", "WALK4", "M2", "WALK5", "CEL"], _ids
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "I3", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets

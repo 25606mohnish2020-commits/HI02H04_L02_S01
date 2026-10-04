@@ -4858,8 +4858,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   // line, the mascot's smile, the advance (fenced to this slide by build.py). The आगे बढ़ें pill is shown disabled from the start and
   // lights when he arrives; a tap on it moves on at once (the completeSlide guard below makes sure the page is left exactly once).
   // The blurred room behind the whole artboard is the stage's first child while this page is up. No taps during the walk (CSS).
-  // The board is ONE journey over five pages (I2, WALK2, P2, WALK4, WALK5 — a question page between each two; [L02-BED-JOURNEY] in
-  // build.py): card data.bed carries each page's leg — Madhav's spot (boy), where the leg ends (boy_to: his spot before the next
+  // The board was ONE journey over five legs (I2, WALK2, P2, WALK4, WALK5 — a question page between each two; [L02-BED-JOURNEY] in
+  // build.py). Since 2026-10-04 NO board page is left in the card (I2 became a card question [L02-I2-FIG]; WALK2 [L02-NO-WALK2] and then
+  // P2 / WALK4 / WALK5 [L02-NO-BOARD] were removed by the user), so this code is dormant — kept for a page that sets slide.bed_fig
+  // again: card data.bed carries each page's leg — Madhav's spot (boy), where the leg ends (boy_to: his spot before the next
   // checkpoint, or the bed), the leg's polyline (walk, Figma px of the box's padding box), its seconds (walk_s), which way he faces
   // at first (face), the checkpoints already showing the small Madhav (done) and the one he passes on this leg (flips: token +
   // distance). The room backdrop (card slide.room_bg) is shared with the card questions between the legs.
