@@ -839,11 +839,70 @@ for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): ca
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
 # CSS object-fit contain with a small inset) instead of cropping it to the window as the P1 / G3 scene pictures are.
-for sid in ("I3", "M1", "M2"):
+for sid in ("M1", "M2"):   # [L02-I3-SENTQ] I3 left this set on 2026-10-05 (block right below); M1 and M2 are as they were
     q = next(s for s in card["slides"] if s["id"] == sid)
     assert q["type"] == "STORY_QUESTION", sid + " is not a story question any more"
     q["fig_q3"] = True; q["fig_q3_yellow"] = True; q["fig_q3_contain"] = True; q["room_bg"] = True
     q["data"]["hide_recall"] = True; q["data"].pop("recall_image_id", None)
+# ---- [L02-I3-SENTQ] (2026-10-05, user request) I3 ("page 14 I3 INDEPENDENT" in the user's count, ?slide=13): "use the exact same layout
+# and the design of the page as of the Page 11 G3 Guided; just change the image with this image, the text in the three options with
+# खाना बना रही हैं। / माधव को सुला रही हैं। / माधव को पढ़ा रही हैं। and the title text with चित्र में माँ क्या कर रही हैं ?; rest keep the design,
+# placement, size and the elements just like that of Page 11 G3." So I3 is now a second [L02-G3-REF] page: the same card flags (sent_ref +
+# hide_header_chip + hide_nav + bare_recall + sentence_options → the bare 374.125x315 picture over three 344x78 white pills, stage class
+# .l02-sentq, every behaviour of sent_q_page.js: the 5 s idle repeat with the picture's pop-and-hold, the pill words lit in sync, wiggle +
+# try line / the read-out of all pills / the reveal on the 1st / 2nd / 3rd wrong tap, the correct tap's mark + scene sound + pop hold,
+# then the praise line with the pill's words lit, ding + confetti, advance) and the same kinds of assets: the picture = the user's PNG of
+# the mother stroking the sleeping boy's hair in his bed (_reskin_build/i3_sula_source.png, 1681x936) cut like q3_khel to the reference
+# picture's 1411:1188 shape — the full height, the window at columns SULA_X0 .. SULA_X0 + 1112 (the bedside lamp and plant, the bed with
+# the two, the flower picture; the window at the left and the toys / wardrobe at the right fall outside) -> assets/Images/i3_sula.webp
+# 1411x1188; the answer is माधव को सुला रही हैं। (story T2 "माधव की माँ उसे सुलाने लगी।"). Lines — edge-tts hi-IN-SwaraNeural placeholders via
+# tts_clip, as G3's are: the question vo_q_maa_kya, the three sentences vo_opt_khana_bana / _sula_rahi / _padha_rahi, the praise line
+# vo_ok_sula "शाबाश! माँ माधव को सुला रही हैं।" (its sentence part = the correct pill's five words, lit with it); try_again = the recorded vo_q_hint
+# and reveal = the recorded vo_q_reveal, exactly as on G3; no audio.hint (the 2nd wrong tap reads the pills out). The correct tap's scene
+# sound = sfx_pop_2 (the sound of story page 3, "माधव की माँ उसे सुलाने लगी।" — G3 takes the toys page's sound the same way; 2 s). The one
+# flag G3 does not carry: slide.confetti — I3 is an independent-phase page and the kit's gate would otherwise mute the confetti that G3
+# (guided) shows on the correct tap; with it the two pages look the same ([L02-I1-CONFETTI] mechanism). I3's Figma card look (fig_q3 +
+# yellow + contain + room_bg) and its "माधव ने क्या पढ़ा?" content (vo_q_kitab, vo_opt_book / _toys / _khana, opt_* icons) are gone from I3;
+# the clips and icons stay registered, unused (opt_* icons still serve M1). M1 and M2 keep the card look (loop above).
+i3 = next(s for s in card["slides"] if s["id"] == "I3")
+assert i3["type"] == "STORY_QUESTION" and i3["phase"] == "independent", "I3 is not the independent story question any more"
+for _k in ("fig_q3", "fig_q3_yellow", "fig_q3_contain", "room_bg"): i3.pop(_k, None)
+i3["sent_ref"] = True; i3["hide_header_chip"] = True; i3["hide_nav"] = True; i3["bare_recall"] = True; i3["sentence_options"] = True
+i3["confetti"] = True
+i3["prompt_hi"] = "चित्र में माँ क्या कर रही हैं ?"
+tts_clip("vo_q_maa_kya", "चित्र में माँ क्या कर रही हैं?")
+tts_clip("vo_opt_khana_bana", "खाना बना रही हैं।")
+tts_clip("vo_opt_sula_rahi", "माधव को सुला रही हैं।")
+tts_clip("vo_opt_padha_rahi", "माधव को पढ़ा रही हैं।")
+tts_clip("vo_ok_sula", "शाबाश! माँ माधव को सुला रही हैं।")
+i3["audio"] = {"prompt": "vo_q_maa_kya", "try_again": "vo_q_hint", "reveal": "vo_q_reveal", "correct": "vo_ok_sula"}
+i3["data"]["recall_image_id"] = "i3_sula"; i3["data"]["hide_recall"] = False
+i3["data"]["options"] = [
+    {"label_hi": "खाना बना रही हैं।", "audio": "vo_opt_khana_bana"},
+    {"label_hi": "माधव को सुला रही हैं।", "audio": "vo_opt_sula_rahi", "correct": True},
+    {"label_hi": "माधव को पढ़ा रही हैं।", "audio": "vo_opt_padha_rahi"},
+]
+i3["data"]["correct_sfx"] = {"src": "sfx_pop_2", "hold_ms": 2000, "vol": 1.0}
+i3["data"]["prompt_idle_ms"] = 5000
+I3_WT = {}
+for _o in i3["data"]["options"]: I3_WT[_o["audio"]] = word_times_for(_o["audio"], _o["label_hi"].split())
+_ok3_words = "शाबाश! माँ माधव को सुला रही हैं।".split(); _ok3_t = word_times_for("vo_ok_sula", _ok3_words)
+I3_WT["vo_ok_sula"] = _ok3_t[2:8]     # माधव, को, सुला, रही, हैं। start … हैं। end — the correct pill's five words inside the praise line
+assert _ok3_words[2:] == "माधव को सुला रही हैं।".split() and len(I3_WT["vo_ok_sula"]) == 6, (_ok3_words, I3_WT["vo_ok_sula"])
+i3["data"]["word_times_by_audio"] = I3_WT
+i3["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_maa_kya") * 1000))
+SULA_SRC = os.path.join(SCR, "i3_sula_source.png"); SULA_DST = os.path.join(CUR, "assets", "Images", "i3_sula.webp"); SULA_X0 = 285
+assert os.path.exists(SULA_SRC), "missing " + SULA_SRC
+if not os.path.exists(SULA_DST) or os.path.getmtime(SULA_DST) < os.path.getmtime(SULA_SRC):
+    from PIL import Image
+    im = Image.open(SULA_SRC).convert("RGB"); W, H = im.size; w = int(round(H * 1411 / 1188)); x0 = max(0, min(SULA_X0, W - w))
+    im.crop((x0, 0, x0 + w, H)).resize((1411, 1188), Image.LANCZOS).save(SULA_DST, "WEBP", quality=88, method=6)
+    print("wrote", SULA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
+card["assets"]["image"]["i3_sula"] = "assets/Images/i3_sula.webp"
+card.setdefault("_emoji_fallback", {})["i3_sula"] = "🛏️"
+for _k in ("vo_q_hint", "vo_q_reveal"):
+    assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7
 # ---- [L02-P1-FIG] P1 ("page 15" of the Figma section, the practice story question) from "15 P1 Practice Story Question": G3's card layout
 # ([L02-Q3-FIG]: header 36,26 / band 39.9,44 with the text 135.55 in, three 252x314.113 cards @ x 232/514/796, y 247, no pill) with the
 # blurred room behind the artboard and the cards in YELLOW — the outer box #FCB717 (G3: #D9D9D9) with a 0 4px 2px 25% shadow, the white

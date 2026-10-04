@@ -184,7 +184,7 @@
    "खिलौनों",
    "से"
   ],
-  "md5": "ce407cc4f320c8bf1abaee0546a91d32",
+  "md5": "7f8ac12d1d0a56b392f12fd8e8826826",
   "times": [
    0.09,
    0.7,
@@ -197,7 +197,7 @@
    "बर्तनों",
    "से"
   ],
-  "md5": "e4b47e304ba1cecd67bd28f07d53d419",
+  "md5": "4c34267825fe5bdc26b9d01bfe1349c7",
   "times": [
    0.09,
    0.72,
@@ -210,7 +210,7 @@
    "किताबों",
    "से"
   ],
-  "md5": "243fb78702a2b4b6105641c57def7ff3",
+  "md5": "0b2f880252b2626389f0ba7412b3effd",
   "times": [
    0.09,
    0.69,
@@ -228,7 +228,7 @@
    "रहा",
    "है।"
   ],
-  "md5": "3f051a847bd93d74a87d1d3d3e2d8161",
+  "md5": "f86bdce1fb626d3c3ff7ec7cc1bbf695",
   "times": [
    0.09,
    0.82,
@@ -238,6 +238,84 @@
    3.12,
    3.62,
    3.97
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_khana_bana": {
+  "words": [
+   "खाना",
+   "बना",
+   "रही",
+   "हैं।"
+  ],
+  "md5": "c92fb807b15684a0ab40051fb737a5a5",
+  "times": [
+   0.09,
+   0.36,
+   0.74,
+   1.02,
+   1.21
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_sula_rahi": {
+  "words": [
+   "माधव",
+   "को",
+   "सुला",
+   "रही",
+   "हैं।"
+  ],
+  "md5": "30deb916af7100ad1854f7c7583aec1d",
+  "times": [
+   0.09,
+   0.61,
+   0.89,
+   1.28,
+   1.47,
+   1.6
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_padha_rahi": {
+  "words": [
+   "माधव",
+   "को",
+   "पढ़ा",
+   "रही",
+   "हैं।"
+  ],
+  "md5": "4d2e96908a0ff02c119ed8020357cb28",
+  "times": [
+   0.09,
+   0.62,
+   0.88,
+   1.34,
+   1.53,
+   1.67
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_ok_sula": {
+  "words": [
+   "शाबाश!",
+   "माँ",
+   "माधव",
+   "को",
+   "सुला",
+   "रही",
+   "हैं।"
+  ],
+  "md5": "9c8cc55facdd576d0b1f63411da6ca8e",
+  "times": [
+   0.09,
+   0.83,
+   1.15,
+   1.75,
+   2.16,
+   2.6,
+   3.27,
+   3.6
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
