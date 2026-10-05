@@ -881,15 +881,20 @@ RC_TOKENS = [[179, 290], [435, 200], [620, 316], [830, 249]]
 RC_CAR_BOX, RC_CAR_SIZE = (64.0, 230.6), 54.404
 RC_START = (RC_CAR_BOX[0] + RC_CAR_SIZE / 2, RC_CAR_BOX[1] + RC_CAR_SIZE / 2)                 # (91.2, 257.8): the car's centre at rest
 RC_CP1 = (RC_TOKENS[0][0] + 52.0, RC_TOKENS[0][1] + 51.0)                                      # (231, 341): the first checkpoint's centre
-with open(os.path.join(SCR, "rc_leg_source.json"), encoding="utf-8") as _f: _rc_leg = json.load(_f)   # rc_path_trace.py: the carpet's centre line, box coords
-assert _rc_leg["start"] == [RC_START[0], RC_START[1]] and _rc_leg["cp1"] == [RC_CP1[0], RC_CP1[1]], "rc_leg_source.json was traced for other end points: rerun rc_path_trace.py"
-RC_LEG = _rc_leg["pts"]
-assert RC_LEG[0] == [round(RC_START[0], 2), round(RC_START[1], 2)] and RC_LEG[-1] == [231.0, 341.0] and len(RC_LEG) > 40, (RC_LEG[0], RC_LEG[-1], len(RC_LEG))
+with open(os.path.join(SCR, "rc_leg_source.json"), encoding="utf-8") as _f: _rc_legs = json.load(_f)["legs"]   # rc_path_trace.py: the carpet's centre line, box coords
+def rc_leg(name, start, end):
+    leg = _rc_legs[name]
+    assert leg["start"] == [start[0], start[1]] and leg["end"] == [end[0], end[1]], name + " in rc_leg_source.json was traced for other end points: rerun rc_path_trace.py"
+    pts = leg["pts"]
+    assert pts[0] == [round(start[0], 2), round(start[1], 2)] and pts[-1] == [round(end[0], 2), round(end[1], 2)] and len(pts) > 40, (name, pts[0], pts[-1], len(pts))
+    return pts
+RC_LEG = rc_leg("leg1", RC_START, RC_CP1)
 RC_VIEWS = [{"src": "rc_car", "deg": 0}, {"src": "rc_car_fr", "deg": 42}]                       # [L02-RC-MOTION] the renders by the screen heading they show
 bed_webp("rc_scene.webp", "rc_scene_image239_source.png")                                      # 1672x941, the Figma export of image 239
 bed_webp("rc_q.webp", "rc_q_image225_figma_source.png", size=(140, 210), quality=90, mode="RGBA")   # the "?" (shown 35x53: 4x)
 bed_webp("rc_car.webp", "rc_car_source.png", size=(200, 200), quality=90, mode="RGBA")         # the car, side view (shown 50x50: 4x)
 bed_webp("rc_car_fr.webp", "rc_car_fr_source.png", size=(200, 200), quality=90, mode="RGBA")   # [L02-RC-MOTION] the car, front three-quarter view (the folder's "…07_48_15 PM")
+bed_webp("rc_car_bk.webp", "rc_car_bk_source.png", size=(200, 200), quality=90, mode="RGBA")   # [L02-RC2] the car, rear three-quarter view (the folder's "…07_48_23 PM")
 bed_webp("rc_title.webp", "rc_title_source.png", lossless=True, mode="RGBA")                  # "मनमोजी माधव" 493x95 as supplied
 def rc_boy():
     """The user's GIF (36 frames, 70 ms, transparent) as an animated WebP at 152x284 — twice the 76x142 slot."""
@@ -905,7 +910,18 @@ _sh_s = os.path.join(SCR, "rc_boy_shadow_ellipse2802_source.svg"); _sh_d = os.pa
 assert os.path.exists(_sh_s), "missing " + _sh_s
 if not bed_fresh(_sh_d, _sh_s): shutil.copyfile(_sh_s, _sh_d); print("wrote", _sh_d)
 sfx_clip("sfx_rc", "sfx_rc_source.mp3", 0.30, 3.20)                                            # the motor, looped by the JS while the car drives
-for k in ("rc_scene", "rc_q", "rc_car", "rc_car_fr", "rc_boy", "rc_title"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+def rc_done(name, src, win):
+    """[L02-RC2] A won question's picture as it fills a checkpoint's circle (Figma 267-1053 "image 242": the 213x118 picture at (-64,-8) of
+    the token's 100x98 inner box, i.e. the window x 64..164 / y 8..106 of it) — that window cut from the full-size source, 400x392 (4x)."""
+    s = os.path.join(SCR, src); d = os.path.join(BED_IMG, name)
+    assert os.path.exists(s), "missing " + s
+    if bed_fresh(d, s): return
+    im = Image.open(s).convert("RGB"); W, H = im.size
+    x0, x1 = W * win[0] / win[4], W * win[2] / win[4]; y0, y1 = H * win[1] / win[5], H * win[3] / win[5]
+    im.crop((int(round(x0)), int(round(y0)), int(round(x1)), int(round(y1)))).resize((400, 392), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
+    print("wrote", d, "window", (round(x0), round(y0), round(x1), round(y1)), "of", (W, H))
+rc_done("rc_done_1.webp", "i3_sula_source.png", (64, 8, 164, 106, 213, 118))               # the Figma's "ChatGPT Image Sep 26, 2026, 04_20_36 PM" export is BYTE-IDENTICAL to i3_sula_source.png (md5 f91cd074…)
+for k in ("rc_scene", "rc_q", "rc_car", "rc_car_fr", "rc_car_bk", "rc_boy", "rc_title", "rc_done_1"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 rc = copy.deepcopy(i2)                                                                          # the untouched TAP_IN_SCENE card (I2 becomes a card question further down)
 assert rc["type"] == "TAP_IN_SCENE" and "bed" not in rc["data"], "RC1 must start from the plain find card"
 for _k in ("bed_fig", "room_bg", "find_fig", "fig_q3", "confetti", "mascot_replay"): rc.pop(_k, None)
@@ -919,6 +935,34 @@ rc["data"] = {"image_id": "rc_scene", "alt_hi": "माधव का कमर�
                      "start_ms": 600, "hold_ms": 2500, "sfx": "sfx_rc"}}   # [L02-RC-MOTION] views + hold 2.5 s
 card["slides"].insert(card["slides"].index(i2) + 1, rc)
 assert [s["id"] for s in card["slides"]][card["slides"].index(i2):card["slides"].index(i2) + 3] == ["I2", "RC1", "I3"], "RC1 must sit between I2 and I3"
+# ---- [L02-RC2] (2026-10-05, user request) "After page 15 I3 the RC toy scene should come again: the picture of Madhav and his mother
+# gets placed in the first checkpoint with a little glowing animation, then the RC car moves towards the next checkpoint smoothly with
+# its other angle view as shown, and once it reaches it, after 1.5 seconds the next question arrives." Figma 267-1053 (the scene as it
+# opens: checkpoint 1 = "image 242" now holds the picture "ChatGPT Image Sep 26, 2026, 04_20_36 PM" — the very I3 picture, byte-identical
+# to i3_sula_source.png — 213x118 at (-64,-8) of the token's inner box, no inner ring, the inset shadow kept; the car = the folder's REAR
+# three-quarter render "…07_48_23 PM" 50x50 at (319,334) of the box, unrotated, on the carpet's trough past checkpoint 1) and 278-1471
+# (the car in checkpoint 2's ring, its "?" gone). Slide RC2: a copy of RC1 inserted after I3 (practice, like I3 and P1: no gate either
+# side), data.rc.placed = [checkpoint 0 ← rc_done_1, animated: 0.5 s after the page opens the picture pops into the circle under a glow
+# (CSS .placing)], the car opens where the Figma puts it (box = the 50 picture's spot minus the 2.202 inset; its opening heading -14 =
+# the rear render's own angle, so that render stands unrotated as drawn), its views = the rear
+# render (deg -14: its roof / side lines on screen; the sole view below a -3° heading) and the side render (from +3°) — leg2 climbs the
+# hump (headings -16° → -61° → -5° at the ring: the rear view all the way, turned with the carpet, parked nearly in its natural pose as
+# in 278-1471), traced by rc_path_trace.py like leg1 (188 px, 2.8 s); start_ms 1800 (after the glow), reach 1, hold_ms 1500 → P1.
+RC2_CAR_IMG = (319.0, 334.0)                                                                   # the 50x50 render in the Figma; the 54.404 box sits 2.202 around it
+RC2_CAR_BOX = (RC2_CAR_IMG[0] - 2.202, RC2_CAR_IMG[1] - 2.202)
+RC2_START = (RC2_CAR_IMG[0] + 25.0, RC2_CAR_IMG[1] + 25.0)                                      # (344, 359)
+RC_CP2 = (RC_TOKENS[1][0] + 52.0, RC_TOKENS[1][1] + 51.0)                                      # (487, 251): the second checkpoint's centre
+RC_LEG2 = rc_leg("leg2", RC2_START, RC_CP2)
+RC2_VIEWS = [{"src": "rc_car_bk", "deg": -14, "to": -3}, {"src": "rc_car", "deg": 0, "from": 3}]
+rc2 = copy.deepcopy(rc); rc2["id"] = "RC2"
+rc2["data"]["alt_hi"] = "माधव का कमरा: पहले प्रश्नचिह्न पर माँ और माधव की तस्वीर लग गई; माधव रिमोट से अपनी खिलौना कार दूसरे प्रश्नचिह्न तक चलाता है।"
+rc2["data"]["rc"] = {"tokens": RC_TOKENS, "reach": 1, "boy": rc["data"]["rc"]["boy"], "shadow": rc["data"]["rc"]["shadow"],
+                     "placed": [{"token": 0, "image": "rc_done_1", "animate": True}], "place_ms": 500,
+                     "car": {"box": [round(RC2_CAR_BOX[0], 3), round(RC2_CAR_BOX[1], 3)], "size": RC_CAR_SIZE, "rot": -14, "views": RC2_VIEWS},   # rot = the opening HEADING: -14 shows the rear render unrotated, as the Figma has it
+                     "leg": {"pts": RC_LEG2, "s": 2.8}, "start_ms": 1800, "hold_ms": 1500, "sfx": "sfx_rc"}
+_i3_now = next(s for s in card["slides"] if s["id"] == "I3")
+card["slides"].insert(card["slides"].index(_i3_now) + 1, rc2)
+assert [s["id"] for s in card["slides"]][card["slides"].index(_i3_now):card["slides"].index(_i3_now) + 3] == ["I3", "RC2", "P1"], "RC2 must sit between I3 and P1"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
@@ -1205,7 +1249,7 @@ i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
-assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] the second leg after it
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets

@@ -546,3 +546,16 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-rc .l02-rc-token:nth-child(3) .l02-rc-q{animation-delay:.7s;}
 .stage.l02-rc .l02-rc-token:nth-child(4) .l02-rc-q{animation-delay:1.05s;}
 .stage.l02-rc .l02-rc-car img + img{opacity:0;}
+/* [L02-RC2] (2026-10-05, user request) a checkpoint already won (.placed, adapt.js data.rc.placed) shows that question's picture in its
+   circle instead of the "?" and the inner ring — Figma 267-1053 "image 242": the picture fills the token inside its 2px #F6E28B border
+   (object-fit cover of the pre-cut window, see build.py rc_done_1), the inset shadow stays on top. While it is being placed (.placing,
+   once, as the page opens) the picture pops in (scale .55 → 1.06 → 1 over .5 s) and the token glows: a soft yellow halo swells and fades
+   over 1.2 s. The .l02-rc-done picture sits under the ::after inset shadow (z-index) and over the teal ground. */
+.stage.l02-rc .l02-rc-token .l02-rc-done{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;display:none;}
+.stage.l02-rc .l02-rc-token.placed .l02-rc-done{display:block;}
+.stage.l02-rc .l02-rc-token.placed .l02-rc-ring,.stage.l02-rc .l02-rc-token.placed .l02-rc-q{display:none;}
+.stage.l02-rc .l02-rc-token::after{z-index:1;}
+@keyframes l02-rc-place{0%{transform:scale(.55);opacity:0}55%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes l02-rc-glow{0%{box-shadow:0 0 0 0 rgba(255,236,150,0)}35%{box-shadow:0 0 calc(22px * var(--fs)) calc(8px * var(--fs)) rgba(255,236,150,.9)}100%{box-shadow:0 0 calc(6px * var(--fs)) 0 rgba(255,236,150,0)}}
+.stage.l02-rc .l02-rc-token.placing{animation:l02-rc-glow 1.2s ease-out both;}
+.stage.l02-rc .l02-rc-token.placing .l02-rc-done{animation:l02-rc-place .5s cubic-bezier(.3,1.2,.4,1) both;transform-origin:50% 50%;}

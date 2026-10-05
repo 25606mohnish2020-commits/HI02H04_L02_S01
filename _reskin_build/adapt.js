@@ -187,6 +187,11 @@
   // (heading − its deg), so the body always points along the carpet and the car looks round the bend as it comes down. On arrival the
   // checkpoint's "?" goes (the Figma 267-858 state: the car sits in the ring, at the carpet's heading there) and after data.rc.hold_ms the
   // page moves on by itself (completeSlide(true), once). A dev jump away mid-drive stops the sound quietly.
+  // [L02-RC2] The same page serves every leg: data.rc.placed lists the checkpoints already won ({token, image, animate}: the token shows
+  // that question's picture in its circle instead of the "?" — Figma 267-1053; with animate the picture is placed data.rc.place_ms after
+  // the page opens, popping in under a short glow, CSS .placing), data.rc.car.box is where the car stands as the page opens, data.rc.reach
+  // the checkpoint this leg ends on. A view may carry its own `to` / `from` headings: the cross-fade to the next view runs from this
+  // view's `to` to the next one's `from` (default: 30% / 70% of the gap between their degs).
   function applyRC(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, on = !!(s && s.rc_fig === true);
     var st = document.getElementById("stage"); if(!st) return;
@@ -198,26 +203,35 @@
     if(!frame || frame.querySelector(".l02-rc-layer")) return;
     if(!title){ title = bedImg("l02-rc-title", R.title || "assets/Images/rc_title.webp"); st.appendChild(title); }
     var layer = bedEl("div", "l02-rc-layer");
+    var imgSrc = function(id){ return (id.indexOf("/") >= 0) ? id : ((CARD.assets && CARD.assets.image && CARD.assets.image[id]) || ("assets/Images/" + id + ".webp")); };
     var tokens = (R.tokens || []).map(function(t){
       var tok = bedEl("div", "l02-rc-token"); tok.style.left = px(t[0] - B); tok.style.top = px(t[1] - B);
       tok.appendChild(bedEl("i", "l02-rc-ring")); tok.appendChild(bedImg("l02-rc-q", R.q || "assets/Images/rc_q.webp"));
       layer.appendChild(tok); return tok; });
+    var placing = [];
+    (R.placed || []).forEach(function(pl){                                   // [L02-RC2] the checkpoints already won show their picture
+      var tok = tokens[pl.token]; if(!tok) return;
+      tok.appendChild(bedImg("l02-rc-done", imgSrc(pl.image)));
+      if(pl.animate) placing.push(tok); else tok.classList.add("placed");
+    });
     if(R.shadow){ var sh = bedImg("l02-rc-shadow", R.shadow_src || "assets/Images/rc_shadow.svg");   // the 58x12 ellipse sits at the centre of its 118x72 blurred SVG
       sh.style.left = px(R.shadow[0] + R.shadow[2] / 2 - 59 - B); sh.style.top = px(R.shadow[1] + R.shadow[3] / 2 - 36 - B); layer.appendChild(sh); }
     if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B); layer.appendChild(boy); }
     var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
-    var imgSrc = function(id){ return (id.indexOf("/") >= 0) ? id : ((CARD.assets && CARD.assets.image && CARD.assets.image[id]) || ("assets/Images/" + id + ".webp")); };
     // [L02-RC-MOTION] one <img> per view, stacked in the car's slot, sorted by the heading each one shows
     var views = (C.views && C.views.length) ? C.views.slice().sort(function(a, b){ return a.deg - b.deg; }) : [{ src: C.src || "rc_car", deg: 0 }];
     var car = bedEl("div", "l02-rc-car");
     car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B);
     var imgs = views.map(function(v){ var im = bedImg("", imgSrc(v.src)); car.appendChild(im); return im; });
     function pose(heading){
-      // the two renders bracketing the heading cross-fade over the 30..70% stretch of the gap between them; each is turned to the heading
+      // the two renders bracketing the heading cross-fade between the lower one's `to` and the upper one's `from` (default: the 30..70%
+      // stretch of the gap between their degs); each is turned to the heading
       var n = views.length, lo = 0;
       while(lo < n - 2 && heading > views[lo + 1].deg) lo++;
       var a = views[lo], b = views[Math.min(n - 1, lo + 1)], w = 0;
-      if(n > 1 && b.deg > a.deg){ var t = Math.min(1, Math.max(0, (heading - a.deg) / (b.deg - a.deg))), q = Math.min(1, Math.max(0, (t - 0.3) / 0.4)); w = q * q * (3 - 2 * q); }
+      if(n > 1 && b.deg > a.deg){
+        var h0 = (typeof a.to === "number") ? a.to : a.deg + 0.3 * (b.deg - a.deg), h1 = (typeof b.from === "number") ? b.from : a.deg + 0.7 * (b.deg - a.deg);
+        var q = Math.min(1, Math.max(0, (heading - h0) / Math.max(0.001, h1 - h0))); w = q * q * (3 - 2 * q); }
       for(var i = 0; i < n; i++){
         var op = (i === lo) ? 1 - w : (i === lo + 1) ? w : 0;
         imgs[i].style.opacity = op.toFixed(3); imgs[i].style.visibility = op > 0.002 ? "" : "hidden";
@@ -260,6 +274,8 @@
       }
       requestAnimationFrame(tick);
     }
+    if(placing.length) setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;   // [L02-RC2] the won picture pops into its checkpoint under a glow
+      placing.forEach(function(tok){ tok.classList.add("placed", "placing"); }); }, (typeof R.place_ms === "number") ? R.place_ms : 500);
     setTimeout(drive, R.start_ms || 600);
   }
   function applyBed(idx){
