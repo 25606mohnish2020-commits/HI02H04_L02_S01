@@ -12,7 +12,8 @@ line), converted to Figma box coords and resampled every 2 px of arc length.
 
 Legs: leg1 = the car at rest (RC1, Figma 264-664: a 54.404 box @ (64,230.6), centre (91.2,257.8)) → checkpoint 1 (231,341);
       leg2 = the car as RC2 opens (Figma 267-1053: the 50x50 rear-view render @ (319,334), centre (344,359)) → checkpoint 2 (487,251);
-      leg3 = the car as RC3 opens (Figma 278-1882: the 42x42 front-view render @ (554,269), centre (575,290)) → checkpoint 3 (672,367)."""
+      leg3 = the car as RC3 opens (Figma 278-1882: the 42x42 front-view render @ (554,269), centre (575,290)) → checkpoint 3 (672,367);
+      leg4 = the car as RC4 opens (Figma 290-197: the 50x50 rear-view render @ (733,334), centre (758,359)) → checkpoint 4 (882,300)."""
 import os, json, math
 import numpy as np
 from PIL import Image, ImageFilter
@@ -29,7 +30,8 @@ CAR_BOX, CAR_SIZE = (64.0, 230.6), 54.404      # the car at rest in RC1
 START1 = (CAR_BOX[0] + CAR_SIZE / 2, CAR_BOX[1] + CAR_SIZE / 2)
 START2 = (319.0 + 25.0, 334.0 + 25.0)          # RC2 opens with the car here (Figma 267-1053)
 START3 = (554.0 + 21.0, 269.0 + 21.0)          # RC3 opens with the car here (Figma 278-1882: the 42x42 front-view render @ (554,269))
-LEGS = [("leg1", START1, cp(0)), ("leg2", START2, cp(1)), ("leg3", START3, cp(2))]
+START4 = (733.0 + 25.0, 334.0 + 25.0)          # RC4 opens with the car here (Figma 290-197: the 50x50 rear-view render @ (733,334))
+LEGS = [("leg1", START1, cp(0)), ("leg2", START2, cp(1)), ("leg3", START3, cp(2)), ("leg4", START4, cp(3))]
 
 im = Image.open(SRC).convert("RGB"); W, H = im.size
 S = max(FIG_IMG[2] / W, FIG_IMG[3] / H)        # object-fit: cover scale (the 550 height rules: 0.58448)
