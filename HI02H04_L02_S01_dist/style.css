@@ -2815,3 +2815,48 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-sentq.l02-sentq-shadow .story-q-stim.sq-bare .story-q-thumb{box-shadow:0 4px 2px rgba(0,0,0,.25);}
 .stage.l02-sentq.l02-sentq-shadow .sent-opt .so-pill{box-shadow:0 4px 2px rgba(0,0,0,.25);}
 .stage.l02-sentq.l02-sentq-shadow .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+
+/* ===== [L02-RC-FIG] (2026-10-05, user request) the RC-car screen between the अब आपकी बारी gate and page 14 (I3) — Figma "FLN by MJ" nodes
+   264-664 (the car at the path's start) and 267-858 (the car on the first checkpoint), 1280x720 artboards mapped by --fs = 1333/1280.
+   Stage class .l02-rc (adapt.js applyRC, card slide.rc_fig; the engine's TAP_IN_SCENE mounts the page, its picture box is the Figma box).
+   The page has no header (the Figma HUD row is hidden): the header row keeps its 140px of space but is invisible, and the title picture
+   "मनमोजी माधव" (Object, 493x95 @ (393,42)) stands at the top of the stage. The box: 974x480 @ (153,172), 4px #386AF6 stroke, r20, shadow
+   0 6px 6px 45%, clipped; the room-and-path picture (image 239) 976x550 @ (-1,-35) of the box = (-5,-39) inside its stroke. Four "?"
+   checkpoints 104x102 (2px #F6E28B ring, #35A7A0, an inner 94 ring, the "?" 35x53 @ (34,24) with a 0 4px 4px 25% shadow, inset shadow),
+   the boy (the user's GIF, 76x142 @ (852.5,102) — the Figma reports its FLIPPED layer by its right edge, 928.5 — MIRRORED as in the
+   Figma) over his soft shadow (Ellipse 2802, 58x12 @ (870.5,232), drawn
+   as its blurred SVG, 118x72 around it), and the car (54.404 box @ (64,230.6); the picture 50x50 turned -5.3°, shadow 0 2px 2px 50%).
+   Nothing is tapped: the car drives by itself (adapt.js) and the page moves on. Child coordinates are Figma ones from the box's OUTER
+   edge; adapt.js subtracts the 4px stroke when it places them inside the box. */
+.stage.l02-rc{--fs:1.04140625;}
+.stage.l02-rc .header-row{visibility:hidden;}
+.stage.l02-rc #audioChip{display:none !important;}
+.stage.l02-rc #navBtn{display:none !important;}
+.stage.l02-rc .slide-stage{padding:0;display:block;}
+.stage.l02-rc .slide-host{display:block;position:absolute;inset:0;padding:0;gap:0;}
+.stage.l02-rc .tis-scene{position:absolute;inset:0;display:block;padding:0;width:auto;height:auto;}
+.stage.l02-rc .tis-frame{position:absolute;left:calc(153px * var(--fs));top:calc(172px * var(--fs) - 140px);
+  width:calc(974px * var(--fs)) !important;height:calc(480px * var(--fs)) !important;aspect-ratio:auto !important;max-width:none !important;
+  box-sizing:border-box;margin:0;flex:none;border:calc(4px * var(--fs)) solid #386AF6;border-radius:calc(20px * var(--fs));
+  overflow:hidden;background:#000;box-shadow:0 6px 6px rgba(0,0,0,.45);}
+.stage.l02-rc .tis-frame,.stage.l02-rc .tis-frame *{pointer-events:none !important;}   /* nothing to tap on this page */
+.stage.l02-rc .tis-img{position:absolute;left:calc(-5px * var(--fs));top:calc(-39px * var(--fs));
+  width:calc(976px * var(--fs)) !important;height:calc(550px * var(--fs)) !important;max-width:none;object-fit:cover !important;
+  outline:none;border-radius:0;}
+.stage.l02-rc .l02-rc-layer{position:absolute;left:0;top:0;width:calc(966px * var(--fs));height:calc(472px * var(--fs));}
+.stage.l02-rc .l02-rc-layer img{display:block;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;}
+.stage.l02-rc .l02-rc-token{position:absolute;width:calc(104px * var(--fs));height:calc(102px * var(--fs));box-sizing:border-box;
+  border:calc(2px * var(--fs)) solid #F6E28B;background:#35A7A0;border-radius:900px;overflow:hidden;}
+.stage.l02-rc .l02-rc-token::after{content:"";position:absolute;inset:calc(-2px * var(--fs));border-radius:inherit;box-shadow:inset 0 2px 2px rgba(0,0,0,.25);}
+.stage.l02-rc .l02-rc-token .l02-rc-ring{position:absolute;left:calc(3px * var(--fs));top:calc(2px * var(--fs));width:calc(94px * var(--fs));height:calc(94px * var(--fs));
+  box-sizing:border-box;border:calc(2px * var(--fs)) solid #F6E28B;border-radius:50%;display:block;}
+.stage.l02-rc .l02-rc-token .l02-rc-q{position:absolute;left:calc(32px * var(--fs));top:calc(22px * var(--fs));width:calc(35px * var(--fs));height:calc(53px * var(--fs));
+  object-fit:cover;filter:drop-shadow(0 4px 4px rgba(0,0,0,.25));transition:opacity .25s ease;}
+.stage.l02-rc .l02-rc-token.reached .l02-rc-q{opacity:0;}   /* the car has parked on it: the "?" is gone (Figma 267-858) */
+.stage.l02-rc .l02-rc-shadow{position:absolute;width:calc(118px * var(--fs));height:calc(72px * var(--fs));}
+.stage.l02-rc .l02-rc-boy{position:absolute;width:calc(76px * var(--fs));height:calc(142px * var(--fs));object-fit:cover;transform:scaleX(-1);transform-origin:50% 50%;}
+.stage.l02-rc .l02-rc-car{position:absolute;width:calc(54.404px * var(--fs));height:calc(54.404px * var(--fs));will-change:transform;}
+.stage.l02-rc .l02-rc-car img{position:absolute;left:calc(2.202px * var(--fs));top:calc(2.202px * var(--fs));width:calc(50px * var(--fs));height:calc(50px * var(--fs));
+  object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));transform-origin:50% 50%;will-change:transform;}
+.stage.l02-rc .l02-rc-title{position:absolute;left:calc(393px * var(--fs));top:calc(42px * var(--fs));width:calc(493px * var(--fs));height:calc(95px * var(--fs));
+  max-width:none;pointer-events:none;user-select:none;display:block;z-index:3;}

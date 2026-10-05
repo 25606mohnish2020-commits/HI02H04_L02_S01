@@ -841,6 +841,66 @@ assert i2["type"] == "TAP_IN_SCENE" and i2["phase"] == "independent" and p2["typ
 # [L02-BED-FIG] stay, dormant — no slide sets bed_fig.
 card["slides"].remove(p2)
 for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+# ---- [L02-RC-FIG] (2026-10-05, user request) "After the अब आपकी बारी screen and before page 14 I3 this screen should be shown, in which
+# the RC toy car is shown moving towards the first checkpoint and reaches it, and then page 14 should come; the boy is shown in a GIF on an
+# exact position; I have added a folder for the items." Figma "FLN by MJ" nodes 264-664 (the car at the path's start) and 267-858 (the
+# car on the first checkpoint): a 1280x720 artboard — the blurred room behind everything (the Figma layer is the lesson's bed_bg at
+# (-23.29,-11) blur 4 95%; the user's folder "Background.png" is BYTE-IDENTICAL to i3_floor_source.png, the flattened render of that very
+# layer that page 14 already stands on → page_bg i3_floor: the same ground as the page that follows), the title picture "मनमोजी माधव"
+# ("Object", 493x95 @ (393,42); the folder's Object.png), the box 974x480 @ (153,172) with a 4px #386AF6 stroke, r20, shadow 0 6px 6px 45%,
+# the room-and-path picture "image 239" 976x550 @ (-1,-35) of the box (the Figma export, 1672x941 — not in the folder), four "?"
+# checkpoints 104x102 @ (179,290) (435,200) (620,316) (830,249) (#35A7A0, a 2px #F6E28B ring, an inner 94 ring "Ellipse 5", the "?"
+# "image 225" 35x53 @ (34,24) — the Figma export at 1024x1536 — with a 0 4px 4px 25% shadow, inset shadow), the boy's soft shadow "Ellipse
+# 2802" (58x12 @ (870.5,232), its blurred SVG), the boy = the folder's GIF (36 frames @ 70 ms, 416x772) 76x142 @ (928.5,102) MIRRORED (the
+# Figma flips the layer), and the car = the folder's side-view render "ChatGPT Image Oct 4, 2026, 07_48_41 PM" in a 54.404 box @ (64,230.6)
+# (the picture 50x50 turned -5.3°, shadow 0 2px 2px 50%). In 267-858 the car sits in the first checkpoint's ring and its "?" is gone.
+# BEHAVIOUR (adapt.js applyRC, CSS [L02-RC-FIG]): a TAP_IN_SCENE slide "RC1" (a copy of the untouched find card, no lines, no hotspots —
+# nothing is tapped; the engine's own play(null) is a silent beat) inserted between I2 and I3 in the PRACTICE phase, so the practice gate
+# (अब आपकी बारी) now falls on I2 → RC1 and RC1 → I3 advances straight on, exactly as asked. 0.6 s after the page opens the car drives
+# along the striped path's centre line to the first checkpoint (RC_LEG: a Catmull-Rom through points read off the picture, from the car's
+# start centre to the checkpoint's centre; constant speed, 2.6 s; the picture turns with the heading) with the folder's "RC Toy car Sound
+# effect" (sfx_rc: 3.2 s cut from 0.3 s, pop-style levelling, looped while it drives, 200 ms fade on arrival; it ducks the music bed like
+# every sound); on arrival the checkpoint's "?" fades out and the car settles level (the 267-858 state); 1.0 s later completeSlide(true)
+# → page 14. The user's folder stays in the dist as the source folder (like assets/SFX); build.py reads copies in _reskin_build/.
+RC_TOKENS = [[179, 290], [435, 200], [620, 316], [830, 249]]
+RC_CAR_BOX, RC_CAR_SIZE = (64.0, 230.6), 54.404
+RC_START = (RC_CAR_BOX[0] + RC_CAR_SIZE / 2, RC_CAR_BOX[1] + RC_CAR_SIZE / 2)                 # (91.2, 257.8): the car's centre at rest
+RC_CP1 = (RC_TOKENS[0][0] + 52.0, RC_TOKENS[0][1] + 51.0)                                      # (231, 341): the first checkpoint's centre
+RC_CTRL = [RC_START, (140.0, 264.0), (180.0, 295.0), (210.0, 326.0), RC_CP1]                   # the path's centre line, read off image 239 (box coords)
+RC_LEG = [[round(x, 1), round(y, 1)] for x, y in open_catmull_rom(RC_CTRL, steps=10)]
+assert RC_LEG[0] == [round(RC_START[0], 1), round(RC_START[1], 1)] and RC_LEG[-1] == [231.0, 341.0], (RC_LEG[0], RC_LEG[-1])
+bed_webp("rc_scene.webp", "rc_scene_image239_source.png")                                      # 1672x941, the Figma export of image 239
+bed_webp("rc_q.webp", "rc_q_image225_figma_source.png", size=(140, 210), quality=90, mode="RGBA")   # the "?" (shown 35x53: 4x)
+bed_webp("rc_car.webp", "rc_car_source.png", size=(200, 200), quality=90, mode="RGBA")         # the car (shown 50x50: 4x)
+bed_webp("rc_title.webp", "rc_title_source.png", lossless=True, mode="RGBA")                  # "मनमोजी माधव" 493x95 as supplied
+def rc_boy():
+    """The user's GIF (36 frames, 70 ms, transparent) as an animated WebP at 152x284 — twice the 76x142 slot."""
+    s = os.path.join(SCR, "rc_boy_source.gif"); d = os.path.join(BED_IMG, "rc_boy.webp")
+    if bed_fresh(d, s): return
+    g = Image.open(s); frames = []; durs = []
+    for i in range(g.n_frames):
+        g.seek(i); frames.append(g.convert("RGBA").resize((152, 284), Image.LANCZOS)); durs.append(int(g.info.get("duration", 70)))
+    frames[0].save(d, "WEBP", save_all=True, append_images=frames[1:], duration=durs, loop=0, quality=80, method=4)
+    print("wrote", d, len(frames), "frames")
+rc_boy()
+_sh_s = os.path.join(SCR, "rc_boy_shadow_ellipse2802_source.svg"); _sh_d = os.path.join(BED_IMG, "rc_shadow.svg")
+assert os.path.exists(_sh_s), "missing " + _sh_s
+if not bed_fresh(_sh_d, _sh_s): shutil.copyfile(_sh_s, _sh_d); print("wrote", _sh_d)
+sfx_clip("sfx_rc", "sfx_rc_source.mp3", 0.30, 3.20)                                            # the motor, looped by the JS while the car drives
+for k in ("rc_scene", "rc_q", "rc_car", "rc_boy", "rc_title"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+rc = copy.deepcopy(i2)                                                                          # the untouched TAP_IN_SCENE card (I2 becomes a card question further down)
+assert rc["type"] == "TAP_IN_SCENE" and "bed" not in rc["data"], "RC1 must start from the plain find card"
+for _k in ("bed_fig", "room_bg", "find_fig", "fig_q3", "confetti", "mascot_replay"): rc.pop(_k, None)
+rc["id"] = "RC1"; rc["phase"] = "practice"; rc["eis"] = "iconic"
+rc["rc_fig"] = True; rc["page_bg"] = "i3_floor"; rc["hide_header_chip"] = True; rc["hide_nav"] = True
+rc["prompt_hi"] = ""; rc["audio"] = {}; rc["signals"] = {"on_complete": []}
+rc["data"] = {"image_id": "rc_scene", "alt_hi": "माधव का कमरा: एक घुमावदार रास्ता, उस पर चार प्रश्नचिह्न; माधव रिमोट से अपनी खिलौना कार पहले प्रश्नचिह्न तक चलाता है।",
+              "hotspots": [], "signal_name": "scene_tap_first_try",
+              "rc": {"tokens": RC_TOKENS, "reach": 0, "boy": [852.5, 102, 76, 142], "shadow": [870.5, 232, 58, 12],   # the boy's layer is FLIPPED in the Figma, so its reported x (928.5) is its right edge: the box starts at 928.5 - 76
+                     "car": {"box": list(RC_CAR_BOX), "size": RC_CAR_SIZE, "rot": -5.3}, "leg": {"pts": RC_LEG, "s": 2.6},
+                     "start_ms": 600, "hold_ms": 1000, "sfx": "sfx_rc"}}
+card["slides"].insert(card["slides"].index(i2) + 1, rc)
+assert [s["id"] for s in card["slides"]][card["slides"].index(i2):card["slides"].index(i2) + 3] == ["I2", "RC1", "I3"], "RC1 must sit between I2 and I3"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
@@ -1127,7 +1187,7 @@ i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
-assert _ids[_ids.index("I1"):] == ["I1", "I2", "I3", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets

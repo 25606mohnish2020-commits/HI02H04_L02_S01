@@ -4897,6 +4897,76 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(!bg){ bg = bedImg("l02-page-bg", src); st.insertBefore(bg, st.firstChild); }
     else if(bg.getAttribute("src") !== src) bg.src = src;
   }
+  // [L02-RC-FIG] (2026-10-05, user request) the RC-car screen before page 14 (card slide.rc_fig, stage class .l02-rc; Figma 264-664 →
+  // 267-858): the engine's TAP_IN_SCENE mounts the page (its picture = the room-and-path picture in the Figma box, CSS), and this layer
+  // adds the four "?" checkpoints, the boy with his remote (the user's GIF, mirrored as in the Figma) over his soft shadow, the title
+  // picture at the top of the stage and the RC car. Nothing is tapped: data.rc.start_ms after the page opens the car drives along
+  // data.rc.leg.pts (Figma box coords of the car's CENTRE, from build.py; constant speed over leg.s seconds; the picture turns with the
+  // heading) to the first checkpoint, its motor sound (data.rc.sfx, own Audio element, looped, faded out over 200 ms on arrival) running
+  // with it; on arrival the checkpoint's "?" goes (the Figma 267-858 state: the car sits in the ring), the car settles level, and after
+  // data.rc.hold_ms the page moves on by itself (completeSlide(true), once). A dev jump away mid-drive stops the sound quietly.
+  function applyRC(idx){
+    var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, on = !!(s && s.rc_fig === true);
+    var st = document.getElementById("stage"); if(!st) return;
+    st.classList.toggle("l02-rc", on);
+    var title = st.querySelector(".l02-rc-title");
+    if(!on){ if(title) title.remove(); return; }
+    var R = (s.data && s.data.rc) || {}, fs = 1333 / 1280, B = 4, px = function(v){ return (v * fs).toFixed(3) + "px"; };
+    var frame = document.querySelector("#slideHost .tis-frame");
+    if(!frame || frame.querySelector(".l02-rc-layer")) return;
+    if(!title){ title = bedImg("l02-rc-title", R.title || "assets/Images/rc_title.webp"); st.appendChild(title); }
+    var layer = bedEl("div", "l02-rc-layer");
+    var tokens = (R.tokens || []).map(function(t){
+      var tok = bedEl("div", "l02-rc-token"); tok.style.left = px(t[0] - B); tok.style.top = px(t[1] - B);
+      tok.appendChild(bedEl("i", "l02-rc-ring")); tok.appendChild(bedImg("l02-rc-q", R.q || "assets/Images/rc_q.webp"));
+      layer.appendChild(tok); return tok; });
+    if(R.shadow){ var sh = bedImg("l02-rc-shadow", R.shadow_src || "assets/Images/rc_shadow.svg");   // the 58x12 ellipse sits at the centre of its 118x72 blurred SVG
+      sh.style.left = px(R.shadow[0] + R.shadow[2] / 2 - 59 - B); sh.style.top = px(R.shadow[1] + R.shadow[3] / 2 - 36 - B); layer.appendChild(sh); }
+    if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B); layer.appendChild(boy); }
+    var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
+    var car = bedEl("div", "l02-rc-car"), carImg = bedImg("", C.src || "assets/Images/rc_car.webp");
+    car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B); carImg.style.transform = "rotate(" + rot0 + "deg)"; car.appendChild(carImg);
+    layer.appendChild(car); frame.appendChild(layer);
+    // the leg (constant speed along the polyline; the car's centre starts at the box's centre and lands exactly on the last point)
+    var pts = (R.leg && R.leg.pts) || [], cum = [0], L = 0;
+    for(var i = 1; i < pts.length; i++){ L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); cum.push(L); }
+    function at(d){ var i = 1; while(i < cum.length - 1 && cum[i] < d) i++;
+      var a = pts[i - 1], b = pts[i], seg = cum[i] - cum[i - 1], t = seg ? Math.min(1, Math.max(0, (d - cum[i - 1]) / seg)) : 0;
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
+    var cx0 = c0[0] + size / 2, cy0 = c0[1] + size / 2, dur = ((R.leg && R.leg.s) || 2.6) * 1000;
+    var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); motor.preload = "auto"; motor.loop = true; }catch(e){ motor = null; } }
+    function stopMotor(fade){ var a = motor; if(!a) return; motor = null;
+      if(!fade){ try{ a.pause(); }catch(e){} return; }
+      var v0 = a.volume, t1 = null;
+      requestAnimationFrame(function ease(now){ if(t1 === null) t1 = now; var q = Math.min(1, (now - t1) / 200); a.volume = v0 * (1 - q);
+        if(q < 1) requestAnimationFrame(ease); else { try{ a.pause(); }catch(e){} } }); }
+    var started = false, done = false;
+    function leave(){ if(done) return; done = true; if(CARD.slides[state.idx] !== s) return; if(typeof completeSlide === "function") completeSlide(true); }
+    function drive(){
+      if(started || CARD.slides[state.idx] !== s) return; started = true;
+      if(pts.length < 2){ setTimeout(leave, R.hold_ms || 1000); return; }
+      if(motor){ try{ motor.currentTime = 0; motor.play().catch(function(){}); }catch(e){} }
+      var t0 = null, rot = rot0;
+      function tick(now){
+        if(CARD.slides[state.idx] !== s){ stopMotor(false); return; }   // the page was left mid-drive (dev jump)
+        if(t0 === null) t0 = now;
+        var k = Math.min(1, (now - t0) / dur), d = k * L, p = at(d), a = at(Math.max(0, d - 6)), b = at(Math.min(L, d + 6));
+        var heading = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+        rot = rot + (heading - rot) * 0.25;                                   // the picture eases into the heading
+        car.style.transform = "translate(" + ((p[0] - cx0) * fs).toFixed(2) + "px," + ((p[1] - cy0) * fs).toFixed(2) + "px)";
+        carImg.style.transform = "rotate(" + rot.toFixed(2) + "deg)";
+        if(k < 1){ requestAnimationFrame(tick); return; }
+        stopMotor(true);
+        if(typeof R.reach === "number" && tokens[R.reach]) tokens[R.reach].classList.add("reached");
+        var r0 = rot, t2 = null;                                              // parked: the car settles level over 300 ms
+        requestAnimationFrame(function settle(now2){ if(t2 === null) t2 = now2; var q = Math.min(1, (now2 - t2) / 300);
+          carImg.style.transform = "rotate(" + (r0 * (1 - q)).toFixed(2) + "deg)"; if(q < 1) requestAnimationFrame(settle); });
+        setTimeout(leave, R.hold_ms || 1000);
+      }
+      requestAnimationFrame(tick);
+    }
+    setTimeout(drive, R.start_ms || 600);
+  }
   function applyBed(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, bed = !!(s && s.bed_fig === true);
     var st = document.getElementById("stage"); if(st) st.classList.toggle("l02-bed", bed);
@@ -5001,10 +5071,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   if(typeof CARD !== "undefined" && CARD.slides && CARD.slides.some(function(x){ return x.bed_fig === true; }))
     BED_IMGS.map(function(k){ return "assets/Images/" + k + ".webp"; }).concat(["assets/Images/bed_guide_13.svg", "assets/Images/bed_guide_14.svg", "assets/Images/bed_guide_16.svg"])
       .forEach(function(src){ var im = new Image(); im.src = src; });
-  window.mountSlide = function(idx){ var r = orig.apply(this, arguments); applyRoomBg(idx); applyPageBg(idx); applyFind(idx); applyQ3(idx); applyBed(idx); return r; };
+  window.mountSlide = function(idx){ var r = orig.apply(this, arguments); applyRoomBg(idx); applyPageBg(idx); applyFind(idx); applyQ3(idx); applyBed(idx); applyRC(idx); return r; };
   // the ?slide=N dev jump (QA/capture) mounts its slide while the engine block is still being evaluated, i.e. before this
   // hook exists — so a find page (or the Figma question page) that is already on the stage gets its layout here, once, at load
-  if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .tis-scene")){ applyRoomBg(state.idx); applyFind(state.idx); applyBed(state.idx); }
+  if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .tis-scene")){ applyRoomBg(state.idx); applyFind(state.idx); applyBed(state.idx); applyRC(state.idx); }
   if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .opt-grid")){ applyRoomBg(state.idx); applyQ3(state.idx); }
   if(typeof state !== "undefined" && typeof state.idx === "number") applyPageBg(state.idx);   // [L02-I3-BG] a ?slide=N dev load of any page type (a no-op for a page without page_bg, so safe at boot too)
   var origDone = window.completeSlide; if(typeof origDone !== "function") return;
