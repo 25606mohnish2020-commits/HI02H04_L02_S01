@@ -948,6 +948,13 @@ assert [s["id"] for s in card["slides"]][card["slides"].index(i2):card["slides"]
 # render (deg -14: its roof / side lines on screen; the sole view below a -3° heading) and the side render (from +3°) — leg2 climbs the
 # hump (headings -16° → -61° → -5° at the ring: the rear view all the way, turned with the carpet, parked nearly in its natural pose as
 # in 278-1471), traced by rc_path_trace.py like leg1 (188 px, 2.8 s); start_ms 1800 (after the glow), reach 1, hold_ms 1500 → P1.
+# [L02-RC2-SFX] (2026-10-05, user request) "the images in the checkpoints should get placed in sync with this sound effect" — the user's
+# "universfield-level-up-03-199576.mp3" (2.14 s: a bright rising chime that attacks at 0.05 s, peaks at 0.10 s and has died away by
+# 1.25 s, silence after). sfx_place = the clip cut from 0.04 s for 1.30 s (the attack 10 ms in, right under the 20 ms fade-in), pop-style
+# levelling; data.rc.place_sfx — adapt.js starts it in the very same tick that adds .placing, so the chime's attack lands on the
+# picture's pop and its ring-out runs under the glow (which peaks at 0.42 s and is gone at 1.2 s, as the sound is). Any later leg that
+# places a picture gets the same chime.
+sfx_clip("sfx_place", "sfx_place_source.mp3", 0.04, 1.30)
 RC2_CAR_IMG = (319.0, 334.0)                                                                   # the 50x50 render in the Figma; the 54.404 box sits 2.202 around it
 RC2_CAR_BOX = (RC2_CAR_IMG[0] - 2.202, RC2_CAR_IMG[1] - 2.202)
 RC2_START = (RC2_CAR_IMG[0] + 25.0, RC2_CAR_IMG[1] + 25.0)                                      # (344, 359)
@@ -957,7 +964,7 @@ RC2_VIEWS = [{"src": "rc_car_bk", "deg": -14, "to": -3}, {"src": "rc_car", "deg"
 rc2 = copy.deepcopy(rc); rc2["id"] = "RC2"
 rc2["data"]["alt_hi"] = "माधव का कमरा: पहले प्रश्नचिह्न पर माँ और माधव की तस्वीर लग गई; माधव रिमोट से अपनी खिलौना कार दूसरे प्रश्नचिह्न तक चलाता है।"
 rc2["data"]["rc"] = {"tokens": RC_TOKENS, "reach": 1, "boy": rc["data"]["rc"]["boy"], "shadow": rc["data"]["rc"]["shadow"],
-                     "placed": [{"token": 0, "image": "rc_done_1", "animate": True}], "place_ms": 500,
+                     "placed": [{"token": 0, "image": "rc_done_1", "animate": True}], "place_ms": 500, "place_sfx": "sfx_place",
                      "car": {"box": [round(RC2_CAR_BOX[0], 3), round(RC2_CAR_BOX[1], 3)], "size": RC_CAR_SIZE, "rot": -14, "views": RC2_VIEWS},   # rot = the opening HEADING: -14 shows the rear render unrotated, as the Figma has it
                      "leg": {"pts": RC_LEG2, "s": 2.8}, "start_ms": 1800, "hold_ms": 1500, "sfx": "sfx_rc"}
 _i3_now = next(s for s in card["slides"] if s["id"] == "I3")

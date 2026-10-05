@@ -4912,7 +4912,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   // page moves on by itself (completeSlide(true), once). A dev jump away mid-drive stops the sound quietly.
   // [L02-RC2] The same page serves every leg: data.rc.placed lists the checkpoints already won ({token, image, animate}: the token shows
   // that question's picture in its circle instead of the "?" — Figma 267-1053; with animate the picture is placed data.rc.place_ms after
-  // the page opens, popping in under a short glow, CSS .placing), data.rc.car.box is where the car stands as the page opens, data.rc.reach
+  // the page opens, popping in under a short glow, CSS .placing, with data.rc.place_sfx — the user's level-up chime — started in the same
+  // tick so its attack lands on the pop), data.rc.car.box is where the car stands as the page opens, data.rc.reach
   // the checkpoint this leg ends on. A view may carry its own `to` / `from` headings: the cross-fade to the next view runs from this
   // view's `to` to the next one's `from` (default: 30% / 70% of the gap between their degs).
   function applyRC(idx){
@@ -4997,7 +4998,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       }
       requestAnimationFrame(tick);
     }
-    if(placing.length) setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;   // [L02-RC2] the won picture pops into its checkpoint under a glow
+    if(placing.length) setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;   // [L02-RC2] the won picture pops into its checkpoint under a glow, with the chime
+      if(R.place_sfx){ try{ var chime = new Audio("assets/Audio/" + R.place_sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); chime.play().catch(function(){}); }catch(e){} }
       placing.forEach(function(tok){ tok.classList.add("placed", "placing"); }); }, (typeof R.place_ms === "number") ? R.place_ms : 500);
     setTimeout(drive, R.start_ms || 600);
   }
