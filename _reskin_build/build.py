@@ -1037,6 +1037,13 @@ if not os.path.exists(SOYA_DST) or os.path.getmtime(SOYA_DST) < os.path.getmtime
 card["assets"]["image"]["m2_soya"] = "assets/Images/m2_soya.webp"
 card.setdefault("_emoji_fallback", {})["m2_soya"] = "😴"
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8.ogg")), "M2 scene sound missing: sfx_pop_8.ogg"
+# ---- [L02-SENTQ-SHADOW] (2026-10-05, user request) "Apply a little shadow on the images and the options shown on pages 14 I3, 16 M1 and
+# 17 M2, just like the shadow on the options of page 15 P1." P1's cards carry the Figma drop shadow 0 4px 2px rgba(0,0,0,.25) (adapt.css
+# [L02-P1-FIG] / .l02-q3-yellow); the same shadow goes on the bare picture and the three pills of these three sentence pages: card
+# slide.sentq_shadow → sent_q_page.js wire() sets stage class .l02-sentq-shadow → adapt.css [L02-SENTQ-SHADOW]. G3 (page 11), the fourth
+# sentence page, is NOT named by the user and stays without. Nothing moves: a box-shadow takes no layout space.
+for _s in (i3, m1, m2): _s["sentq_shadow"] = True
+assert "sentq_shadow" not in g3, "G3 must stay without the shadow"
 for _k in ("vo_q_hint", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7

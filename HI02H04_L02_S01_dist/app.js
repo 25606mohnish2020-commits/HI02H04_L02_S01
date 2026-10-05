@@ -5330,7 +5330,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   // ---- per page
   function wire(idx){
     var sl = slideAt(idx), st = document.getElementById("stage");
-    if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", flagged(idx)); }
+    if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", flagged(idx));
+      st.classList.toggle("l02-sentq-shadow", flagged(idx) && !!(sl && sl.sentq_shadow === true)); }   // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
     if(!flagged(idx)) return;
     wireOptWords(idx); wireIdlePrompt(idx);
   }
