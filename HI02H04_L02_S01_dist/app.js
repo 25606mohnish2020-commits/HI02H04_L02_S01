@@ -3722,32 +3722,44 @@ const PHASE_GATE_TITLE = { tutorial:"आइए कहानी पढ़ें�
 const PHASE_GATE_VO    = { tutorial:"vo_pt_tutorial", guided:"vo_pt_guided", practice:"vo_pt_practice" };
 const _gatedPhases = new Set();   // each phase gate plays ONCE (Start→tutorial, →guided, →practice)
 let _gateToken = 0;
-function phaseBlurTransition(cb, toPhase){
+function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] the standard transition: the bird rises, its beak opens → the line appears and speaks → closed at 4 s
   const tok = ++_gateToken;
   stopNudge(); stopAudio();
   const gate = $("phaseGate"), img = $("phaseGateImg");
-  if(img) img.src = "assets/UI/peeking_pal.webp?r=" + Date.now();   // restart the loop each time (cache-bust)
+  const G = CARD.gate || {}, TALK = (G.talk_ms != null) ? G.talk_ms : 1250, TOTAL = (G.total_ms != null) ? G.total_ms : 4000, TAIL = (G.tail_ms != null) ? G.tail_ms : 300;
   const title = $("phaseGateTitle"); if(title) title.textContent = PHASE_GATE_TITLE[toPhase] || "";
+  gate.classList.remove("pg-talk");                                  // the headline stays hidden until the bird starts talking (adapt.css)
   $("stage").classList.add("blurred", "gating");
   document.body.classList.add("gating");
   gate.classList.add("show");
   SwiftPAL.emit("phase_transition", { to: toPhase });
-  const closeGate = ()=>{ gate.classList.remove("show"); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
-  // VO only if the card actually ships it; else a silent beat — the 2s min-hold keeps the peek visible.
+  const closeGate = ()=>{ gate.classList.remove("show", "pg-talk"); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
+  // VO only if the card actually ships it; else a silent beat.
   const voId = PHASE_GATE_VO[toPhase];
   const voSrc = (voId && CARD.assets && CARD.assets.audio && CARD.assets.audio[voId]) || null;
   const openedAt = Date.now();
-  play(voSrc, ()=>{
-    if(tok !== _gateToken){ closeGate(); return; }               // a newer gate superseded us
-    const hold = Math.max(200, 2000 - (Date.now() - openedAt));  // Swiftie peeks ≥2s even with no/short VO
+  // the animation restarts from its first frame: adapt.js preloads the file once and hands the <img> a fresh object URL each gate (its
+  // load is the animation's first frame); without it, the file with a cache-buster, as the reference restarted its loop
+  const started = (window.l02GateBird && window.l02GateBird.start) ? window.l02GateBird.start(img) : new Promise(res=>{
+    if(!img){ res(); return; } img.onload = img.onerror = ()=> res(); img.src = (G.anim || "assets/UI/gate_swiftee.webp") + "?r=" + Date.now(); setTimeout(res, 1500); });
+  started.then(()=>{
+    if(tok !== _gateToken) return;                                   // a newer gate superseded us
     setTimeout(()=>{
-      if(tok !== _gateToken){ closeGate(); return; }
-      gate.classList.remove("show");
-      $("stage").classList.remove("blurred");
-      if(cb) cb();                              // mounts the next slide
-      $("stage").classList.remove("gating");    // header returns once the slide is in
-      document.body.classList.remove("gating");
-    }, hold);
+      if(tok !== _gateToken) return;
+      gate.classList.add("pg-talk");                                 // the beak opens: the line appears and speaks
+      play(voSrc, ()=>{
+        if(tok !== _gateToken){ closeGate(); return; }
+        const hold = Math.max(TAIL, TOTAL - (Date.now() - openedAt));   // the screen lasts TOTAL from its opening; a longer line gets TAIL after its end
+        setTimeout(()=>{
+          if(tok !== _gateToken){ closeGate(); return; }
+          gate.classList.remove("show", "pg-talk");
+          $("stage").classList.remove("blurred");
+          if(cb) cb();                              // mounts the next slide
+          $("stage").classList.remove("gating");    // header returns once the slide is in
+          document.body.classList.remove("gating");
+        }, hold);
+      });
+    }, TALK);
   });
 }
 
@@ -4785,6 +4797,26 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(sb) sb.addEventListener("click", function(){ stdSfx("sfx_play_button"); }, true);
   }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
+})();
+
+/* ===== L02-STD-GATE-JS ===== (2026-10-05, user request: the transition screens' bird is the standard Swiftee transition animation,
+   and the pink line appears only when the bird starts moving its beak — build.py [L02-STD-GATE], engine patch 3j)
+   The animation (CARD.gate.anim, an animated WebP) is fetched ONCE, at boot, and kept as a Blob; every gate gets a fresh object URL of
+   it, so the browser decodes a new image and its animation starts from the first frame — no refetch (the reference restarted its loop
+   with a cache-busting query, a download per gate), and the engine times the line against this image's load, which is the animation's
+   first frame. If the fetch has not finished when the first gate opens, the gate waits for it; if it failed, the file itself with a
+   cache-buster, as before. */
+(function(){
+  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/gate_swiftee.webp", blob = null, url = null, failed = false;
+  var pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true);
+  function hand(img, res){
+    var done = false, fin = function(){ if(done) return; done = true; res(); };
+    if(url){ try{ URL.revokeObjectURL(url); }catch(e){} url = null; }
+    img.onload = fin; img.onerror = fin;
+    if(blob){ url = URL.createObjectURL(blob); img.src = url; } else { img.src = SRC + "?r=" + Date.now(); }
+    setTimeout(fin, 1500);                                           // never leave a gate waiting on a load that does not fire
+  }
+  window.l02GateBird = { src: SRC, start: function(img){ return new Promise(function(res){ if(!img){ res(); return; } if(blob || failed) hand(img, res); else pre.then(function(){ hand(img, res); }); }); } };
 })();
 
 /* ===== L02-I1-CONFETTI-JS =====

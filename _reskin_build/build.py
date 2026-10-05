@@ -150,6 +150,62 @@ eng = eng.replace(needle, '''  const scheduleFollowUp = ()=>{                   
     landingVO.cue = "idle";
     revealStart();
   };''', 1)
+# 3j. [L02-STD-GATE] (2026-10-05, user request: "In the transition screens in which the background is black and the text is written in
+#     pink Hindi replace the bird animation with this animation; the bird should only start moving its beak when the pink text appears —
+#     adjust this bird gif in such a way that when the bird starts moving its beak only then the pink text should appear, for all
+#     transition screens; also the whole transition screen should last for only 4 seconds.") The reference gate (phaseBlurTransition):
+#     scrim + blur, the headline at once, peeking_pal.webp looping under it (restarted by a cache-busting src), the VO at once, closed once
+#     the VO had ended and ≥ 2 s had passed. Now: the gate opens with the headline hidden (adapt.css hides .pg-title until the gate carries
+#     .pg-talk); adapt.js [L02-STD-GATE-JS] restarts the standard transition animation (assets/UI/gate_swiftee.webp, made below) from its
+#     first frame; CARD.gate.talk_ms into it — the animation's first open-beak frame — the gate gets .pg-talk (the headline appears) and
+#     the VO speaks; the gate closes CARD.gate.total_ms (4000) after it opened, or CARD.gate.tail_ms (300) after a longer line has ended
+#     (the guided line is 5.6 s; a hard cut at 4 s would stop it mid-sentence), never before its line has ended. Same signature, same
+#     callers (the start tap, completeSlide), same token guard, same classes on the stage and body.
+_i0 = eng.index('function phaseBlurTransition(cb, toPhase){'); _i1 = eng.index('\n}\n', _i0) + 3
+_old = eng[_i0:_i1]
+assert eng.count('function phaseBlurTransition(cb, toPhase){') == 1 and 'peeking_pal.webp?r=' in _old and '2000 - (Date.now() - openedAt)' in _old \
+    and _old.count('\n}\n') == 1 and 'SwiftPAL.emit("phase_transition", { to: toPhase });' in _old, "[L02-STD-GATE] phaseBlurTransition anchor"
+eng = eng[:_i0] + '''function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] the standard transition: the bird rises, its beak opens → the line appears and speaks → closed at 4 s
+  const tok = ++_gateToken;
+  stopNudge(); stopAudio();
+  const gate = $("phaseGate"), img = $("phaseGateImg");
+  const G = CARD.gate || {}, TALK = (G.talk_ms != null) ? G.talk_ms : 1250, TOTAL = (G.total_ms != null) ? G.total_ms : 4000, TAIL = (G.tail_ms != null) ? G.tail_ms : 300;
+  const title = $("phaseGateTitle"); if(title) title.textContent = PHASE_GATE_TITLE[toPhase] || "";
+  gate.classList.remove("pg-talk");                                  // the headline stays hidden until the bird starts talking (adapt.css)
+  $("stage").classList.add("blurred", "gating");
+  document.body.classList.add("gating");
+  gate.classList.add("show");
+  SwiftPAL.emit("phase_transition", { to: toPhase });
+  const closeGate = ()=>{ gate.classList.remove("show", "pg-talk"); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
+  // VO only if the card actually ships it; else a silent beat.
+  const voId = PHASE_GATE_VO[toPhase];
+  const voSrc = (voId && CARD.assets && CARD.assets.audio && CARD.assets.audio[voId]) || null;
+  const openedAt = Date.now();
+  // the animation restarts from its first frame: adapt.js preloads the file once and hands the <img> a fresh object URL each gate (its
+  // load is the animation's first frame); without it, the file with a cache-buster, as the reference restarted its loop
+  const started = (window.l02GateBird && window.l02GateBird.start) ? window.l02GateBird.start(img) : new Promise(res=>{
+    if(!img){ res(); return; } img.onload = img.onerror = ()=> res(); img.src = (G.anim || "assets/UI/gate_swiftee.webp") + "?r=" + Date.now(); setTimeout(res, 1500); });
+  started.then(()=>{
+    if(tok !== _gateToken) return;                                   // a newer gate superseded us
+    setTimeout(()=>{
+      if(tok !== _gateToken) return;
+      gate.classList.add("pg-talk");                                 // the beak opens: the line appears and speaks
+      play(voSrc, ()=>{
+        if(tok !== _gateToken){ closeGate(); return; }
+        const hold = Math.max(TAIL, TOTAL - (Date.now() - openedAt));   // the screen lasts TOTAL from its opening; a longer line gets TAIL after its end
+        setTimeout(()=>{
+          if(tok !== _gateToken){ closeGate(); return; }
+          gate.classList.remove("show", "pg-talk");
+          $("stage").classList.remove("blurred");
+          if(cb) cb();                              // mounts the next slide
+          $("stage").classList.remove("gating");    // header returns once the slide is in
+          document.body.classList.remove("gating");
+        }, hold);
+      });
+    }, TALK);
+  });
+}
+''' + eng[_i1:]
 engine[0]["inner"] = eng
 
 js_parts = []
@@ -740,6 +796,54 @@ for _src, _dst in (("std_play_btn_source.svg", "btn-play-std.svg"), ("std_play_b
     _s = os.path.join(SCR, _src); _d = os.path.join(CUR, "assets", "UI", _dst)
     assert os.path.exists(_s), "missing " + _s
     if not bed_fresh(_d, _s): shutil.copyfile(_s, _d); print("wrote", _d)
+# ---- [L02-STD-GATE] (2026-10-05, user request; engine patch 3j above) "In the transition screens (black background, pink Hindi text)
+# replace the bird animation with this animation; the bird should only start moving its beak when the pink text appears — adjust this bird
+# gif in such a way that when the bird starts moving its beak only then the pink text should appear, for all transition screens; the whole
+# transition screen should last for only 4 seconds." The user's "Standard Swiftee Transition Animation.gif" is really an animated WebP
+# (RIFF/WEBP VP8X+ANIM, 1500x1500, 115 frames, 2.8 MB, loop 0, 16.1 s a loop; kept verbatim as _reskin_build/std_gate_swiftee_source.webp):
+# frames 0-19 the bird rises from below its ledge (40 ms steps, frame 19 held 350 ms), 20-35 it waits at half height and blinks (1.4 s),
+# 36-53 it rises to its full pose (53 held 490 ms), 54-56 it blinks, 57 eyes open with the beak shut, and from frame 58 (t = 4140 ms) it
+# talks — the beak open on 58, 60, 67, 69, 71, 74 ... with blinks between — until frame 114 holds 1.2 s and the loop restarts. Frame 58 is
+# the first open beak (measured: the beak box's yellow drops from 31 k to 28 k px and the dark mouth interior appears, 7 k px, on 58;
+# shut again on 59, open on 60 ...; the changes of 54-56 are the eyes only). Made here as assets/UI/gate_swiftee.webp: the canvas cropped
+# to the bird (x 218-1214, y 561-1485: 10 px over its highest tuft, 44 px of foot under its ledge line) and scaled to 431x400 (the bird
+# shows ≤ 200 CSS px tall: ×2 for dense screens; lossy q80 — the bird bobs a little on every talking frame, so each frame is nearly the
+# whole bird and the file is 1.5 MB, in line with the landing bird's 1.8 MB new_landing_swiftee_anim.webp; 520 px / q85 was 2.2 MB),
+# the intro retimed so the beak opens 1250 ms in — a 4 s screen cannot wait 4.1 s for it:
+# rise 1 on every other frame at the native 40 ms cadence (0,2,..,18 → 400 ms, frame 19 held 120), the half-height wait and its blink
+# dropped (frames 20-35 hold frame 19's pose), rise 2 on every other frame (36,38,..,52 → 360 ms, 53 held 80), the full-pose blink and the
+# eyes-open frame as drawn (54-57: 290 ms) — then every talking frame at its own native duration (58-114, 12 s), loop 0 as supplied.
+# CARD.gate = {anim, talk_ms (asserted from the written frame durations), total_ms 4000, tail_ms 300}: the engine hides the headline
+# until talk_ms and then shows it with the VO (patch 3j); adapt.js [L02-STD-GATE-JS] preloads the file and restarts it per gate; CSS
+# adapt.css [L02-STD-GATE] (the bird drawn as tall as the old peeking bird's full pose). peeking_pal.webp stays in assets/UI unused, like
+# the pill play-button art; the gate's <img> ships without a src (below, where index.html is assembled) — adapt.js hands it the animation.
+GATE_CROP = (218, 561, 1214, 1485); GATE_H = 400; GATE_TALK_FRAME = 58
+GATE_PLAN = [(k, 40) for k in range(0, 19, 2)] + [(19, 120)] + [(k, 40) for k in range(36, 53, 2)] + [(53, 80), (54, 50), (55, 90), (56, 50), (57, 100)]
+def webp_durations(path):
+    """The ANMF frame durations (ms) of an animated WebP, in order."""
+    b = open(path, "rb").read(); i = 12; out = []
+    while i + 8 <= len(b):
+        typ = b[i:i+4]; ln = struct.unpack("<I", b[i+4:i+8])[0]
+        if typ == b"ANMF": out.append(int.from_bytes(b[i+20:i+23], "little"))
+        i += 8 + ln + (ln & 1)
+    return out
+def gate_anim(name, src):
+    from PIL import ImageSequence
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "UI", name)
+    assert os.path.exists(s), "missing " + s
+    if not bed_fresh(dst, s):
+        src_durs = webp_durations(s); assert len(src_durs) == 115 and sum(src_durs) == 16100, "unexpected source animation " + str((len(src_durs), sum(src_durs)))
+        frames = [f.convert("RGBA").copy() for f in ImageSequence.Iterator(Image.open(s))]
+        plan = GATE_PLAN + [(k, src_durs[k]) for k in range(GATE_TALK_FRAME, len(frames))]
+        W = round((GATE_CROP[2] - GATE_CROP[0]) * GATE_H / (GATE_CROP[3] - GATE_CROP[1]))
+        out = [frames[k].crop(GATE_CROP).resize((W, GATE_H), Image.LANCZOS) for k, _ in plan]
+        out[0].save(dst, "WEBP", save_all=True, append_images=out[1:], duration=[d for _, d in plan], loop=0, quality=80, method=4, minimize_size=True, allow_mixed=True)
+        print("wrote", dst, os.path.getsize(dst), "bytes,", len(out), "frames")
+    durs = webp_durations(dst); assert len(durs) == len(GATE_PLAN) + 115 - GATE_TALK_FRAME, "gate animation frame count " + str(len(durs))
+    return sum(durs[:len(GATE_PLAN)])
+GATE_TALK_MS = gate_anim("gate_swiftee.webp", "std_gate_swiftee_source.webp")
+assert GATE_TALK_MS == 1250, GATE_TALK_MS
+card["gate"] = {"anim": "assets/UI/gate_swiftee.webp", "talk_ms": GATE_TALK_MS, "total_ms": 4000, "tail_ms": 300}
 # ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
 # every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
 # cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,
@@ -1481,6 +1585,8 @@ frame = "\n".join(ind + l for l in [
 ])
 body = body[:m.start()] + "\n" + frame + body[m.end():]
 gate = re.search(r'<div class="phase-gate" id="phaseGate">.*?</div><img[^>]*></div>', html, re.S).group(0)
+assert gate.count(' src="assets/UI/peeking_pal.webp"') == 1, "[L02-STD-GATE] gate img anchor"
+gate = gate.replace(' src="assets/UI/peeking_pal.webp"', '', 1)   # [L02-STD-GATE] no art at rest: adapt.js hands the <img> the standard transition animation at each gate
 
 index_html = f"""<!doctype html>
 <html lang="hi">

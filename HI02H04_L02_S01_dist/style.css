@@ -2895,3 +2895,13 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 @keyframes l02-rc-glow{0%{box-shadow:0 0 0 0 rgba(255,236,150,0)}35%{box-shadow:0 0 calc(22px * var(--fs)) calc(8px * var(--fs)) rgba(255,236,150,.9)}100%{box-shadow:0 0 calc(6px * var(--fs)) 0 rgba(255,236,150,0)}}
 .stage.l02-rc .l02-rc-token.placing{animation:l02-rc-glow 1.2s ease-out both;}
 .stage.l02-rc .l02-rc-token.placing .l02-rc-done{animation:l02-rc-place .5s cubic-bezier(.3,1.2,.4,1) both;transform-origin:50% 50%;}
+/* ===== [L02-STD-GATE] (2026-10-05, user request) the transition screens' bird is the standard Swiftee transition animation
+   (assets/UI/gate_swiftee.webp — build.py [L02-STD-GATE]: the user's "Standard Swiftee Transition Animation.gif", an animated WebP,
+   cropped to the bird and retimed so its beak first opens 1250 ms in). It is drawn as tall as the old peeking bird's full pose was: the
+   old 500 px canvas showed a 377 px bird at clamp(120px,26vh,250px), so the bird was ×.754 of that; the new 924 px canvas holds an
+   870 px bird plus a 44 px foot under its ledge line, so ×.754×924/870 = ×.8008 puts the bird at the same height and its ledge the same
+   3.8 % of the old canvas (7.6 px at 768 high) above the viewport's bottom; the same spot (bottom 0, centred), width:auto as before.
+   The pink headline is hidden until the gate carries .pg-talk, which the engine adds the moment the bird's beak first opens (patch 3j);
+   its look, place and words are untouched. */
+.phase-gate img,#phaseGateImg{height:calc(clamp(120px,26vh,250px) * .8008) !important;}
+.phase-gate:not(.pg-talk) .pg-title,.phase-gate:not(.pg-talk) #phaseGateTitle{visibility:hidden !important;}

@@ -65,6 +65,26 @@
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
 })();
 
+/* ===== L02-STD-GATE-JS ===== (2026-10-05, user request: the transition screens' bird is the standard Swiftee transition animation,
+   and the pink line appears only when the bird starts moving its beak — build.py [L02-STD-GATE], engine patch 3j)
+   The animation (CARD.gate.anim, an animated WebP) is fetched ONCE, at boot, and kept as a Blob; every gate gets a fresh object URL of
+   it, so the browser decodes a new image and its animation starts from the first frame — no refetch (the reference restarted its loop
+   with a cache-busting query, a download per gate), and the engine times the line against this image's load, which is the animation's
+   first frame. If the fetch has not finished when the first gate opens, the gate waits for it; if it failed, the file itself with a
+   cache-buster, as before. */
+(function(){
+  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/gate_swiftee.webp", blob = null, url = null, failed = false;
+  var pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true);
+  function hand(img, res){
+    var done = false, fin = function(){ if(done) return; done = true; res(); };
+    if(url){ try{ URL.revokeObjectURL(url); }catch(e){} url = null; }
+    img.onload = fin; img.onerror = fin;
+    if(blob){ url = URL.createObjectURL(blob); img.src = url; } else { img.src = SRC + "?r=" + Date.now(); }
+    setTimeout(fin, 1500);                                           // never leave a gate waiting on a load that does not fire
+  }
+  window.l02GateBird = { src: SRC, start: function(img){ return new Promise(function(res){ if(!img){ res(); return; } if(blob || failed) hand(img, res); else pre.then(function(){ hand(img, res); }); }); } };
+})();
+
 /* ===== L02-I1-CONFETTI-JS =====
    card slide.confetti: the kit's confetti burst fires on this slide whatever its phase. The kit's confetti-wire gates the
    burst to guided / practice / mastery (its recipe), so I1 — an independent-phase question — got the green mark, the ding
