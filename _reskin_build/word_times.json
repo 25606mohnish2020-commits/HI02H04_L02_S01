@@ -184,7 +184,7 @@
    "खिलौनों",
    "से"
   ],
-  "md5": "7f8ac12d1d0a56b392f12fd8e8826826",
+  "md5": "9184e5b6e11eea7188f30279c9de9332",
   "times": [
    0.09,
    0.7,
@@ -197,7 +197,7 @@
    "बर्तनों",
    "से"
   ],
-  "md5": "4c34267825fe5bdc26b9d01bfe1349c7",
+  "md5": "76fe7f381ce7abb9d4c51fe1dedc56ca",
   "times": [
    0.09,
    0.72,
@@ -210,7 +210,7 @@
    "किताबों",
    "से"
   ],
-  "md5": "0b2f880252b2626389f0ba7412b3effd",
+  "md5": "31dd1a26a715309b18379d6cb1895cf4",
   "times": [
    0.09,
    0.69,
@@ -228,7 +228,7 @@
    "रहा",
    "है।"
   ],
-  "md5": "f86bdce1fb626d3c3ff7ec7cc1bbf695",
+  "md5": "05871cd07b49f7e47a56a0dc357c1ed8",
   "times": [
    0.09,
    0.82,
@@ -248,7 +248,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "c92fb807b15684a0ab40051fb737a5a5",
+  "md5": "a687d7aeb817db568ae5b411b0db1285",
   "times": [
    0.09,
    0.36,
@@ -266,7 +266,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "30deb916af7100ad1854f7c7583aec1d",
+  "md5": "5eadace318a1be33551fdbeca127fad7",
   "times": [
    0.09,
    0.61,
@@ -285,7 +285,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "4d2e96908a0ff02c119ed8020357cb28",
+  "md5": "99edb5d4e75db49a3c0f7044e047c28c",
   "times": [
    0.09,
    0.62,
@@ -306,7 +306,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "9c8cc55facdd576d0b1f63411da6ca8e",
+  "md5": "fd6c2aa0025cd075a70f2e5c31d6de12",
   "times": [
    0.09,
    0.83,
@@ -316,6 +316,76 @@
    2.6,
    3.27,
    3.6
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_kitab_padhi": {
+  "words": [
+   "माधव",
+   "ने",
+   "किताब",
+   "पढ़ी।"
+  ],
+  "md5": "e0ba7718a923efc251584ad8992f0f46",
+  "times": [
+   0.09,
+   0.59,
+   0.81,
+   1.23,
+   1.59
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_akhbar_padha": {
+  "words": [
+   "माधव",
+   "ने",
+   "अखबार",
+   "पढ़ा।"
+  ],
+  "md5": "049c8f92c32db408e473ae2d8099d7c9",
+  "times": [
+   0.09,
+   0.59,
+   0.83,
+   1.35,
+   1.71
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_patra_padha": {
+  "words": [
+   "माधव",
+   "ने",
+   "पत्र",
+   "पढ़ा।"
+  ],
+  "md5": "c82373c8d1e5e2e3c99f8bd8dce4122c",
+  "times": [
+   0.09,
+   0.6,
+   0.83,
+   1.18,
+   1.52
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_ok_kitab_padhi": {
+  "words": [
+   "शाबाश!",
+   "माधव",
+   "ने",
+   "किताब",
+   "पढ़ी।"
+  ],
+  "md5": "fc45d821ea16239793fef917010ad9bd",
+  "times": [
+   0.09,
+   0.87,
+   1.75,
+   2.16,
+   2.99,
+   3.35
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }

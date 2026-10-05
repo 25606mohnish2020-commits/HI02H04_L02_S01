@@ -107,6 +107,12 @@ for needle, fixed in [
 ]:
     assert eng.count(needle) == 1, "mountTapOptions completion anchor not unique: " + needle
     eng = eng.replace(needle, fixed, 1)
+# 3g. [L02-M1-SENTQ] STORY_QUESTION hides its recall picture on every mastery-phase page ("so the answer isn't leaked by thumb-reading").
+#     M1 must show its picture (the user wants page 16 to look exactly like page 14), so a card that says `hide_recall: false` OUTRIGHT
+#     keeps the picture at mastery too; a mastery card that says nothing (M2) hides it as before, and `hide_recall: true` still hides.
+needle = 'const hideRecall = slide.phase === "mastery" || d.hide_recall === true;'
+assert eng.count(needle) == 1, "STORY_QUESTION hideRecall anchor not unique"
+eng = eng.replace(needle, 'const hideRecall = (slide.phase === "mastery" && d.hide_recall !== false) || d.hide_recall === true;   /* [L02-M1-SENTQ] an explicit false shows it at mastery */', 1)
 engine[0]["inner"] = eng
 
 js_parts = []
@@ -839,7 +845,7 @@ for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): ca
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
 # CSS object-fit contain with a small inset) instead of cropping it to the window as the P1 / G3 scene pictures are.
-for sid in ("M1", "M2"):   # [L02-I3-SENTQ] I3 left this set on 2026-10-05 (block right below); M1 and M2 are as they were
+for sid in ("M2",):   # [L02-I3-SENTQ] I3 left this set on 2026-10-05 (block right below), [L02-M1-SENTQ] M1 the same day (block after it); M2 is as it was
     q = next(s for s in card["slides"] if s["id"] == sid)
     assert q["type"] == "STORY_QUESTION", sid + " is not a story question any more"
     q["fig_q3"] = True; q["fig_q3_yellow"] = True; q["fig_q3_contain"] = True; q["room_bg"] = True
@@ -925,6 +931,61 @@ i3["page_bg"] = "i3_floor"
 # practice, so I3's confetti flag is now merely redundant). There is no independent-phase gate (G3 → I1 stays gate-less) and no mastery
 # gate (P1 → M1 stays gate-less), as before. Signals from I3 now carry phase "practice".
 i3["phase"] = "practice"
+# ---- [L02-M1-SENTQ] (2026-10-05, user request) M1 ("page 16 M1 MASTERY" in the user's count, ?slide=15): "use the exact same layout and
+# design as page 14 I3; just change the image with this image, the title with माधव ने क्या पढ़ा? and the three options with माधव ने किताब पढ़ी । /
+# माधव ने अखबार पढ़ा । / माधव ने पत्र पढ़ा ।; rest exactly like page 14." So M1 is the third [L02-G3-REF] page, dressed like I3: the same card
+# flags (sent_ref + hide_header_chip + hide_nav + bare_recall + sentence_options; confetti for parity — the kit allows mastery anyway) and
+# I3's floor backdrop (page_bg i3_floor). The question is the lesson's OWN recorded line vo_q_kitab ("माधव ने क्या पढ़ा?" — the words the user
+# gave, so no placeholder is needed for it; it was the old I3's question). The answer माधव ने किताब पढ़ी। (story T6 "उसने किताब पढ़ी।"). The
+# three sentences and the praise line "शाबाश! माधव ने किताब पढ़ी।" are edge-tts hi-IN-SwaraNeural placeholders via tts_clip, like I3's; try_again =
+# recorded vo_q_hint, reveal = recorded vo_q_reveal; no audio.hint. The danda is set CLOSE to the word ("पढ़ी।", not the typed "पढ़ी ।"), as on
+# I3's pills — the pill splits its words on spaces for the word-by-word lighting, and a lone "।" would be a word of its own. The correct
+# tap's scene sound = sfx_pop_6 (the sound of story page 7, "उसने किताब पढ़ी।"; 2 s), the matching-page rule of G3 / I3.
+# PICTURE: the user's message named "this image" but NO picture arrived with it (the session's image folder holds only the two earlier
+# ones), so the page shows a STAND-IN until it comes: _reskin_build/m1_padha_source.png = a copy of the user's own story_6_source.png (the
+# boy on the rug reading the rocket book — the very event of the answer, 1672x941), cut like q3_khel / i3_sula (full height, the 1411:1188
+# window at columns PADHA_X0 .. PADHA_X0 + 1118) -> assets/Images/m1_padha.webp 1411x1188. To place the intended picture: overwrite
+# m1_padha_source.png, set PADHA_X0 for its framing, rebuild. Told the user. M1's phase stays "mastery": the engine's mastery flag only
+# counts telemetry (masteryAttempts / masteryHits) and would HIDE the recall picture — engine patch 3g above lets this card's explicit
+# `hide_recall: false` keep it. M1's Figma card look (fig_q3 + yellow + contain + room_bg) and its old content ("आख़िर में माधव कहाँ सोया?",
+# vo_q_kahan + vo_opt_toys/bed/chair — the question I2 asks today) are gone from M1; the clips stay registered (I2 uses them). M2 is as it was.
+m1 = next(s for s in card["slides"] if s["id"] == "M1")
+assert m1["type"] == "STORY_QUESTION" and m1["phase"] == "mastery", "M1 is not the mastery story question any more"
+for _k in ("fig_q3", "fig_q3_yellow", "fig_q3_contain", "room_bg"): m1.pop(_k, None)
+m1["sent_ref"] = True; m1["hide_header_chip"] = True; m1["hide_nav"] = True; m1["bare_recall"] = True; m1["sentence_options"] = True
+m1["confetti"] = True; m1["page_bg"] = "i3_floor"
+m1["prompt_hi"] = "माधव ने क्या पढ़ा?"
+assert txt.get("vo_q_kitab") == "माधव ने क्या पढ़ा?" and os.path.exists(os.path.join(CUR, aud["vo_q_kitab"])), "vo_q_kitab is not the recorded question line"
+tts_clip("vo_opt_kitab_padhi", "माधव ने किताब पढ़ी।")
+tts_clip("vo_opt_akhbar_padha", "माधव ने अखबार पढ़ा।")
+tts_clip("vo_opt_patra_padha", "माधव ने पत्र पढ़ा।")
+tts_clip("vo_ok_kitab_padhi", "शाबाश! माधव ने किताब पढ़ी।")
+m1["audio"] = {"prompt": "vo_q_kitab", "try_again": "vo_q_hint", "reveal": "vo_q_reveal", "correct": "vo_ok_kitab_padhi"}
+m1["data"]["recall_image_id"] = "m1_padha"; m1["data"]["hide_recall"] = False
+m1["data"]["options"] = [
+    {"label_hi": "माधव ने किताब पढ़ी।", "audio": "vo_opt_kitab_padhi", "correct": True},
+    {"label_hi": "माधव ने अखबार पढ़ा।", "audio": "vo_opt_akhbar_padha"},
+    {"label_hi": "माधव ने पत्र पढ़ा।", "audio": "vo_opt_patra_padha"},
+]
+m1["data"]["correct_sfx"] = {"src": "sfx_pop_6", "hold_ms": 2000, "vol": 1.0}
+m1["data"]["prompt_idle_ms"] = 5000
+M1_WT = {}
+for _o in m1["data"]["options"]: M1_WT[_o["audio"]] = word_times_for(_o["audio"], _o["label_hi"].split())
+_ok4_words = "शाबाश! माधव ने किताब पढ़ी।".split(); _ok4_t = word_times_for("vo_ok_kitab_padhi", _ok4_words)
+M1_WT["vo_ok_kitab_padhi"] = _ok4_t[1:6]     # माधव, ने, किताब, पढ़ी। starts … पढ़ी। end — the correct pill's four words inside the praise line
+assert _ok4_words[1:] == "माधव ने किताब पढ़ी।".split() and len(M1_WT["vo_ok_kitab_padhi"]) == 5, (_ok4_words, M1_WT["vo_ok_kitab_padhi"])
+m1["data"]["word_times_by_audio"] = M1_WT
+m1["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_kitab") * 1000))
+PADHA_SRC = os.path.join(SCR, "m1_padha_source.png"); PADHA_DST = os.path.join(CUR, "assets", "Images", "m1_padha.webp"); PADHA_X0 = 277
+assert os.path.exists(PADHA_SRC), "missing " + PADHA_SRC
+if not os.path.exists(PADHA_DST) or os.path.getmtime(PADHA_DST) < os.path.getmtime(PADHA_SRC):
+    from PIL import Image
+    im = Image.open(PADHA_SRC).convert("RGB"); W, H = im.size; w = int(round(H * 1411 / 1188)); x0 = max(0, min(PADHA_X0, W - w))
+    im.crop((x0, 0, x0 + w, H)).resize((1411, 1188), Image.LANCZOS).save(PADHA_DST, "WEBP", quality=88, method=6)
+    print("wrote", PADHA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
+card["assets"]["image"]["m1_padha"] = "assets/Images/m1_padha.webp"
+card.setdefault("_emoji_fallback", {})["m1_padha"] = "📖"
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_6.ogg")), "M1 scene sound missing: sfx_pop_6.ogg"
 for _k in ("vo_q_hint", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7

@@ -3066,7 +3066,7 @@ const SlideModules = {
       // Reference layout: the question lives in the header band and the header speaker chip replays it —
       // there is no in-stage listen chip. The only stimulus drawn is the recall PICTURE (picture→sentence
       // direction); it falls back to the card's emoji while the art is pending, like every other picture.
-      const hideRecall = slide.phase === "mastery" || d.hide_recall === true;
+      const hideRecall = (slide.phase === "mastery" && d.hide_recall !== false) || d.hide_recall === true;   /* [L02-M1-SENTQ] an explicit false shows it at mastery */
       let stim = null;
       if(!hideRecall && d.recall_image_id){
         stim = document.createElement("div"); stim.className = "story-q-stim";
