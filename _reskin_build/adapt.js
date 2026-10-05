@@ -29,6 +29,42 @@
   };
 })();
 
+/* ===== L02-STD-SFX-JS ===== (2026-10-05, user request: "I have added a Standard SFX folder — apply all these sound effects wherever
+   they can be applied and replace the existing sound effect with these where one already exists.") The five standard sounds
+   (assets/Audio/sfx_confetti / sfx_correct_feedback / sfx_incorrect_feedback / sfx_next_button / sfx_play_button, cut by build.py from
+   the user's folder) and where they sound:
+     correct feedback   every correct answer — the engine's sfxCorrect() is the standard clip now (engine patch, build.py): the find pages'
+                        hit, the question pages' right pill (G3 / I3 / M1 / M2: after the picture's own scene sound), the engine's other
+                        correct branches. The synthesized rising arpeggio is gone.
+     incorrect feedback every wrong answer — sfxWrongSoft() likewise (a decoy on the find pages, a wrong pill, a wrong drop). The soft
+                        two-note buzz is gone.
+     confetti           whenever confetti falls — confettiCannon() (every correct answer's burst, the kit's burst on a flagged slide) plays
+                        it 250 ms after the correct chime so the two read as "ding, then the burst"; the celebration page's star burst
+                        plays it instead of the engine's sfx_celebrate (engine patch).
+     next button        every tap on an ACTIVE आगे / आगे बढ़ें pill (the story pages, the phase pages, any page that shows it) and on the
+                        celebration page's finish pill.
+     play button        the landing's शुरू करें tap.
+   The lesson's own scene sounds stay (the story pops, the question pages' picture sounds, the car's motor, the checkpoint chime, the
+   music bed): none of them is a feedback / button sound. stdSfx(id): its own Audio element at full volume (the clips are levelled to
+   the lesson's SFX standard by the build), fire-and-forget, ducking the music like every sound. */
+(function(){
+  var ext = (typeof CARD !== "undefined" && CARD.assets && CARD.assets.audio_ext) || "ogg";
+  window.stdSfx = function(id){ if(!id) return; try{ var a = new Audio("assets/Audio/" + id + "." + ext); a.volume = 1; a.play().catch(function(){}); }catch(e){} };
+  // the confetti's sound, on every burst
+  var origConfetti = window.confettiCannon;
+  if(typeof origConfetti === "function") window.confettiCannon = function(){ setTimeout(function(){ stdSfx("sfx_confetti"); }, 250); return origConfetti.apply(this, arguments); };
+  // the buttons (listeners alongside the engine's own handlers; capture phase, so a tap sounds before the page changes under it)
+  function wire(){
+    var nb = document.getElementById("navBtn");
+    if(nb) nb.addEventListener("click", function(){ if(!nb.disabled && nb.classList.contains("active")) stdSfx("sfx_next_button"); }, true);
+    var eb = document.getElementById("endBtn");
+    if(eb) eb.addEventListener("click", function(){ stdSfx("sfx_next_button"); }, true);
+    var sb = document.getElementById("sgBtn");
+    if(sb) sb.addEventListener("click", function(){ stdSfx("sfx_play_button"); }, true);
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
+})();
+
 /* ===== L02-I1-CONFETTI-JS =====
    card slide.confetti: the kit's confetti burst fires on this slide whatever its phase. The kit's confetti-wire gates the
    burst to guided / practice / mastery (its recipe), so I1 — an independent-phase question — got the green mark, the ding

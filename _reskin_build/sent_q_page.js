@@ -24,8 +24,10 @@
               handed to the engine: kit correct-select, ding, confetti, happy mascot, and the praise line ALONE (the pill's own line
               is skipped), the correct pill's words lit with the sentence inside the praise; then completeSlide 700 ms later.
      nav      none (slide.hide_nav -> .stage.no-nav, as the live reference's mountSlide does; this engine snapshot predates that flag).
-   Not ported: the reference's standard SFX set for correct / incorrect / confetti (it replaced the engine's tones lesson-wide on
-   2026-10-02) — this lesson keeps its own sounds on every page, this one included. */
+   The standard SFX set (correct / incorrect / confetti / next / play — the reference replaced the engine's tones with it lesson-wide on
+   2026-10-02) came to this lesson on 2026-10-05 from the user's own "Standard SFX" folder ([L02-STD-SFX]: engine patch 3h in build.py
+   + adapt.js [L02-STD-SFX-JS]): the "ding" of the correct branch is the standard correct clip, the "soft buzz" of a wrong tap the
+   standard incorrect clip, and the confetti burst carries the confetti clip. This page's own scene sound (data.correct_sfx) stays. */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }

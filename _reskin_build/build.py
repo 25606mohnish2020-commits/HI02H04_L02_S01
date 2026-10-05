@@ -113,6 +113,23 @@ for needle, fixed in [
 needle = 'const hideRecall = slide.phase === "mastery" || d.hide_recall === true;'
 assert eng.count(needle) == 1, "STORY_QUESTION hideRecall anchor not unique"
 eng = eng.replace(needle, 'const hideRecall = (slide.phase === "mastery" && d.hide_recall !== false) || d.hide_recall === true;   /* [L02-M1-SENTQ] an explicit false shows it at mastery */', 1)
+# 3h. [L02-STD-SFX] (2026-10-05, user request: "apply all these sound effects wherever they can be applied and replace the existing sound
+#     effect with these where one already exists") the engine's two procedural answer tones become the user's standard clips: every
+#     correct answer (sfxCorrect — the find pages' hit, the question pages' right pill after its scene sound, the drag / other branches)
+#     plays sfx_correct_feedback, every wrong one (sfxWrongSoft — a decoy, a wrong pill, a wrong drop) sfx_incorrect_feedback; the
+#     celebration page's sound (playSfx at 0.7) goes through the same full-volume player as the rest of the set (its clip is set on the
+#     card below: sfx_confetti). stdSfx is adapt.js's player ([L02-STD-SFX-JS], where the confetti and the buttons are wired too);
+#     playSfx stays as the fallback. sfxTap (the counting games' tick) is not used by this lesson and stays.
+for needle, fixed in [
+    ('const sfxCorrect   = ()=> _tone([660, 880, 1180], "sine", 0.42, 0.13);   // rising major arpeggio',
+     'const sfxCorrect   = ()=> (window.stdSfx || playSfx)("sfx_correct_feedback");   // [L02-STD-SFX] the standard correct clip (was a synthesized rising arpeggio)'),
+    ('const sfxWrongSoft = ()=> _tone([300, 235], "triangle", 0.20, 0.08);      // gentle, never harsh',
+     'const sfxWrongSoft = ()=> (window.stdSfx || playSfx)("sfx_incorrect_feedback");   // [L02-STD-SFX] the standard incorrect clip (was a soft two-note buzz)'),
+    ('      playSfx(slide.audio && slide.audio.sfx ? slide.audio.sfx : "sfx_celebrate");',
+     '      (window.stdSfx || playSfx)(slide.audio && slide.audio.sfx ? slide.audio.sfx : "sfx_celebrate");   // [L02-STD-SFX] the card says sfx_confetti; the standard player'),
+]:
+    assert eng.count(needle) == 1, "[L02-STD-SFX] engine anchor not unique: " + needle
+    eng = eng.replace(needle, fixed, 1)
 engine[0]["inner"] = eng
 
 js_parts = []
@@ -658,6 +675,29 @@ for _gone in ("vo_tap_bed", "sfx_walk"):
     _p = os.path.join(CUR, "assets", "Audio", _gone + ".ogg")
     if os.path.exists(_p): os.remove(_p); print("removed", _p)
     aud.pop(_gone, None); txt.pop(_gone, None)
+# ---- [L02-STD-SFX] (2026-10-05, user request) the user's "Standard SFX" folder (HI02H04_L02_S01_dist/assets/Standard SFX-20261005T114216Z-1-001/
+# Standard SFX/, left in the dist as the source folder like assets/SFX; copies in _reskin_build/std_sfx_*_source.*): five fleet-standard
+# sounds — confetti (1.09 s), correct_feedback (0.86 s, already Opus), incorrect_feedback (0.72 s), next_button (0.10 s), play_button
+# (0.42 s); 48 kHz mono, peaks at 0 dBFS, means -8.5 .. -24 dB. Each is shipped whole (no cut, no fades: the files are clean) at the
+# lesson's SFX level — the same levelling as the pops and the car's clips (mean to SFX_MEAN_DB -26, peak no higher than SFX_PEAK_DB; the
+# supplied peaks would otherwise sit 17 dB above every other effect of the lesson) — as Opus 64 k assets/Audio/sfx_<name>.ogg, addressed
+# by id like the pops (no audio_text). Where they sound: adapt.js [L02-STD-SFX-JS] + engine patch 3h above.
+def std_sfx(name, src):
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    assert os.path.exists(s), "missing " + s
+    if bed_fresh(dst, s): return
+    with tempfile.TemporaryDirectory() as td:
+        wav = os.path.join(td, "whole.wav")
+        ff("-i", s, "-ac", "1", "-ar", "48000", wav)
+        mean, peak = sfx_levels(wav); gain = min(SFX_MEAN_DB - mean, SFX_PEAK_DB - peak)
+        ff("-i", wav, "-af", "volume=%.2fdB" % gain, "-c:a", "libopus", "-b:a", "64k", dst)
+    assert os.path.exists(dst), "ffmpeg did not write " + dst
+    print("wrote", dst, "gain %.1f dB (mean %.1f, peak %.1f)" % (gain, mean, peak))
+std_sfx("sfx_confetti", "std_sfx_confetti_source.wav")
+std_sfx("sfx_correct_feedback", "std_sfx_correct_feedback_source.ogg")
+std_sfx("sfx_incorrect_feedback", "std_sfx_incorrect_feedback_source.wav")
+std_sfx("sfx_next_button", "std_sfx_next_button_source.wav")
+std_sfx("sfx_play_button", "std_sfx_play_button_source.wav")
 # ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
 # every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
 # cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,
@@ -1029,6 +1069,12 @@ rc4["data"]["rc"].update({"reach": 3, "placed": [{"token": 0, "image": "rc_done_
 _m1_now = next(s for s in card["slides"] if s["id"] == "M1")
 card["slides"].insert(card["slides"].index(_m1_now) + 1, rc4)
 assert [s["id"] for s in card["slides"]][card["slides"].index(_m1_now):card["slides"].index(_m1_now) + 3] == ["M1", "RC4", "M2"], "RC4 must sit between M1 and M2"
+# ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
+# standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in
+# the dist as the engine's fallback asset, unused.
+_cel = next(s for s in card["slides"] if s["id"] == "CEL")
+assert _cel.get("audio", {}).get("sfx") == "sfx_celebrate", _cel.get("audio")
+_cel["audio"]["sfx"] = "sfx_confetti"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
