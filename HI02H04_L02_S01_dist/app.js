@@ -4899,12 +4899,17 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   }
   // [L02-RC-FIG] (2026-10-05, user request) the RC-car screen before page 14 (card slide.rc_fig, stage class .l02-rc; Figma 264-664 →
   // 267-858): the engine's TAP_IN_SCENE mounts the page (its picture = the room-and-path picture in the Figma box, CSS), and this layer
-  // adds the four "?" checkpoints, the boy with his remote (the user's GIF, mirrored as in the Figma) over his soft shadow, the title
-  // picture at the top of the stage and the RC car. Nothing is tapped: data.rc.start_ms after the page opens the car drives along
-  // data.rc.leg.pts (Figma box coords of the car's CENTRE, from build.py; constant speed over leg.s seconds; the picture turns with the
-  // heading) to the first checkpoint, its motor sound (data.rc.sfx, own Audio element, looped, faded out over 200 ms on arrival) running
-  // with it; on arrival the checkpoint's "?" goes (the Figma 267-858 state: the car sits in the ring), the car settles level, and after
-  // data.rc.hold_ms the page moves on by itself (completeSlide(true), once). A dev jump away mid-drive stops the sound quietly.
+  // adds the four "?" checkpoints (each "?" bobs gently all the while, CSS [L02-RC-MOTION]), the boy with his remote (the user's GIF,
+  // mirrored as in the Figma) over his soft shadow, the title picture at the top of the stage and the RC car. Nothing is tapped:
+  // data.rc.start_ms after the page opens the car drives along data.rc.leg.pts (Figma box coords of the car's CENTRE: the carpet's traced
+  // centre line, build.py / rc_path_trace.py) to the first checkpoint over leg.s seconds, pulling away and braking smoothly (ease-in-out),
+  // its motor sound (data.rc.sfx, own Audio element, looped, faded in over 250 ms and out over the last 400 ms) running with it.
+  // [L02-RC-MOTION] The car's ANGLE follows the line's heading (damped over ~110 ms) and its VIEW follows the angle: data.rc.car.views
+  // lists the renders by the screen heading each one shows ({src, deg}: the side view at 0°, the front three-quarter view at 42°); every
+  // frame the two renders bracketing the heading are cross-faded (over the 30..70% stretch of the gap between them) and each is turned by
+  // (heading − its deg), so the body always points along the carpet and the car looks round the bend as it comes down. On arrival the
+  // checkpoint's "?" goes (the Figma 267-858 state: the car sits in the ring, at the carpet's heading there) and after data.rc.hold_ms the
+  // page moves on by itself (completeSlide(true), once). A dev jump away mid-drive stops the sound quietly.
   function applyRC(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, on = !!(s && s.rc_fig === true);
     var st = document.getElementById("stage"); if(!st) return;
@@ -4924,44 +4929,57 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       sh.style.left = px(R.shadow[0] + R.shadow[2] / 2 - 59 - B); sh.style.top = px(R.shadow[1] + R.shadow[3] / 2 - 36 - B); layer.appendChild(sh); }
     if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B); layer.appendChild(boy); }
     var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
-    var car = bedEl("div", "l02-rc-car"), carImg = bedImg("", C.src || "assets/Images/rc_car.webp");
-    car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B); carImg.style.transform = "rotate(" + rot0 + "deg)"; car.appendChild(carImg);
+    var imgSrc = function(id){ return (id.indexOf("/") >= 0) ? id : ((CARD.assets && CARD.assets.image && CARD.assets.image[id]) || ("assets/Images/" + id + ".webp")); };
+    // [L02-RC-MOTION] one <img> per view, stacked in the car's slot, sorted by the heading each one shows
+    var views = (C.views && C.views.length) ? C.views.slice().sort(function(a, b){ return a.deg - b.deg; }) : [{ src: C.src || "rc_car", deg: 0 }];
+    var car = bedEl("div", "l02-rc-car");
+    car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B);
+    var imgs = views.map(function(v){ var im = bedImg("", imgSrc(v.src)); car.appendChild(im); return im; });
+    function pose(heading){
+      // the two renders bracketing the heading cross-fade over the 30..70% stretch of the gap between them; each is turned to the heading
+      var n = views.length, lo = 0;
+      while(lo < n - 2 && heading > views[lo + 1].deg) lo++;
+      var a = views[lo], b = views[Math.min(n - 1, lo + 1)], w = 0;
+      if(n > 1 && b.deg > a.deg){ var t = Math.min(1, Math.max(0, (heading - a.deg) / (b.deg - a.deg))), q = Math.min(1, Math.max(0, (t - 0.3) / 0.4)); w = q * q * (3 - 2 * q); }
+      for(var i = 0; i < n; i++){
+        var op = (i === lo) ? 1 - w : (i === lo + 1) ? w : 0;
+        imgs[i].style.opacity = op.toFixed(3); imgs[i].style.visibility = op > 0.002 ? "" : "hidden";
+        imgs[i].style.transform = "rotate(" + (heading - views[i].deg).toFixed(2) + "deg)";
+      }
+    }
+    pose(rot0);
     layer.appendChild(car); frame.appendChild(layer);
-    // the leg (constant speed along the polyline; the car's centre starts at the box's centre and lands exactly on the last point)
+    // the leg: the car's centre starts at the box's centre and lands exactly on the last point; the speed eases in and out over leg.s
     var pts = (R.leg && R.leg.pts) || [], cum = [0], L = 0;
     for(var i = 1; i < pts.length; i++){ L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); cum.push(L); }
     function at(d){ var i = 1; while(i < cum.length - 1 && cum[i] < d) i++;
       var a = pts[i - 1], b = pts[i], seg = cum[i] - cum[i - 1], t = seg ? Math.min(1, Math.max(0, (d - cum[i - 1]) / seg)) : 0;
       return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
+    function ease(k){ return 0.5 - 0.5 * Math.cos(Math.PI * k); }          // pulls away and brakes smoothly
     var cx0 = c0[0] + size / 2, cy0 = c0[1] + size / 2, dur = ((R.leg && R.leg.s) || 2.6) * 1000;
     var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); motor.preload = "auto"; motor.loop = true; }catch(e){ motor = null; } }
-    function stopMotor(fade){ var a = motor; if(!a) return; motor = null;
-      if(!fade){ try{ a.pause(); }catch(e){} return; }
-      var v0 = a.volume, t1 = null;
-      requestAnimationFrame(function ease(now){ if(t1 === null) t1 = now; var q = Math.min(1, (now - t1) / 200); a.volume = v0 * (1 - q);
-        if(q < 1) requestAnimationFrame(ease); else { try{ a.pause(); }catch(e){} } }); }
+    function stopMotor(){ var a = motor; if(!a) return; motor = null; try{ a.pause(); }catch(e){} }
     var started = false, done = false;
     function leave(){ if(done) return; done = true; if(CARD.slides[state.idx] !== s) return; if(typeof completeSlide === "function") completeSlide(true); }
     function drive(){
       if(started || CARD.slides[state.idx] !== s) return; started = true;
       if(pts.length < 2){ setTimeout(leave, R.hold_ms || 1000); return; }
-      if(motor){ try{ motor.currentTime = 0; motor.play().catch(function(){}); }catch(e){} }
-      var t0 = null, rot = rot0;
+      if(motor){ try{ motor.volume = 0; motor.currentTime = 0; motor.play().catch(function(){}); }catch(e){} }
+      var t0 = null, tPrev = null, rot = rot0;
       function tick(now){
-        if(CARD.slides[state.idx] !== s){ stopMotor(false); return; }   // the page was left mid-drive (dev jump)
-        if(t0 === null) t0 = now;
-        var k = Math.min(1, (now - t0) / dur), d = k * L, p = at(d), a = at(Math.max(0, d - 6)), b = at(Math.min(L, d + 6));
+        if(CARD.slides[state.idx] !== s){ stopMotor(); return; }   // the page was left mid-drive (dev jump)
+        if(t0 === null){ t0 = now; tPrev = now; }
+        var dt = Math.min(100, now - tPrev); tPrev = now;
+        var el = now - t0, k = Math.min(1, el / dur), d = ease(k) * L, p = at(d), a = at(Math.max(0, d - 5)), b = at(Math.min(L, d + 5));
         var heading = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
-        rot = rot + (heading - rot) * 0.25;                                   // the picture eases into the heading
+        rot += (heading - rot) * (1 - Math.exp(-dt / 110));                   // the body turns into the heading, damped (frame-rate independent)
         car.style.transform = "translate(" + ((p[0] - cx0) * fs).toFixed(2) + "px," + ((p[1] - cy0) * fs).toFixed(2) + "px)";
-        carImg.style.transform = "rotate(" + rot.toFixed(2) + "deg)";
+        pose(rot);
+        if(motor){ try{ motor.volume = Math.min(1, el / 250) * Math.min(1, Math.max(0, (dur - el) / 400)); }catch(e){} }   // in over 250 ms, out over the last 400 ms as it brakes
         if(k < 1){ requestAnimationFrame(tick); return; }
-        stopMotor(true);
+        stopMotor();
         if(typeof R.reach === "number" && tokens[R.reach]) tokens[R.reach].classList.add("reached");
-        var r0 = rot, t2 = null;                                              // parked: the car settles level over 300 ms
-        requestAnimationFrame(function settle(now2){ if(t2 === null) t2 = now2; var q = Math.min(1, (now2 - t2) / 300);
-          carImg.style.transform = "rotate(" + (r0 * (1 - q)).toFixed(2) + "deg)"; if(q < 1) requestAnimationFrame(settle); });
-        setTimeout(leave, R.hold_ms || 1000);
+        setTimeout(leave, R.hold_ms || 1000);                                 // the page stays on the parked car, then moves on
       }
       requestAnimationFrame(tick);
     }

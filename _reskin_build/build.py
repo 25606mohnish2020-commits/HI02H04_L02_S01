@@ -857,21 +857,38 @@ for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): ca
 # BEHAVIOUR (adapt.js applyRC, CSS [L02-RC-FIG]): a TAP_IN_SCENE slide "RC1" (a copy of the untouched find card, no lines, no hotspots —
 # nothing is tapped; the engine's own play(null) is a silent beat) inserted between I2 and I3 in the PRACTICE phase, so the practice gate
 # (अब आपकी बारी) now falls on I2 → RC1 and RC1 → I3 advances straight on, exactly as asked. 0.6 s after the page opens the car drives
-# along the striped path's centre line to the first checkpoint (RC_LEG: a Catmull-Rom through points read off the picture, from the car's
-# start centre to the checkpoint's centre; constant speed, 2.6 s; the picture turns with the heading) with the folder's "RC Toy car Sound
-# effect" (sfx_rc: 3.2 s cut from 0.3 s, pop-style levelling, looped while it drives, 200 ms fade on arrival; it ducks the music bed like
-# every sound); on arrival the checkpoint's "?" fades out and the car settles level (the 267-858 state); 1.0 s later completeSlide(true)
-# → page 14. The user's folder stays in the dist as the source folder (like assets/SFX); build.py reads copies in _reskin_build/.
+# along the striped carpet's centre line to the first checkpoint (RC_LEG, from the car's start centre to the checkpoint's centre) with the
+# folder's "RC Toy car Sound effect" (sfx_rc: 3.2 s cut from 0.3 s, pop-style levelling, looped while it drives, faded in and out with
+# the drive; it ducks the music bed like every sound); on arrival the checkpoint's "?" fades out (the 267-858 state: the car in the ring)
+# and hold_ms later completeSlide(true) → page 14. The user's folder stays in the dist as the source folder (like assets/SFX); build.py
+# reads copies in _reskin_build/.
+# [L02-RC-MOTION] (2026-10-05, user request) "the car should change the angle and the view smoothly as per the path shown in the page
+# and should smoothly make turns on the carpet as per the carpet shown; the question marks should show a very little bouncy animation at
+# all the checkpoints; once the car lands on the checkpoint the whole RC page should stay for 0.5 more seconds and then the question
+# should come." So: (1) the leg is the carpet's TRACED centre line — rc_path_trace.py masks the carpet in image 239, takes a distance
+# transform and follows its ridge from the car's start column to the checkpoint's column (the car's rest spot is 3.6 px above the line,
+# the Figma's checkpoint centre 13 px above it: the leg eases onto the line over its first 40% and veers into the ring over its last
+# half), resampled every 2 px → rc_leg_source.json, read here; the car pulls away and brakes smoothly (ease-in-out over leg.s) and its
+# body turns into the heading of the line with a short damping (adapt.js); (2) the VIEW follows the heading too: car.views lists the
+# folder's renders by the screen heading each shows — the side view ("…07_48_41 PM", the Figma's) at 0° and the front three-quarter view
+# ("…07_48_15 PM", the car coming towards the viewer and to the right, its wheel line ~41° / body axis ~37° on screen → 42°) — and
+# adapt.js cross-fades the two renders bracketing the heading (over headings 12.6° → 29.4°, the gentle descent, so the view has settled
+# before the bend), each turned by (heading − its deg), so the car looks round the bend as it comes down the carpet (the leg's headings
+# run 0° → ~57° → ~31° at the ring: the car parks in the front view, turned a few degrees); (3) each "?" bobs 3 px, 1.4 s, the four a little out of step
+# (CSS [L02-RC-MOTION]); (4) hold_ms 1000 → 1500: half a second more on the page after the car lands, then page 14.
 RC_TOKENS = [[179, 290], [435, 200], [620, 316], [830, 249]]
 RC_CAR_BOX, RC_CAR_SIZE = (64.0, 230.6), 54.404
 RC_START = (RC_CAR_BOX[0] + RC_CAR_SIZE / 2, RC_CAR_BOX[1] + RC_CAR_SIZE / 2)                 # (91.2, 257.8): the car's centre at rest
 RC_CP1 = (RC_TOKENS[0][0] + 52.0, RC_TOKENS[0][1] + 51.0)                                      # (231, 341): the first checkpoint's centre
-RC_CTRL = [RC_START, (140.0, 264.0), (180.0, 295.0), (210.0, 326.0), RC_CP1]                   # the path's centre line, read off image 239 (box coords)
-RC_LEG = [[round(x, 1), round(y, 1)] for x, y in open_catmull_rom(RC_CTRL, steps=10)]
-assert RC_LEG[0] == [round(RC_START[0], 1), round(RC_START[1], 1)] and RC_LEG[-1] == [231.0, 341.0], (RC_LEG[0], RC_LEG[-1])
+with open(os.path.join(SCR, "rc_leg_source.json"), encoding="utf-8") as _f: _rc_leg = json.load(_f)   # rc_path_trace.py: the carpet's centre line, box coords
+assert _rc_leg["start"] == [RC_START[0], RC_START[1]] and _rc_leg["cp1"] == [RC_CP1[0], RC_CP1[1]], "rc_leg_source.json was traced for other end points: rerun rc_path_trace.py"
+RC_LEG = _rc_leg["pts"]
+assert RC_LEG[0] == [round(RC_START[0], 2), round(RC_START[1], 2)] and RC_LEG[-1] == [231.0, 341.0] and len(RC_LEG) > 40, (RC_LEG[0], RC_LEG[-1], len(RC_LEG))
+RC_VIEWS = [{"src": "rc_car", "deg": 0}, {"src": "rc_car_fr", "deg": 42}]                       # [L02-RC-MOTION] the renders by the screen heading they show
 bed_webp("rc_scene.webp", "rc_scene_image239_source.png")                                      # 1672x941, the Figma export of image 239
 bed_webp("rc_q.webp", "rc_q_image225_figma_source.png", size=(140, 210), quality=90, mode="RGBA")   # the "?" (shown 35x53: 4x)
-bed_webp("rc_car.webp", "rc_car_source.png", size=(200, 200), quality=90, mode="RGBA")         # the car (shown 50x50: 4x)
+bed_webp("rc_car.webp", "rc_car_source.png", size=(200, 200), quality=90, mode="RGBA")         # the car, side view (shown 50x50: 4x)
+bed_webp("rc_car_fr.webp", "rc_car_fr_source.png", size=(200, 200), quality=90, mode="RGBA")   # [L02-RC-MOTION] the car, front three-quarter view (the folder's "…07_48_15 PM")
 bed_webp("rc_title.webp", "rc_title_source.png", lossless=True, mode="RGBA")                  # "मनमोजी माधव" 493x95 as supplied
 def rc_boy():
     """The user's GIF (36 frames, 70 ms, transparent) as an animated WebP at 152x284 — twice the 76x142 slot."""
@@ -887,7 +904,7 @@ _sh_s = os.path.join(SCR, "rc_boy_shadow_ellipse2802_source.svg"); _sh_d = os.pa
 assert os.path.exists(_sh_s), "missing " + _sh_s
 if not bed_fresh(_sh_d, _sh_s): shutil.copyfile(_sh_s, _sh_d); print("wrote", _sh_d)
 sfx_clip("sfx_rc", "sfx_rc_source.mp3", 0.30, 3.20)                                            # the motor, looped by the JS while the car drives
-for k in ("rc_scene", "rc_q", "rc_car", "rc_boy", "rc_title"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+for k in ("rc_scene", "rc_q", "rc_car", "rc_car_fr", "rc_boy", "rc_title"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
 rc = copy.deepcopy(i2)                                                                          # the untouched TAP_IN_SCENE card (I2 becomes a card question further down)
 assert rc["type"] == "TAP_IN_SCENE" and "bed" not in rc["data"], "RC1 must start from the plain find card"
 for _k in ("bed_fig", "room_bg", "find_fig", "fig_q3", "confetti", "mascot_replay"): rc.pop(_k, None)
@@ -897,8 +914,8 @@ rc["prompt_hi"] = ""; rc["audio"] = {}; rc["signals"] = {"on_complete": []}
 rc["data"] = {"image_id": "rc_scene", "alt_hi": "माधव का कमरा: एक घुमावदार रास्ता, उस पर चार प्रश्नचिह्न; माधव रिमोट से अपनी खिलौना कार पहले प्रश्नचिह्न तक चलाता है।",
               "hotspots": [], "signal_name": "scene_tap_first_try",
               "rc": {"tokens": RC_TOKENS, "reach": 0, "boy": [852.5, 102, 76, 142], "shadow": [870.5, 232, 58, 12],   # the boy's layer is FLIPPED in the Figma, so its reported x (928.5) is its right edge: the box starts at 928.5 - 76
-                     "car": {"box": list(RC_CAR_BOX), "size": RC_CAR_SIZE, "rot": -5.3}, "leg": {"pts": RC_LEG, "s": 2.6},
-                     "start_ms": 600, "hold_ms": 1000, "sfx": "sfx_rc"}}
+                     "car": {"box": list(RC_CAR_BOX), "size": RC_CAR_SIZE, "rot": -5.3, "views": RC_VIEWS}, "leg": {"pts": RC_LEG, "s": 2.6},
+                     "start_ms": 600, "hold_ms": 1500, "sfx": "sfx_rc"}}   # [L02-RC-MOTION] views + hold 1.5 s
 card["slides"].insert(card["slides"].index(i2) + 1, rc)
 assert [s["id"] for s in card["slides"]][card["slides"].index(i2):card["slides"].index(i2) + 3] == ["I2", "RC1", "I3"], "RC1 must sit between I2 and I3"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);

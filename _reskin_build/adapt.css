@@ -536,3 +536,13 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
   object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));transform-origin:50% 50%;will-change:transform;}
 .stage.l02-rc .l02-rc-title{position:absolute;left:calc(393px * var(--fs));top:calc(42px * var(--fs));width:calc(493px * var(--fs));height:calc(95px * var(--fs));
   max-width:none;pointer-events:none;user-select:none;display:block;z-index:3;}
+/* [L02-RC-MOTION] (2026-10-05, user request) every "?" bobs a very little all the while — a 3px lift that rises eased-out and falls
+   eased-in, 1.4 s round, the four checkpoints a little out of step — and keeps bobbing as it fades when the car parks on it. The car
+   carries one <img> per view (data.rc.car.views: the side view, the front three-quarter view), stacked in its 50x50 slot; adapt.js
+   cross-fades and turns them every frame (inline opacity / transform), so the later ones start hidden. */
+@keyframes l02-rc-qbob{0%{transform:translateY(0);animation-timing-function:ease-out}45%{transform:translateY(calc(-3px * var(--fs)));animation-timing-function:ease-in}100%{transform:translateY(0)}}
+.stage.l02-rc .l02-rc-token .l02-rc-q{animation:l02-rc-qbob 1.4s infinite;will-change:transform;}
+.stage.l02-rc .l02-rc-token:nth-child(2) .l02-rc-q{animation-delay:.35s;}
+.stage.l02-rc .l02-rc-token:nth-child(3) .l02-rc-q{animation-delay:.7s;}
+.stage.l02-rc .l02-rc-token:nth-child(4) .l02-rc-q{animation-delay:1.05s;}
+.stage.l02-rc .l02-rc-car img + img{opacity:0;}
