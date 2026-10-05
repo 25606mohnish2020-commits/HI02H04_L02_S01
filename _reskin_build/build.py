@@ -970,6 +970,36 @@ rc2["data"]["rc"] = {"tokens": RC_TOKENS, "reach": 1, "boy": rc["data"]["rc"]["b
 _i3_now = next(s for s in card["slides"] if s["id"] == "I3")
 card["slides"].insert(card["slides"].index(_i3_now) + 1, rc2)
 assert [s["id"] for s in card["slides"]][card["slides"].index(_i3_now):card["slides"].index(_i3_now) + 3] == ["I3", "RC2", "P1"], "RC2 must sit between I3 and P1"
+# ---- [L02-RC3] (2026-10-05, user request) "After page 17 P1 the RC toy scene again: the picture of Madhav moving away from the bed
+# gets placed in the second checkpoint with the same glowing animation and the synced sound effect, then the car moves towards the next
+# checkpoint smoothly with its other angle view as shown, and 1.5 seconds after it reaches it the next question arrives." Figma 278-1882
+# (open: checkpoint 2 = "image 241" holds "5a6edbfb-10dd-4e23-b509-13d73d6b536a" — BYTE-IDENTICAL to p1_utha_source.png, P1's "माधव उठ
+# गया" picture — 279x208 at (-139,-61) of the token's inner box; checkpoint 1 keeps the I3 picture; the car = the FRONT three-quarter
+# render "…07_48_15 PM", drawn 42x42 at (554,269) on the hump's far slope past checkpoint 2) and 278-2075 (the car in checkpoint 3's ring,
+# its "?" gone). Slide RC3: a copy of RC2 inserted after P1 (practice like P1, so the one phase change of this stretch, into mastery,
+# stays where it was: right before M1), placed = [checkpoint 0 ← rc_done_1 (already there, no animation), checkpoint 1 ← rc_done_2
+# (animated + chime)], the car opens at the Figma spot's CENTRE (575,290) at the lesson's 50 px size (the Figma's 42 px there is the
+# one odd size out of five frames; the car stays one size on every page), views = the side render (deg 0, the sole view below 3°) and
+# the front render — its deg set to 34 on THIS slope (42 on leg1): leg3 runs down the far side of the hump into the trough with headings
+# 54° → 58° → 14° at the ring, so with 34 the render is turned +20° as it opens and -20° as it parks, half-way between the two unrotated
+# Figma poses either side, while its body follows the carpet all the way (with 42 it would park turned -28°); leg3 traced by
+# rc_path_trace.py (129 px, 2.0 s, the same ~66 px/s as the other legs); start_ms 1800, reach 2, hold_ms 1500 → M1.
+RC3_CAR_IMG, RC3_CAR_SZ = (554.0, 269.0), 42.0                                                 # the Figma's 42x42 render; only its centre is used
+RC3_START = (RC3_CAR_IMG[0] + RC3_CAR_SZ / 2, RC3_CAR_IMG[1] + RC3_CAR_SZ / 2)                  # (575, 290)
+RC3_CAR_BOX = (RC3_START[0] - RC_CAR_SIZE / 2, RC3_START[1] - RC_CAR_SIZE / 2)
+RC_CP3 = (RC_TOKENS[2][0] + 52.0, RC_TOKENS[2][1] + 51.0)                                      # (672, 367): the third checkpoint's centre
+RC_LEG3 = rc_leg("leg3", RC3_START, RC_CP3)
+RC3_VIEWS = [{"src": "rc_car", "deg": 0, "to": 3}, {"src": "rc_car_fr", "deg": 34, "from": 8}]
+rc_done("rc_done_2.webp", "p1_utha_source.png", (139, 61, 239, 159, 279, 208))              # the Figma's asset is byte-identical to p1_utha_source.png (md5 ed3a99f2…)
+card["assets"]["image"]["rc_done_2"] = "assets/Images/rc_done_2.webp"
+rc3 = copy.deepcopy(rc2); rc3["id"] = "RC3"
+rc3["data"]["alt_hi"] = "माधव का कमरा: दूसरे प्रश्नचिह्न पर पलंग से उठते माधव की तस्वीर लग गई; माधव रिमोट से अपनी खिलौना कार तीसरे प्रश्नचिह्न तक चलाता है।"
+rc3["data"]["rc"].update({"reach": 2, "placed": [{"token": 0, "image": "rc_done_1", "animate": False}, {"token": 1, "image": "rc_done_2", "animate": True}],
+                          "car": {"box": [round(RC3_CAR_BOX[0], 3), round(RC3_CAR_BOX[1], 3)], "size": RC_CAR_SIZE, "rot": 54, "views": RC3_VIEWS},   # rot = the opening heading = the carpet's there
+                          "leg": {"pts": RC_LEG3, "s": 2.0}})
+_p1_now = next(s for s in card["slides"] if s["id"] == "P1")
+card["slides"].insert(card["slides"].index(_p1_now) + 1, rc3)
+assert [s["id"] for s in card["slides"]][card["slides"].index(_p1_now):card["slides"].index(_p1_now) + 3] == ["P1", "RC3", "M1"], "RC3 must sit between P1 and M1"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
@@ -1256,7 +1286,7 @@ i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
-assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] the second leg after it
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "RC3", "M1", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] / [L02-RC3] the next legs after I3 and P1
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets
