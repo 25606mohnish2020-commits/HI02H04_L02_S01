@@ -480,6 +480,10 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 /* [L02-SENTQ-SHADOW] (2026-10-05, user request) "a little shadow on the images and the options" of pages 14 I3, 16 M1 and 17 M2, "just
    like the shadow on the options of page 15 P1": P1's card drop shadow (0 4px 2px 25%, [L02-P1-FIG] above) on the bare picture and on the
    three pills of a sentence page whose card says slide.sentq_shadow (sent_q_page.js wire → stage class .l02-sentq-shadow). G3 (page 11)
-   stays without. The pills' feedback rings and the picture's frame are outlines, not shadows, so the shadow stays through every state. */
+   stays without. The pills' feedback rings and the picture's frame are outlines, not shadows, so the shadow stays through every state.
+   Second request the same day: "a little shadow on the title bar" of the same three pages "just like the title bar of page 15 P1" — P1's
+   band rule (.l02-q3 .prompt-band above: the engine's faint 0 3px box-shadow off, the Figma 0 4px 2px 25% as a filter drop-shadow so it
+   follows the pill shape) on the same class; the band's colours, stroke and size stay the engine's. */
 .stage.l02-sentq.l02-sentq-shadow .story-q-stim.sq-bare .story-q-thumb{box-shadow:0 4px 2px rgba(0,0,0,.25);}
 .stage.l02-sentq.l02-sentq-shadow .sent-opt .so-pill{box-shadow:0 4px 2px rgba(0,0,0,.25);}
+.stage.l02-sentq.l02-sentq-shadow .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}

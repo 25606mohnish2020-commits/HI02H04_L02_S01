@@ -1041,7 +1041,10 @@ assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8.ogg")), "M
 # 17 M2, just like the shadow on the options of page 15 P1." P1's cards carry the Figma drop shadow 0 4px 2px rgba(0,0,0,.25) (adapt.css
 # [L02-P1-FIG] / .l02-q3-yellow); the same shadow goes on the bare picture and the three pills of these three sentence pages: card
 # slide.sentq_shadow → sent_q_page.js wire() sets stage class .l02-sentq-shadow → adapt.css [L02-SENTQ-SHADOW]. G3 (page 11), the fourth
-# sentence page, is NOT named by the user and stays without. Nothing moves: a box-shadow takes no layout space.
+# sentence page, is NOT named by the user and stays without. Nothing moves: a box-shadow takes no layout space. Same day, second request:
+# "a little shadow on the title bar" of the same three pages "just like the title bar of page 15 P1" — the same flag/class also gives the
+# band (.prompt-band) P1's band shadow (the engine's faint 0 3px box-shadow off, P1's 0 4px 2px 25% as a filter drop-shadow); the band's
+# colours, stroke and size stay the engine's (only the shadow was asked for).
 for _s in (i3, m1, m2): _s["sentq_shadow"] = True
 assert "sentq_shadow" not in g3, "G3 must stay without the shadow"
 for _k in ("vo_q_hint", "vo_q_reveal"):
