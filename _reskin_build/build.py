@@ -845,11 +845,9 @@ for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): ca
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
 # CSS object-fit contain with a small inset) instead of cropping it to the window as the P1 / G3 scene pictures are.
-for sid in ("M2",):   # [L02-I3-SENTQ] I3 left this set on 2026-10-05 (block right below), [L02-M1-SENTQ] M1 the same day (block after it); M2 is as it was
-    q = next(s for s in card["slides"] if s["id"] == sid)
-    assert q["type"] == "STORY_QUESTION", sid + " is not a story question any more"
-    q["fig_q3"] = True; q["fig_q3_yellow"] = True; q["fig_q3_contain"] = True; q["room_bg"] = True
-    q["data"]["hide_recall"] = True; q["data"].pop("recall_image_id", None)
+# (The card-style dressing that used to run here — fig_q3 + fig_q3_yellow + fig_q3_contain + room_bg, hide_recall, no recall picture — for
+#  I3, M1 and M2 is gone: I3 left it on 2026-10-05 ([L02-I3-SENTQ] below), M1 and M2 the same day ([L02-M1-SENTQ] / [L02-M2-SENTQ] after it).
+#  P1 keeps that look through its own block ([L02-P1-FIG]); the CSS for it stays.)
 # ---- [L02-I3-SENTQ] (2026-10-05, user request) I3 ("page 14 I3 INDEPENDENT" in the user's count, ?slide=13): "use the exact same layout
 # and the design of the page as of the Page 11 G3 Guided; just change the image with this image, the text in the three options with
 # खाना बना रही हैं। / माधव को सुला रही हैं। / माधव को पढ़ा रही हैं। and the title text with चित्र में माँ क्या कर रही हैं ?; rest keep the design,
@@ -986,6 +984,59 @@ if not os.path.exists(PADHA_DST) or os.path.getmtime(PADHA_DST) < os.path.getmti
 card["assets"]["image"]["m1_padha"] = "assets/Images/m1_padha.webp"
 card.setdefault("_emoji_fallback", {})["m1_padha"] = "📖"
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_6.ogg")), "M1 scene sound missing: sfx_pop_6.ogg"
+# ---- [L02-M2-SENTQ] (2026-10-05, user request) M2 ("page 17 M2 MASTERY" in the user's count, ?slide=16): "use the exact same layout and
+# design as page 14 I3; just change the image with this image, the title with कहानी के अंत में माधव क्यों सो गया? and the three options with
+# वह थक गया था। / वह भूखा था। / वह डर गया था।; rest exactly like page 14." The fourth [L02-G3-REF] page, dressed like I3 / M1: the same card flags
+# (sent_ref + hide_header_chip + hide_nav + bare_recall + sentence_options + confetti) and I3's floor backdrop (page_bg i3_floor); phase
+# stays "mastery" (engine patch 3g keeps the picture through the card's explicit hide_recall: false). The answer वह थक गया था। (story T8
+# "खेलते-खेलते उसे नींद आ गई" — he had played himself tired). No recorded clip says the new question or the sentences, so all five lines are edge-tts
+# hi-IN-SwaraNeural placeholders via tts_clip: the question vo_q_kyon_soya, the sentences vo_opt_thak_gaya / _bhookha_tha / _dar_gaya and
+# the praise line vo_ok_thak_gaya "शाबाश! वह थक गया था।" (its sentence part = the correct pill's four words, lit with it); try_again = recorded
+# vo_q_hint, reveal = recorded vo_q_reveal; no audio.hint. The correct tap's scene sound = sfx_pop_8 (the sound of story page 9, "खेलते-खेलते
+# उसे नींद आ गई"; 2 s), the matching-page rule of the other three pages. PICTURE: the user's PNG of the boy asleep on the rug among his toys
+# (_reskin_build/m2_soya_source.png, 1448x1086 — nearly the window's shape, 158 px of slack) cut like the others: full height, the 1411:1188
+# window at columns SOYA_X0 .. SOYA_X0 + 1290 (the centred window: the teddy whole at the left, the stacking rings whole at the right)
+# -> assets/Images/m2_soya.webp 1411x1188. M2's Figma card look (fig_q3 + yellow + contain + room_bg, two cards centred by the
+# .opt-grid.cols-2 rule — that CSS stays, unused) and its old content ("माधव को क्या करना था — सोना या खेलना?", vo_q_kya_karna +
+# vo_opt_play / vo_opt_sleep, opt_play / opt_sleep) are gone from M2; the clips and icons stay registered, unused. M2 is the last question:
+# the correct beat's completeSlide leads to the celebration as before.
+m2 = next(s for s in card["slides"] if s["id"] == "M2")
+assert m2["type"] == "STORY_QUESTION" and m2["phase"] == "mastery", "M2 is not the mastery story question any more"
+for _k in ("fig_q3", "fig_q3_yellow", "fig_q3_contain", "room_bg"): m2.pop(_k, None)
+m2["sent_ref"] = True; m2["hide_header_chip"] = True; m2["hide_nav"] = True; m2["bare_recall"] = True; m2["sentence_options"] = True
+m2["confetti"] = True; m2["page_bg"] = "i3_floor"
+m2["prompt_hi"] = "कहानी के अंत में माधव क्यों सो गया?"
+tts_clip("vo_q_kyon_soya", "कहानी के अंत में माधव क्यों सो गया?")
+tts_clip("vo_opt_thak_gaya", "वह थक गया था।")
+tts_clip("vo_opt_bhookha_tha", "वह भूखा था।")
+tts_clip("vo_opt_dar_gaya", "वह डर गया था।")
+tts_clip("vo_ok_thak_gaya", "शाबाश! वह थक गया था।")
+m2["audio"] = {"prompt": "vo_q_kyon_soya", "try_again": "vo_q_hint", "reveal": "vo_q_reveal", "correct": "vo_ok_thak_gaya"}
+m2["data"]["recall_image_id"] = "m2_soya"; m2["data"]["hide_recall"] = False
+m2["data"]["options"] = [
+    {"label_hi": "वह थक गया था।", "audio": "vo_opt_thak_gaya", "correct": True},
+    {"label_hi": "वह भूखा था।", "audio": "vo_opt_bhookha_tha"},
+    {"label_hi": "वह डर गया था।", "audio": "vo_opt_dar_gaya"},
+]
+m2["data"]["correct_sfx"] = {"src": "sfx_pop_8", "hold_ms": 2000, "vol": 1.0}
+m2["data"]["prompt_idle_ms"] = 5000
+M2_WT = {}
+for _o in m2["data"]["options"]: M2_WT[_o["audio"]] = word_times_for(_o["audio"], _o["label_hi"].split())
+_ok5_words = "शाबाश! वह थक गया था।".split(); _ok5_t = word_times_for("vo_ok_thak_gaya", _ok5_words)
+M2_WT["vo_ok_thak_gaya"] = _ok5_t[1:6]     # वह, थक, गया, था। starts … था। end — the correct pill's four words inside the praise line
+assert _ok5_words[1:] == "वह थक गया था।".split() and len(M2_WT["vo_ok_thak_gaya"]) == 5, (_ok5_words, M2_WT["vo_ok_thak_gaya"])
+m2["data"]["word_times_by_audio"] = M2_WT
+m2["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_kyon_soya") * 1000))
+SOYA_SRC = os.path.join(SCR, "m2_soya_source.png"); SOYA_DST = os.path.join(CUR, "assets", "Images", "m2_soya.webp"); SOYA_X0 = 79
+assert os.path.exists(SOYA_SRC), "missing " + SOYA_SRC
+if not os.path.exists(SOYA_DST) or os.path.getmtime(SOYA_DST) < os.path.getmtime(SOYA_SRC):
+    from PIL import Image
+    im = Image.open(SOYA_SRC).convert("RGB"); W, H = im.size; w = int(round(H * 1411 / 1188)); x0 = max(0, min(SOYA_X0, W - w))
+    im.crop((x0, 0, x0 + w, H)).resize((1411, 1188), Image.LANCZOS).save(SOYA_DST, "WEBP", quality=88, method=6)
+    print("wrote", SOYA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
+card["assets"]["image"]["m2_soya"] = "assets/Images/m2_soya.webp"
+card.setdefault("_emoji_fallback", {})["m2_soya"] = "😴"
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8.ogg")), "M2 scene sound missing: sfx_pop_8.ogg"
 for _k in ("vo_q_hint", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7

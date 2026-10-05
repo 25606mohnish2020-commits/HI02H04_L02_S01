@@ -184,7 +184,7 @@
    "खिलौनों",
    "से"
   ],
-  "md5": "9184e5b6e11eea7188f30279c9de9332",
+  "md5": "15986147c249b2aa12493d8166a69fda",
   "times": [
    0.09,
    0.7,
@@ -197,7 +197,7 @@
    "बर्तनों",
    "से"
   ],
-  "md5": "76fe7f381ce7abb9d4c51fe1dedc56ca",
+  "md5": "b3965e4f875f1c4e40ae82ef4f9e90ef",
   "times": [
    0.09,
    0.72,
@@ -210,7 +210,7 @@
    "किताबों",
    "से"
   ],
-  "md5": "31dd1a26a715309b18379d6cb1895cf4",
+  "md5": "11edeac3ba167513a237a3d16be97b06",
   "times": [
    0.09,
    0.69,
@@ -228,7 +228,7 @@
    "रहा",
    "है।"
   ],
-  "md5": "05871cd07b49f7e47a56a0dc357c1ed8",
+  "md5": "b6c7978696b448d54007a0c89c051920",
   "times": [
    0.09,
    0.82,
@@ -248,7 +248,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "a687d7aeb817db568ae5b411b0db1285",
+  "md5": "0ac749df7efd2077d77efe2604150a4e",
   "times": [
    0.09,
    0.36,
@@ -266,7 +266,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "5eadace318a1be33551fdbeca127fad7",
+  "md5": "ce1a9593efcd9ca1f490ca308ee76c55",
   "times": [
    0.09,
    0.61,
@@ -285,7 +285,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "99edb5d4e75db49a3c0f7044e047c28c",
+  "md5": "93d5dbd47e9ef6c53efdd3f18f697839",
   "times": [
    0.09,
    0.62,
@@ -306,7 +306,7 @@
    "रही",
    "हैं।"
   ],
-  "md5": "fd6c2aa0025cd075a70f2e5c31d6de12",
+  "md5": "b549f47410636274c986e4d1ebf7755b",
   "times": [
    0.09,
    0.83,
@@ -326,7 +326,7 @@
    "किताब",
    "पढ़ी।"
   ],
-  "md5": "e0ba7718a923efc251584ad8992f0f46",
+  "md5": "14105805abefbfdc88aed8753c3163c1",
   "times": [
    0.09,
    0.59,
@@ -343,7 +343,7 @@
    "अखबार",
    "पढ़ा।"
   ],
-  "md5": "049c8f92c32db408e473ae2d8099d7c9",
+  "md5": "258c46617b184d034279b974b0f09400",
   "times": [
    0.09,
    0.59,
@@ -360,7 +360,7 @@
    "पत्र",
    "पढ़ा।"
   ],
-  "md5": "c82373c8d1e5e2e3c99f8bd8dce4122c",
+  "md5": "f18cf520ae6c9fa0c38465ea3da8744a",
   "times": [
    0.09,
    0.6,
@@ -378,7 +378,7 @@
    "किताब",
    "पढ़ी।"
   ],
-  "md5": "fc45d821ea16239793fef917010ad9bd",
+  "md5": "960458beaf5620357c6c1bab5549825d",
   "times": [
    0.09,
    0.87,
@@ -386,6 +386,74 @@
    2.16,
    2.99,
    3.35
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_thak_gaya": {
+  "words": [
+   "वह",
+   "थक",
+   "गया",
+   "था।"
+  ],
+  "md5": "ec06b5aa50724da9c78556a0c66f7f1e",
+  "times": [
+   0.09,
+   0.42,
+   0.62,
+   0.98,
+   1.21
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_bhookha_tha": {
+  "words": [
+   "वह",
+   "भूखा",
+   "था।"
+  ],
+  "md5": "10c5d8bb5f0fa80d6eef0c2dd3b29a77",
+  "times": [
+   0.09,
+   0.7,
+   0.93,
+   1.13
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_dar_gaya": {
+  "words": [
+   "वह",
+   "डर",
+   "गया",
+   "था।"
+  ],
+  "md5": "5c437d08635525a37cff2fb7daa99b5e",
+  "times": [
+   0.09,
+   0.47,
+   0.69,
+   0.95,
+   1.15
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_ok_thak_gaya": {
+  "words": [
+   "शाबाश!",
+   "वह",
+   "थक",
+   "गया",
+   "था।"
+  ],
+  "md5": "d3c9dc88e00522baf3db696ba94bb129",
+  "times": [
+   0.09,
+   0.89,
+   1.75,
+   2.18,
+   2.75,
+   2.97
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
