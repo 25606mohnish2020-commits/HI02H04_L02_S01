@@ -2632,6 +2632,12 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-roombg{--fs:1.04140625;}
 .stage.l02-roombg .l02-bed-bg{position:absolute;left:calc(-23.29px * var(--fs));top:calc(-11px * var(--fs));width:calc(1326.582px * var(--fs));height:calc(742px * var(--fs));
   max-width:none;object-fit:cover;filter:blur(4px);opacity:.95;pointer-events:none;user-select:none;display:block;z-index:0;}
+/* [L02-I3-BG] (2026-10-05, user request) a page backdrop from a picture of the user's: card slide.page_bg = <image id> → adapt.js draws
+   that picture as the stage's first child (.l02-page-bg), the whole 1333x750 stage (the picture is the artboard's 16:9), object-fit cover,
+   no blur or fade of its own (the picture comes blurred), under the header row, the picture and the pills — the same layer as the room
+   backdrop above, so the page's layout does not move. Page 14 (I3) carries it with i3_floor.webp (a blurred wooden floor and pale wall). */
+.stage.l02-pagebg .l02-page-bg{position:absolute;left:0;top:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 50%;
+  pointer-events:none;user-select:none;display:block;z-index:0;}
 /* the picture box — Figma: 935x442 @ (173,172), 4px #386AF6 stroke, r20, clipped, shadow 0 4px 4px 45%; the designer's room picture
    ("image 245", assets/Images/bed_room.webp) 934x467 @ (0,-2) of the box = (-4,-6) inside its stroke. The box sits in .slide-stage,
    which starts under the 140px header row. The fleet's frame rules (aspect ratio, contain, yellow stroke) are off. */

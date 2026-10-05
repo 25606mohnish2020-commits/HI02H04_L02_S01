@@ -900,6 +900,31 @@ if not os.path.exists(SULA_DST) or os.path.getmtime(SULA_DST) < os.path.getmtime
     print("wrote", SULA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
 card["assets"]["image"]["i3_sula"] = "assets/Images/i3_sula.webp"
 card.setdefault("_emoji_fallback", {})["i3_sula"] = "🛏️"
+# [L02-I3-BG] (2026-10-05, user request) "At page 14 I3 use this background on the white coloured space, such that everything on the page
+# lies on this background; the whole layout remains the same." The user's 1280x720 PNG (a blurred wooden floor meeting a pale wall — the
+# artboard's own size and shape) → _reskin_build/i3_floor_source.png → assets/Images/i3_floor.webp (1280x720, q88; any alpha flattened on
+# white). Card slide.page_bg = "i3_floor" → adapt.js applyPageBg draws it as the stage's first child (.l02-page-bg; CSS [L02-I3-BG] in
+# adapt.css: the whole 1333x750 stage, object-fit cover, no blur of its own) under the header row, the picture and the pills, the same
+# layer as the lesson's blurred-room backdrop (room_bg) — nothing moves. Only I3 carries the flag; G3 keeps its plain ground.
+FLOOR_SRC = os.path.join(SCR, "i3_floor_source.png"); FLOOR_DST = os.path.join(CUR, "assets", "Images", "i3_floor.webp")
+assert os.path.exists(FLOOR_SRC), "missing " + FLOOR_SRC
+if not os.path.exists(FLOOR_DST) or os.path.getmtime(FLOOR_DST) < os.path.getmtime(FLOOR_SRC):
+    from PIL import Image
+    _im = Image.open(FLOOR_SRC)
+    if _im.mode in ("RGBA", "LA", "P"):
+        _im = _im.convert("RGBA"); _flat = Image.new("RGB", _im.size, (255, 255, 255)); _flat.paste(_im, mask=_im.split()[-1]); _im = _flat
+    _im.convert("RGB").save(FLOOR_DST, "WEBP", quality=88, method=6); print("wrote", FLOOR_DST, _im.size)
+card["assets"]["image"]["i3_floor"] = "assets/Images/i3_floor.webp"
+i3["page_bg"] = "i3_floor"
+# [L02-I3-PRACTICE] (2026-10-05, user request) "Remove the अब आपकी बारी screen after page 14 I3 and place this screen and the VO before
+# page 14." That screen is the engine's PRACTICE phase gate (PHASE_GATE_TITLE.practice "अब आपकी बारी!", VO vo_pt_practice "वाह! अब आपकी
+# बारी।"), shown once, on the first advance INTO a practice-phase slide (completeSlide: next.phase !== slide.phase && PHASE_GATE_TITLE
+# [next.phase] && not gated yet) — until now at I3 → P1. Moving I3 into the practice phase puts that advance at I2 → I3, so the gate (and
+# its line) comes before page 14 and I3 → P1 (practice → practice) advances straight on. Nothing else keys on independent-vs-practice for a
+# STORY_QUESTION (mastery flag / hide_recall look at "mastery" only; nudge timeouts are 8 s for both; the kit's confetti gate allows
+# practice, so I3's confetti flag is now merely redundant). There is no independent-phase gate (G3 → I1 stays gate-less) and no mastery
+# gate (P1 → M1 stays gate-less), as before. Signals from I3 now carry phase "practice".
+i3["phase"] = "practice"
 for _k in ("vo_q_hint", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7

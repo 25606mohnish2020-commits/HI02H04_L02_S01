@@ -4884,6 +4884,19 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(!on){ if(bg) bg.remove(); return; }
     if(!bg) st.insertBefore(bedImg("l02-bed-bg", "assets/Images/bed_bg.webp"), st.firstChild);
   }
+  // [L02-I3-BG] (2026-10-05, user request) a page backdrop from a picture of the user's: card slide.page_bg = <image id> (registered in
+  // CARD.assets.image) → stage class .l02-pagebg and the picture as the stage's first child (.l02-page-bg, CSS: the whole stage, cover),
+  // under everything the page draws; the layout does not move. Page 14 (I3) carries it ("i3_floor"). Removed again on any other page.
+  function applyPageBg(idx){
+    var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, id = (s && typeof s.page_bg === "string" && s.page_bg) || "";
+    var st = document.getElementById("stage"); if(!st) return;
+    st.classList.toggle("l02-pagebg", !!id);
+    var bg = st.querySelector(".l02-page-bg");
+    if(!id){ if(bg) bg.remove(); return; }
+    var src = (CARD.assets && CARD.assets.image && CARD.assets.image[id]) || ("assets/Images/" + id + ".webp");
+    if(!bg){ bg = bedImg("l02-page-bg", src); st.insertBefore(bg, st.firstChild); }
+    else if(bg.getAttribute("src") !== src) bg.src = src;
+  }
   function applyBed(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, bed = !!(s && s.bed_fig === true);
     var st = document.getElementById("stage"); if(st) st.classList.toggle("l02-bed", bed);
@@ -4988,11 +5001,12 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   if(typeof CARD !== "undefined" && CARD.slides && CARD.slides.some(function(x){ return x.bed_fig === true; }))
     BED_IMGS.map(function(k){ return "assets/Images/" + k + ".webp"; }).concat(["assets/Images/bed_guide_13.svg", "assets/Images/bed_guide_14.svg", "assets/Images/bed_guide_16.svg"])
       .forEach(function(src){ var im = new Image(); im.src = src; });
-  window.mountSlide = function(idx){ var r = orig.apply(this, arguments); applyRoomBg(idx); applyFind(idx); applyQ3(idx); applyBed(idx); return r; };
+  window.mountSlide = function(idx){ var r = orig.apply(this, arguments); applyRoomBg(idx); applyPageBg(idx); applyFind(idx); applyQ3(idx); applyBed(idx); return r; };
   // the ?slide=N dev jump (QA/capture) mounts its slide while the engine block is still being evaluated, i.e. before this
   // hook exists — so a find page (or the Figma question page) that is already on the stage gets its layout here, once, at load
   if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .tis-scene")){ applyRoomBg(state.idx); applyFind(state.idx); applyBed(state.idx); }
   if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .opt-grid")){ applyRoomBg(state.idx); applyQ3(state.idx); }
+  if(typeof state !== "undefined" && typeof state.idx === "number") applyPageBg(state.idx);   // [L02-I3-BG] a ?slide=N dev load of any page type (a no-op for a page without page_bg, so safe at boot too)
   var origDone = window.completeSlide; if(typeof origDone !== "function") return;
   window.completeSlide = function(){
     var s = (typeof CARD !== "undefined" && CARD.slides && typeof state !== "undefined") ? CARD.slides[state.idx] : null;
