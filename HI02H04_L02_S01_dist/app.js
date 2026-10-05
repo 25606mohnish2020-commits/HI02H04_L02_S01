@@ -3904,11 +3904,10 @@ function boot(){
   const armIdleReplay = ()=>{                            // [P1-CUE-ONCE]: the 5 s no-activity repeat of the cue is OFF - the cue plays once; kept as a no-op so its callers stay as they were
     clearTimeout(landingVO.idleTimer);
   };
-  const scheduleFollowUp = ()=>{
-    clearTimeout(landingVO.followUpTimer);
-    landingVO.cue = "pending";
-    landingVO.followUpTimer = setTimeout(runBirdCue, 1500);
-    if(!$("sgBtn").classList.contains("ready")){ clearTimeout(landingVO.revealWatch); landingVO.revealWatch = setTimeout(revealStart, 10000); }   // [LANDING-BTN-AFTER-BIRD] safety net
+  const scheduleFollowUp = ()=>{                       // [L02-NO-BIRD-CUE] no bird cue any more: the welcome's end reveals शुरू करें at once
+    clearTimeout(landingVO.followUpTimer); clearTimeout(landingVO.revealWatch);
+    landingVO.cue = "idle";
+    revealStart();
   };
   // Page 1 counts as OPEN only once the boot loader has begun to fade (.done) or is gone
   const pageOneOpen = ()=>{ const bl = $("bootLoader"); return !bl || !bl.isConnected || bl.classList.contains("done"); };

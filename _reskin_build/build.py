@@ -130,6 +130,26 @@ for needle, fixed in [
 ]:
     assert eng.count(needle) == 1, "[L02-STD-SFX] engine anchor not unique: " + needle
     eng = eng.replace(needle, fixed, 1)
+# 3i. [L02-NO-BIRD-CUE] (2026-10-05, user request: "Remove the फिर से सुनने के लिए मुझ पर टैप करें VO and the synced animation of the bird on
+#     the title page; just play the VO of the title page and then enable the play button, without the bird animation and its VO.")
+#     The reference's Page 1 order was welcome VO → 1.5 s → the bird pulses with its replay line (vo_tap_swiftee_replay) → the bird
+#     settles → शुरू करें pops in ([LANDING-BTN-AFTER-BIRD]). scheduleFollowUp — the one place the cue is armed (after the first welcome,
+#     and after a bird-tap replay if the button were still owed) — now reveals the button at once instead: welcome VO → शुरू करें pops in
+#     and breathes. runBirdCue / setBirdCue / stopBirdPulse stay in the engine unreferenced by any flow (the start tap's
+#     stopBirdPulse(true) is a harmless no-op), the bird-tap replay of the welcome stays, the speaker button stays, the 10 s watchdog
+#     is moot. The replay line's clip is deleted from the dist and unregistered below ([L02-NO-BIRD-CUE] after the std SFX).
+needle = '''  const scheduleFollowUp = ()=>{
+    clearTimeout(landingVO.followUpTimer);
+    landingVO.cue = "pending";
+    landingVO.followUpTimer = setTimeout(runBirdCue, 1500);
+    if(!$("sgBtn").classList.contains("ready")){ clearTimeout(landingVO.revealWatch); landingVO.revealWatch = setTimeout(revealStart, 10000); }   // [LANDING-BTN-AFTER-BIRD] safety net
+  };'''
+assert eng.count(needle) == 1, "[L02-NO-BIRD-CUE] scheduleFollowUp anchor not unique"
+eng = eng.replace(needle, '''  const scheduleFollowUp = ()=>{                       // [L02-NO-BIRD-CUE] no bird cue any more: the welcome's end reveals शुरू करें at once
+    clearTimeout(landingVO.followUpTimer); clearTimeout(landingVO.revealWatch);
+    landingVO.cue = "idle";
+    revealStart();
+  };''', 1)
 engine[0]["inner"] = eng
 
 js_parts = []
@@ -162,7 +182,7 @@ for k, v in {
     "vo_pt_tutorial": "आइए कहानी पढ़ें।",   # [L02-GATE-LINE] first transition screen: headline and VO say the same words
     "vo_pt_guided": "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!",
     "vo_pt_practice": "वाह! अब आपकी बारी।",
-    "vo_tap_swiftee_replay": "फिर से सुनने के लिए मुझ पर टैप करिए।",
+    # "vo_tap_swiftee_replay": "फिर से सुनने के लिए मुझ पर टैप करिए।" — the title page's bird-cue line: gone since [L02-NO-BIRD-CUE] (2026-10-05)
     "vo_tap_speaker_sentence": "वाक्य सुनने के लिए यहाँ टैप करिए।",
 }.items():
     aud[k] = "assets/Audio/" + k + ".ogg"; txt[k] = v
@@ -698,6 +718,13 @@ std_sfx("sfx_correct_feedback", "std_sfx_correct_feedback_source.ogg")
 std_sfx("sfx_incorrect_feedback", "std_sfx_incorrect_feedback_source.wav")
 std_sfx("sfx_next_button", "std_sfx_next_button_source.wav")
 std_sfx("sfx_play_button", "std_sfx_play_button_source.wav")
+# ---- [L02-NO-BIRD-CUE] (2026-10-05, user request; engine patch 3i above) the title page's replay line "फिर से सुनने के लिए मुझ पर टैप करिए।"
+# (vo_tap_swiftee_replay, a reference recording that reached the dist with the reference's audio set, not made here) is not played by
+# any flow any more: its clip is deleted from the dist and it is no longer registered (its line in the registry above is commented
+# out). A copy of the recording stays in _reskin_build/vo_tap_swiftee_replay_removed_source.ogg, like every other removed clip's source.
+_p = os.path.join(CUR, "assets", "Audio", "vo_tap_swiftee_replay.ogg")
+if os.path.exists(_p): os.remove(_p); print("removed", _p)
+aud.pop("vo_tap_swiftee_replay", None); txt.pop("vo_tap_swiftee_replay", None)
 # ---- [L02-STD-PLAY-BTN] (2026-10-05, user request) "Replace the Play button on the title page with this play button, on the exact same
 # position, placement and size." The user's two SVGs ("Standard play button (1).svg" = the gold disc with the navy play glyph,
 # "Standard play button disabled (1).svg" = the grey waiting disc; 116x116 canvases: an 86 px disc — the white rim circle r 43 — inside
