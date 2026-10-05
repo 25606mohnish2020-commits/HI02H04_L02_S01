@@ -214,15 +214,19 @@ body.vo-playing .stage.l02-find .l02-shape{pointer-events:none;}   /* the fleet'
    circle 116.513x120 @ (36,26), #61D0FE with a 5px #FDF9E9 ring; band 1214.103x84 @ (39.9,44), #CBE8FF with a 4px white ring,
    ink #012F76 32px SemiBold, the text starting 139.55px in; the row carries a 0 4px 2px 25% drop shadow; no header speaker chip
    (the mascot tap replays the question). The mascot keeps the fleet's own mood heads, as on the story and find pages. */
-.stage.l02-q3{--fs:1.04140625;
+/* [L02-Q3-BAND] (2026-10-05, user request) "the exact same title bar as page 15 P1" on pages 14 I3, 16 M1 and 17 M2, their own words kept:
+   the five header rules below (the Figma header's variables, the mascot circle, the band's shadow, the band text's ink/weight) also apply
+   to a sentence page whose card says slide.q3_band (sent_q_page.js wire → stage class .l02-q3-band). Only these header rules — the
+   card-grid rules further down stay G3/P1-only. */
+.stage.l02-q3,.stage.l02-q3-band{--fs:1.04140625;
   --mascot-left:calc(36px * var(--fs));--mascot-top:calc(26px * var(--fs));--mascot-size:calc(120px * var(--fs));
   --band-top:calc(44px * var(--fs));--band-left:calc(39.9px * var(--fs));--band-w:calc(1214.103px * var(--fs));--band-h:calc(84px * var(--fs));
   --band-border:calc(4px * var(--fs));--band-bg:#CBE8FF;--band-edge:#FFFFFF;--band-pad-l:calc(135.55px * var(--fs));--band-pad-r:calc(10px * var(--fs));
   --band-font:calc(32px * var(--fs));}
-.stage.l02-q3 .mascot-wrap{width:calc(116.513px * var(--fs));height:calc(120px * var(--fs));}
-.stage.l02-q3 .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
-.stage.l02-q3 .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
-.stage.l02-q3 .prompt-band .prompt-text{color:#012F76;font-weight:700;letter-spacing:0;}
+.stage.l02-q3 .mascot-wrap,.stage.l02-q3-band .mascot-wrap{width:calc(116.513px * var(--fs));height:calc(120px * var(--fs));}
+.stage.l02-q3 .mascot-circle,.stage.l02-q3-band .mascot-circle{background:#61D0FE;border:calc(5px * var(--fs)) solid #FDF9E9;box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-q3 .prompt-band,.stage.l02-q3-band .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
+.stage.l02-q3 .prompt-band .prompt-text,.stage.l02-q3-band .prompt-band .prompt-text{color:#012F76;font-weight:700;letter-spacing:0;}
 .stage.l02-q3 #audioChip{display:none !important;}
 .stage.l02-q3 #navBtn{display:none !important;}   /* the Figma page has no pill: the question moves on by itself after the correct tap, as before */
 /* the three cards — Figma: 252x314.113 each @ y 247, x 232 / 514 / 796 (30px apart). The engine's .q-row / .opt-grid (flex-centred,

@@ -313,7 +313,8 @@
   function wire(idx){
     var sl = slideAt(idx), st = document.getElementById("stage");
     if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", flagged(idx));
-      st.classList.toggle("l02-sentq-shadow", flagged(idx) && !!(sl && sl.sentq_shadow === true)); }   // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
+      st.classList.toggle("l02-sentq-shadow", flagged(idx) && !!(sl && sl.sentq_shadow === true));     // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
+      st.classList.toggle("l02-q3-band", flagged(idx) && !!(sl && sl.q3_band === true)); }             // [L02-Q3-BAND] P1's Figma title bar (header variables + mascot circle + band shadow + ink; card slide.q3_band)
     if(!flagged(idx)) return;
     wireOptWords(idx); wireIdlePrompt(idx);
   }

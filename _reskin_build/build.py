@@ -1047,6 +1047,15 @@ assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8.ogg")), "M
 # colours, stroke and size stay the engine's (only the shadow was asked for).
 for _s in (i3, m1, m2): _s["sentq_shadow"] = True
 assert "sentq_shadow" not in g3, "G3 must stay without the shadow"
+# ---- [L02-Q3-BAND] (2026-10-05, user request) "Apply the exact same title bar as of page 15 P1 on pages 14 I3, 16 M1 and 17 M2, but keep
+# the text on them as it is." P1's title bar is the Figma 113-198 header of [L02-Q3-FIG] (adapt.css .stage.l02-q3: the mascot circle
+# 116.513x120 @ (36,26) in #61D0FE with a 5px #FDF9E9 ring, the band 1214.103x84 @ (39.9,44) in #CBE8FF with a 4px white ring, the text
+# starting 135.55 in, ink #012F76 32px Baloo 700, letter-spacing 0, the 0 4px 2px 25% drop shadow on both — all through the engine's header
+# variables). Card slide.q3_band → sent_q_page.js wire() sets stage class .l02-q3-band → the same five header rules apply (selector lists in
+# adapt.css [L02-Q3-BAND]); the card-grid rules of .l02-q3 are NOT included, so the sentence layout (picture + three pills) is untouched.
+# Each page keeps its own words (prompt_hi unchanged). G3 (page 11) is not named and keeps the engine's band.
+for _s in (i3, m1, m2): _s["q3_band"] = True
+assert "q3_band" not in g3, "G3 must keep the engine's band"
 for _k in ("vo_q_hint", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
 assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7
