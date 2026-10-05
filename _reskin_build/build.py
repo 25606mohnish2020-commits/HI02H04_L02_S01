@@ -875,7 +875,8 @@ for k in ("bed_room", "bed_bg", "bed_q", "bed_done", "bed_plant", "bed_boy"): ca
 # adapt.js cross-fades the two renders bracketing the heading (over headings 12.6° → 29.4°, the gentle descent, so the view has settled
 # before the bend), each turned by (heading − its deg), so the car looks round the bend as it comes down the carpet (the leg's headings
 # run 0° → ~57° → ~31° at the ring: the car parks in the front view, turned a few degrees); (3) each "?" bobs 3 px, 1.4 s, the four a little out of step
-# (CSS [L02-RC-MOTION]); (4) hold_ms 1000 → 1500: half a second more on the page after the car lands, then page 14.
+# (CSS [L02-RC-MOTION]); (4) hold_ms 1000 → 1500: half a second more on the page after the car lands, then page 14 — and the same day
+# "the page should stay for 1 more second and then the question should come" → 1500 → 2500 (2.5 s on the parked car before page 14).
 RC_TOKENS = [[179, 290], [435, 200], [620, 316], [830, 249]]
 RC_CAR_BOX, RC_CAR_SIZE = (64.0, 230.6), 54.404
 RC_START = (RC_CAR_BOX[0] + RC_CAR_SIZE / 2, RC_CAR_BOX[1] + RC_CAR_SIZE / 2)                 # (91.2, 257.8): the car's centre at rest
@@ -915,7 +916,7 @@ rc["data"] = {"image_id": "rc_scene", "alt_hi": "माधव का कमर�
               "hotspots": [], "signal_name": "scene_tap_first_try",
               "rc": {"tokens": RC_TOKENS, "reach": 0, "boy": [852.5, 102, 76, 142], "shadow": [870.5, 232, 58, 12],   # the boy's layer is FLIPPED in the Figma, so its reported x (928.5) is its right edge: the box starts at 928.5 - 76
                      "car": {"box": list(RC_CAR_BOX), "size": RC_CAR_SIZE, "rot": -5.3, "views": RC_VIEWS}, "leg": {"pts": RC_LEG, "s": 2.6},
-                     "start_ms": 600, "hold_ms": 1500, "sfx": "sfx_rc"}}   # [L02-RC-MOTION] views + hold 1.5 s
+                     "start_ms": 600, "hold_ms": 2500, "sfx": "sfx_rc"}}   # [L02-RC-MOTION] views + hold 2.5 s
 card["slides"].insert(card["slides"].index(i2) + 1, rc)
 assert [s["id"] for s in card["slides"]][card["slides"].index(i2):card["slides"].index(i2) + 3] == ["I2", "RC1", "I3"], "RC1 must sit between I2 and I3"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
