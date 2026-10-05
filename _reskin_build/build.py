@@ -698,6 +698,21 @@ std_sfx("sfx_correct_feedback", "std_sfx_correct_feedback_source.ogg")
 std_sfx("sfx_incorrect_feedback", "std_sfx_incorrect_feedback_source.wav")
 std_sfx("sfx_next_button", "std_sfx_next_button_source.wav")
 std_sfx("sfx_play_button", "std_sfx_play_button_source.wav")
+# ---- [L02-STD-PLAY-BTN] (2026-10-05, user request) "Replace the Play button on the title page with this play button, on the exact same
+# position, placement and size." The user's two SVGs ("Standard play button (1).svg" = the gold disc with the navy play glyph,
+# "Standard play button disabled (1).svg" = the grey waiting disc; 116x116 canvases: an 86 px disc — the white rim circle r 43 — inside
+# a 14 px shadow margin, the glyph nudged right of centre, a 3 px darker crescent for depth) go to assets/UI/btn-play-std.svg and
+# btn-play-std-waiting.svg; the earlier pill art (btn-play.svg / btn-play-waiting.svg) stays beside them unused, as the NAV-NEXT-BTN
+# originals do. The button keeps its box, spot, states and behaviour exactly ([LANDING-PLAY-BTN]: 214x92 at bottom 26, centred, the
+# waiting art before .ready with no tap, the gold art's pop-in / breathing / hold / onclick after); the new art was first drawn centred
+# in that box at the box's height — the 116 canvas at 92 px, as the old 92-high canvas was — so the disc showed 68 px across where the
+# pill was 64 high, its centre where the pill's centre was. Same day, "increase the size of the play button by 20%": the canvas is drawn
+# at 110.4 px (the disc 81.6) and the box grows with it (height 110.4, bottom 16.8 — a background is clipped to its box), the disc's
+# centre unmoved, the width 214 unchanged. CSS: adapt.css [L02-STD-PLAY-BTN].
+for _src, _dst in (("std_play_btn_source.svg", "btn-play-std.svg"), ("std_play_btn_waiting_source.svg", "btn-play-std-waiting.svg")):
+    _s = os.path.join(SCR, _src); _d = os.path.join(CUR, "assets", "UI", _dst)
+    assert os.path.exists(_s), "missing " + _s
+    if not bed_fresh(_d, _s): shutil.copyfile(_s, _d); print("wrote", _d)
 # ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
 # every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
 # cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,

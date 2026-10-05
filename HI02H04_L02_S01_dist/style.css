@@ -2816,6 +2816,18 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-sentq.l02-sentq-shadow .sent-opt .so-pill{box-shadow:0 4px 2px rgba(0,0,0,.25);}
 .stage.l02-sentq.l02-sentq-shadow .prompt-band{box-shadow:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));}
 
+/* ===== [L02-STD-PLAY-BTN] (2026-10-05, user request) the title page's play button is the user's standard round play button — the gold
+   disc with the navy glyph once .ready, the grey waiting disc before — in the SAME 214x92 box at the SAME spot ([LANDING-PLAY-BTN]
+   above: bottom 26, centred, the same pop-in, breathing, hold and tap; the waiting state still takes no tap). The 116x116 canvas (an
+   86 px disc inside a 14 px shadow margin) was first drawn at the box's height, 92 px, centred: the disc 68 px across where the pill
+   was 64 high, its centre where the pill's centre was. Then (same day) "increase the size of the play button by 20%": the canvas is
+   drawn at 110.4 px (92 × 1.2; the disc 81.6 px), and since a background is clipped to its box, the box grows with it — height 92 →
+   110.4 and bottom 26 → 16.8, so the disc's centre stays exactly where it was (72 px above the card's bottom); the width stays 214.
+   Only these rules change; everything else of the block above (states, pop-in, breathing, tap) stands. */
+.start-gate .sg-btn,.start-gate .sg-btn.ready{background-image:url("assets/UI/btn-play-std.svg") !important;background-size:auto 110.4px !important;
+  height:110.4px !important;bottom:16.8px !important;}
+.start-gate .sg-btn:not(.ready){background-image:url("assets/UI/btn-play-std-waiting.svg") !important;}
+
 /* ===== [L02-RC-FIG] (2026-10-05, user request) the RC-car screen between the अब आपकी बारी gate and page 14 (I3) — Figma "FLN by MJ" nodes
    264-664 (the car at the path's start) and 267-858 (the car on the first checkpoint), 1280x720 artboards mapped by --fs = 1333/1280.
    Stage class .l02-rc (adapt.js applyRC, card slide.rc_fig; the engine's TAP_IN_SCENE mounts the page, its picture box is the Figma box).
