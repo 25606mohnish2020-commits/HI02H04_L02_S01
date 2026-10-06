@@ -8,15 +8,15 @@
    "चुका",
    "था।"
   ],
-  "md5": "50025ef409c66385cbd28b94ad607b30",
+  "md5": "907e9033084949760eacc7443476a411",
   "times": [
-   0.14,
-   0.87,
-   1.07,
-   1.55,
-   1.73,
-   2.07,
-   2.23
+   0.09,
+   0.7,
+   0.88,
+   1.35,
+   1.52,
+   1.85,
+   2.06
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -30,46 +30,50 @@
    "सुलाने",
    "लगी।"
   ],
-  "md5": "555bd9c9909abb07d866cdee855162f1",
+  "md5": "1f1d8bef424a3d1b8e775e0ef8a0884e",
   "times": [
-   0.27,
-   1.02,
-   1.3,
-   1.79,
-   2.35,
-   3.04,
-   3.29
+   0.14,
+   0.74,
+   0.97,
+   1.4,
+   1.81,
+   2.4,
+   2.54
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
  "vo_story_3": {
   "words": [
-   "पर",
+   "पर,",
    "माधव",
    "को",
+   "तो",
    "नींद",
+   "ही",
    "नहीं",
    "आ",
    "रही",
    "थी।"
   ],
-  "md5": "335ae1e1b9c88f707d98ceb964be25aa",
+  "md5": "531051da191737b4bd9b784887d91464",
   "times": [
-   0.26,
-   0.56,
-   1.03,
+   0.09,
+   0.39,
+   0.82,
+   1.04,
    1.21,
-   1.49,
-   1.78,
-   1.97,
-   2.23,
-   2.44
+   1.51,
+   1.75,
+   2.03,
+   2.27,
+   2.48,
+   2.68
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
  "vo_story_4": {
   "words": [
-   "मम्मी",
+   "माँ",
    "के",
    "सोते",
    "ही",
@@ -77,16 +81,16 @@
    "उठ",
    "गया।"
   ],
-  "md5": "26e6a7f571bfb648083538c5e89edbb3",
+  "md5": "01b46a4dd73b2f89f8c7a04bbcecca4d",
   "times": [
+   0.09,
    0.29,
-   0.76,
-   1.05,
-   1.45,
-   1.77,
-   2.03,
-   2.28,
-   2.58
+   0.48,
+   0.97,
+   1.18,
+   1.6,
+   1.85,
+   2.17
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -98,14 +102,14 @@
    "चित्र",
    "बनाए।"
   ],
-  "md5": "6e3ef957315f20ffd5072ba60d927da9",
+  "md5": "bc4583f19efbee2e186354409320aa5b",
   "times": [
-   0.24,
-   0.74,
-   1.23,
-   1.46,
-   1.66,
-   2.15
+   0.09,
+   0.63,
+   1.14,
+   1.4,
+   1.6,
+   2.12
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -115,12 +119,12 @@
    "किताब",
    "पढ़ी।"
   ],
-  "md5": "08c0276412ba93eaa70f509719a5bc80",
+  "md5": "1f8fd1b09b8a0a8303ade4f8a95bc8e1",
   "times": [
-   0.21,
-   0.62,
-   1.03,
-   1.36
+   0.08,
+   0.58,
+   1.1,
+   1.48
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -132,14 +136,14 @@
    "खेलने",
    "लगा।"
   ],
-  "md5": "6b169e9ee10796c1ec1aebea27393834",
+  "md5": "71e04c9d2134170bce974c3b150bd3ce",
   "times": [
-   0.24,
-   0.68,
-   1.27,
-   1.39,
-   1.94,
-   2.11
+   0.09,
+   0.45,
+   1.07,
+   1.24,
+   1.81,
+   1.95
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -148,34 +152,34 @@
    "खेलते-खेलते",
    "उसे",
    "नींद",
-   "आ",
-   "गई"
+   "आने",
+   "लगी।"
   ],
-  "md5": "0519e53df14b7f974aa0cabfcf369384",
+  "md5": "197dbd355861bd7d4f20e84fe51fae47",
   "times": [
-   0.25,
-   0.97,
-   1.32,
-   1.71,
-   1.89,
-   2.14
+   0.16,
+   1.01,
+   1.33,
+   1.81,
+   2.27,
+   2.41
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
  "vo_story_8b": {
   "words": [
-   "और",
    "वह",
+   "थककर",
    "सो",
    "गया।"
   ],
-  "md5": "24d17a9ba17ac8e8912b95ad73cb3ac0",
+  "md5": "7d3fb2d70bc63774e7e2e28f598a3e91",
   "times": [
-   0.05,
-   0.42,
-   0.64,
-   0.72,
-   0.81
+   0.09,
+   0.45,
+   1.2,
+   1.48,
+   1.88
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -184,11 +188,11 @@
    "खिलौनों",
    "से"
   ],
-  "md5": "15986147c249b2aa12493d8166a69fda",
+  "md5": "bedc7e5516edb0c4cd5c639aef1fad7a",
   "times": [
-   0.09,
-   0.7,
-   0.9
+   0.1,
+   0.78,
+   0.94
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -197,11 +201,11 @@
    "बर्तनों",
    "से"
   ],
-  "md5": "b3965e4f875f1c4e40ae82ef4f9e90ef",
+  "md5": "115b17e09c6f2401a96f6eaddfd49841",
   "times": [
    0.09,
-   0.72,
-   0.91
+   0.89,
+   1.02
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -210,11 +214,11 @@
    "किताबों",
    "से"
   ],
-  "md5": "11edeac3ba167513a237a3d16be97b06",
+  "md5": "9e2b93522c98b93072dd3e408ff7d4fe",
   "times": [
    0.09,
-   0.69,
-   0.86
+   0.81,
+   0.98
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -228,16 +232,16 @@
    "रहा",
    "है।"
   ],
-  "md5": "b6c7978696b448d54007a0c89c051920",
+  "md5": "ae0c41693940b7ed0f0b5bf69468d14c",
   "times": [
-   0.09,
-   0.82,
-   1.75,
-   2.41,
-   2.83,
-   3.12,
-   3.62,
-   3.97
+   0.1,
+   0.6,
+   1.49,
+   2.29,
+   2.69,
+   3.1,
+   3.75,
+   3.94
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -248,12 +252,12 @@
    "रही",
    "हैं।"
   ],
-  "md5": "0ac749df7efd2077d77efe2604150a4e",
+  "md5": "c480c8252e859cbdd20a2751b25c8cab",
   "times": [
    0.09,
-   0.36,
-   0.74,
-   1.02,
+   0.53,
+   0.81,
+   1.04,
    1.21
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
@@ -266,14 +270,14 @@
    "रही",
    "हैं।"
   ],
-  "md5": "ce1a9593efcd9ca1f490ca308ee76c55",
+  "md5": "0c5f4c72c47621abc310ca9fe7bd76df",
   "times": [
    0.09,
-   0.61,
-   0.89,
-   1.28,
-   1.47,
-   1.6
+   0.68,
+   0.95,
+   1.42,
+   1.57,
+   1.73
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -285,14 +289,14 @@
    "रही",
    "हैं।"
   ],
-  "md5": "93d5dbd47e9ef6c53efdd3f18f697839",
+  "md5": "81a8d03b5d561e8ee540e3cfd84f1333",
   "times": [
    0.09,
-   0.62,
-   0.88,
-   1.34,
+   0.77,
+   1.02,
    1.53,
-   1.67
+   1.74,
+   1.87
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -326,13 +330,13 @@
    "किताब",
    "पढ़ी।"
   ],
-  "md5": "14105805abefbfdc88aed8753c3163c1",
+  "md5": "93a1985fc3540c42d19a7db6f4817102",
   "times": [
    0.09,
-   0.59,
-   0.81,
-   1.23,
-   1.59
+   0.71,
+   1.12,
+   1.66,
+   2.01
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -343,12 +347,12 @@
    "अखबार",
    "पढ़ा।"
   ],
-  "md5": "258c46617b184d034279b974b0f09400",
+  "md5": "1101407ab2f46481bbd97e63cc22a99b",
   "times": [
    0.09,
-   0.59,
-   0.83,
-   1.35,
+   0.57,
+   0.81,
+   1.38,
    1.71
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
@@ -360,13 +364,13 @@
    "पत्र",
    "पढ़ा।"
   ],
-  "md5": "f18cf520ae6c9fa0c38465ea3da8744a",
+  "md5": "3bd3a66b1c461dab51a1dfb696a61ecc",
   "times": [
    0.09,
-   0.6,
-   0.83,
-   1.18,
-   1.52
+   0.66,
+   1.01,
+   1.37,
+   1.7
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -378,14 +382,14 @@
    "किताब",
    "पढ़ी।"
   ],
-  "md5": "960458beaf5620357c6c1bab5549825d",
+  "md5": "b50f30118b819b3c729bc7f94154921d",
   "times": [
-   0.09,
-   0.87,
-   1.75,
-   2.16,
-   2.99,
-   3.35
+   0.21,
+   0.74,
+   1.46,
+   1.9,
+   2.75,
+   3.08
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -396,13 +400,13 @@
    "गया",
    "था।"
   ],
-  "md5": "ec06b5aa50724da9c78556a0c66f7f1e",
+  "md5": "2df0606aa9ca20d00fa263bbbd6a92c3",
   "times": [
    0.09,
-   0.42,
-   0.62,
-   0.98,
-   1.21
+   0.59,
+   0.97,
+   1.32,
+   1.62
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -412,12 +416,12 @@
    "भूखा",
    "था।"
   ],
-  "md5": "10c5d8bb5f0fa80d6eef0c2dd3b29a77",
+  "md5": "1f95eea2eb8d910736d62e80448a3d6b",
   "times": [
    0.09,
-   0.7,
-   0.93,
-   1.13
+   0.75,
+   0.99,
+   1.24
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -428,13 +432,13 @@
    "गया",
    "था।"
   ],
-  "md5": "5c437d08635525a37cff2fb7daa99b5e",
+  "md5": "cce08e5cfbebb4ced77973e7bdcf86a5",
   "times": [
    0.09,
-   0.47,
-   0.69,
-   0.95,
-   1.15
+   0.39,
+   0.66,
+   0.92,
+   1.18
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -446,14 +450,14 @@
    "गया",
    "था।"
   ],
-  "md5": "d3c9dc88e00522baf3db696ba94bb129",
+  "md5": "4810e11f3ef3d4ab8164765bc92d2d48",
   "times": [
-   0.09,
-   0.89,
-   1.75,
-   2.18,
-   2.75,
-   2.97
+   0.1,
+   0.69,
+   1.23,
+   1.86,
+   2.45,
+   2.68
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }

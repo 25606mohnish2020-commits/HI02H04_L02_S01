@@ -68,7 +68,7 @@ eng = eng.replace(needle, needle + '\n  if(CARD.landing_caption_hi && $("sgCapti
 #     (assets/Audio/vo_pt_tutorial.ogg), so the headline and the line are in sync; the other two gates are as in the reference
 needle = 'tutorial:"चलिए, शुरू करें!"'
 assert eng.count(needle) == 1, "PHASE_GATE_TITLE anchor not unique"
-eng = eng.replace(needle, 'tutorial:"आइए कहानी पढ़ें।"', 1)
+eng = eng.replace(needle, 'tutorial:"चलिए, शुरू करें!"', 1)   # [L02-VO-BATCH] 2026-10-06: the recorded line is "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!" — the headline is its last words = the reference's own; the earlier "आइए कहानी पढ़ें।" went with the earlier recording
 # 3d. [L02-FIND-FIG] TAP_IN_SCENE's delayed completion (900 ms after the "correct" line) fires only if its slide is still the
 #     one on the stage: on the Figma find page the lit आगे बढ़ें pill may already have moved the lesson on (adapt.js), and the
 #     stray call would otherwise complete the NEXT page as well.
@@ -235,7 +235,7 @@ for s in card["slides"]:
     if s["type"] == "CELEBRATION": s.setdefault("audio", {})["sfx"] = "sfx_celebrate"
 aud, txt = card["assets"]["audio"], card["assets"]["audio_text"]
 for k, v in {
-    "vo_pt_tutorial": "आइए कहानी पढ़ें।",   # [L02-GATE-LINE] first transition screen: headline and VO say the same words
+    "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",   # [L02-GATE-LINE] → [L02-VO-BATCH] the recorded line; the headline is its last words, चलिए, शुरू करें!
     "vo_pt_guided": "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!",
     "vo_pt_practice": "वाह! अब आपकी बारी।",
     # "vo_tap_swiftee_replay": "फिर से सुनने के लिए मुझ पर टैप करिए।" — the title page's bird-cue line: gone since [L02-NO-BIRD-CUE] (2026-10-05)
@@ -275,17 +275,17 @@ for s in story:
     clip = (s.get("audio") or {}).get("prompt")
     if clip in CHIP_PULSE_AT: s["data"]["chip_pulse_at"] = CHIP_PULSE_AT[clip]
 t8 = story[-1]; t9 = copy.deepcopy(t8)
-t8["data"]["words"] = [{"text": w} for w in ["खेलते-खेलते", "उसे", "नींद", "आ", "गई"]]
+t8["data"]["words"] = [{"text": w} for w in ["खेलते-खेलते", "उसे", "नींद", "आने", "लगी।"]]   # [L02-VO-BATCH] the deck's / recording's words
 t8["data"]["whole_audio"] = "vo_story_8a"
 t8["data"]["alt_hi"] = "माधव खेलते-खेलते जम्हाई ले रहा है।"
 t9["id"] = "T9"
 t9["data"]["image_id"] = "story_9"
-t9["data"]["words"] = [{"text": w} for w in ["और", "वह", "सो", "गया।"]]
+t9["data"]["words"] = [{"text": w} for w in ["वह", "थककर", "सो", "गया।"]]   # [L02-VO-BATCH]
 t9["data"]["whole_audio"] = "vo_story_8b"
 t9["data"]["alt_hi"] = "माधव खिलौनों के बीच सो गया, माँ हैरान खड़ी है।"
 card["slides"].insert(card["slides"].index(t8) + 1, t9)
-aud["vo_story_8a"] = "assets/Audio/vo_story_8a.ogg"; txt["vo_story_8a"] = "खेलते-खेलते उसे नींद आ गई"
-aud["vo_story_8b"] = "assets/Audio/vo_story_8b.ogg"; txt["vo_story_8b"] = "और वह सो गया।"
+aud["vo_story_8a"] = "assets/Audio/vo_story_8a.ogg"; txt["vo_story_8a"] = "खेलते-खेलते उसे नींद आने लगी।"   # [L02-VO-BATCH] the recordings' words (the clips are made below)
+aud["vo_story_8b"] = "assets/Audio/vo_story_8b.ogg"; txt["vo_story_8b"] = "वह थककर सो गया।"
 # ---- [L02-POP-SFX] the picture's pop has a sound. The user's assets/SFX/"Page N.mp3" are raw library tracks (1.8 s to 3 min,
 # several opening in silence), so each is cut to the pop's 2 s, levelled and encoded like every other clip (Opus, mono, 48 k)
 # into assets/Audio/sfx_pop_<n>.ogg (n = story page index, page N = n + 1); story_read_page.js starts that clip with the pop
@@ -318,6 +318,128 @@ def sfx_onset(src):
 def ff(*args):
     r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-y", *args], capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout + r.stderr
+
+# ---- [L02-VO-BATCH] (2026-10-06, user request) "I have added the folder (voiceovers_batch (25)) which contains all the new VOs — implement
+# all these VOs to their respective places, replace the older VOs with these VOs and they must be in sync." The folder (kept where the user
+# put it, HI02H04_L02_S01_dist/assets/voiceovers_batch (25)/voiceovers/, like the car and SFX folders) holds one WAV per manifest line
+# (61; 24 kHz mono 16-bit, 0.2-0.3 s of silence before the voice, -21..-15 LUFS), named by Audio ID — the VO_Manifest.xlsx of the same
+# day ([L02-VO-MANIFEST]). Each is made into assets/Audio/<id>.ogg exactly as the placeholder lines were (tts_clip): cut to 0.10 s before
+# the voice and 0.33 s after it (silencedetect -45 dB / 0.15 s), two-pass linear loudnorm to -16.5 LUFS / -1.1 dBTP (the lesson's
+# recordings sat at -16.4..-17.2, its placeholders at -15.9: one level for every line now), 20 ms fade-in / 100 ms fade-out, Opus 64 k
+# mono 48 k; remade only when the WAV is newer. Every line is registered with the deck's words (VO_LINES): the placeholder tts_clip calls
+# below return at once for these ids (the recording rules), the Vorbis cue clip is no longer made, the gate / fleet lines of the registry
+# above are overridden. In sync: the story pages' words are the recordings' words (T3 / T4 here, T8 / T9 at their split), and every
+# word-timing table (story word_times, the sentence pages' word_times_by_audio) is re-measured from the new clips by word_times_for (the
+# md5 in word_times.json goes stale → envelope measurement). The pages are wired further down ([L02-VO-BATCH] wiring): I1 / I2 option
+# ids, the seven page reveal lines, RC1's opener, I3's one-word praise. Not spoken any more, still registered (as every removed clip is):
+# vo_q_reveal, vo_opt_khana / book / toys / bed / chair, vo_tap_speaker_sentence.
+VO_BATCH_DIR = os.path.join(CUR, "assets", "voiceovers_batch (25)", "voiceovers")
+VO_TARGET_I = -16.5
+VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the lesson's play order; one recording each in the batch
+    # the title page (deck slide 3)
+    ("vo_landing", "नमस्ते दोस्त! मैं हूँ स्विफ़्टी, आज हम एक कहानी पढ़ेंगे - सोना नहीं, खेलना है।"),
+    # the first transition screen (deck slide 4)
+    ("vo_pt_tutorial", "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!"),
+    # the story pages T1-T9 (deck slides 5-13): the mic cue, then each sentence
+    ("vo_tap_speaker_sentence_story", "इस बटन पर टैप करिए और वाक्य पढ़िए।"),
+    ("vo_story_1", "दोपहर का खाना हो चुका था।"),
+    ("vo_story_2", "माधव की माँ उसे सुलाने लगी।"),
+    ("vo_story_3", "पर, माधव को तो नींद ही नहीं आ रही थी।"),
+    ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
+    ("vo_story_5", "उसने दीवार पर चित्र बनाए।"),
+    ("vo_story_6", "उसने किताब पढ़ी।"),
+    ("vo_story_7", "वह खिलौनों से खेलने लगा।"),
+    ("vo_story_8a", "खेलते-खेलते उसे नींद आने लगी।"),
+    ("vo_story_8b", "वह थककर सो गया।"),
+    # the guided transition (the fleet's line; the deck has no line for it)
+    ("vo_pt_guided", "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!"),
+    # G2 — find Madhav in the picture (deck slide 14): prompt, the three hints, the correct line (the lesson's; the deck has none)
+    ("vo_tap_madhav", "इस चित्र में माधव कहाँ है? माधव को पहचानिए और उसपर टैप कीजिए।"),
+    ("vo_tap_try_madhav", "ध्यान से देखिए और माधव को पहचानिए।"),
+    ("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।"),
+    ("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।"),
+    ("vo_tap_ok", "शाबाश! सही जगह।"),
+    # G3 — माधव किससे खेल रहा है? (deck slide 15): prompt, hint 1, the options, the reveal (hint 3), the correct line (the lesson's)
+    ("vo_q_khel", "चित्र में माधव किससे खेल रहा है?"),
+    ("vo_q_hint", "चित्र को ध्यान से देखिए।"),
+    ("vo_opt_khilono_se", "खिलौनों से"),
+    ("vo_opt_bartano_se", "बर्तनों से"),
+    ("vo_opt_kitabo_se", "किताबों से"),
+    ("vo_reveal_khel", "चित्र में माधव खिलौनों से खेल रहा है। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_khel", "शाबाश! माधव खिलौनों से खेल रहा है।"),
+    # I1 — कहानी में माधव ने सबसे पहले क्या किया? (deck slide 16): prompt, hint 1, the sentence options, the reveal, the correct line
+    ("vo_q_khana", "कहानी में माधव ने सबसे पहले क्या किया?"),
+    ("vo_q_try", "फिर से कोशिश कीजिए, कहानी याद करिए।"),
+    ("vo_p1_khana", "माधव ने खाना खाया।"),
+    ("vo_opt_kitab_padhi", "माधव ने किताब पढ़ी।"),
+    ("vo_opt_khilono_se_khela", "माधव ने खिलौनों से खेला।"),
+    ("vo_reveal_khana", "माधव ने सबसे पहले खाना खाया। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_q_correct", "शाबाश! यही सही जवाब है।"),
+    # I2 — आख़िर में माधव कहाँ सोया? (deck slide 17): prompt, the place options, the reveal (hint 1 is a wiggle, no line)
+    ("vo_q_kahan", "आख़िर में माधव कहाँ सोया?"),
+    ("vo_opt_khilono_ke_beech", "खिलौनों के बीच"),
+    ("vo_opt_palang_par", "पलंग पर"),
+    ("vo_opt_kursi_par", "कुर्सी पर"),
+    ("vo_reveal_khilone_beech", "माधव खिलौनों के बीच सो गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    # the practice transition (the fleet's line), then the RC-car screen's opener (deck slide 18)
+    ("vo_pt_practice", "वाह! अब आपकी बारी।"),
+    ("vo_rc_intro", "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?"),
+    # I3 — चित्र में माँ क्या कर रही हैं? (deck slide 19): prompt, options, the reveal, the correct line the deck gives ("शाबाश।")
+    ("vo_q_maa_kya", "चित्र में माँ क्या कर रही हैं?"),
+    ("vo_opt_khana_bana", "खाना बना रही हैं।"),
+    ("vo_opt_sula_rahi", "माधव को सुला रही हैं।"),
+    ("vo_opt_padha_rahi", "माधव को पढ़ा रही हैं।"),
+    ("vo_reveal_sula", "माँ माधव को सुला रही हैं। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_sula", "शाबाश।"),
+    # P1 — माँ के सोते ही माधव ने क्या किया? (deck slide 20): prompt, options (माधव ने खाना खाया। is listed under I1), the reveal
+    ("vo_q_maa_sote", "माँ के सोते ही माधव ने क्या किया?"),
+    ("vo_p1_utha", "माधव उठ गया।"),
+    ("vo_p1_rona", "माधव रोने लगा।"),
+    ("vo_reveal_utha", "माँ के सोते ही माधव उठ गया। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    # M1 — माधव ने क्या पढ़ा? (deck slide 21): prompt, options (माधव ने किताब पढ़ी। is listed under I1), the reveal, the correct line
+    ("vo_q_kitab", "माधव ने क्या पढ़ा?"),
+    ("vo_opt_akhbar_padha", "माधव ने अखबार पढ़ा।"),
+    ("vo_opt_patra_padha", "माधव ने पत्र पढ़ा।"),
+    ("vo_reveal_kitab", "माधव ने किताब पढ़ी। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_kitab_padhi", "शाबाश! माधव ने किताब पढ़ी।"),
+    # M2 — कहानी के अंत में माधव क्यों सो गया? (deck slide 22): prompt, options, the reveal, the correct line
+    ("vo_q_kyon_soya", "कहानी के अंत में माधव क्यों सो गया?"),
+    ("vo_opt_thak_gaya", "वह थक गया था।"),
+    ("vo_opt_bhookha_tha", "वह भूखा था।"),
+    ("vo_opt_dar_gaya", "वह डर गया था।"),
+    ("vo_reveal_thak", "माधव थक गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_thak_gaya", "शाबाश! वह थक गया था।"),
+    # the celebration (deck slide 23)
+    ("vo_celebrate", "शाबाश! आपने पूरी कहानी ध्यान से पढ़ी और सभी प्रश्नों के उत्तर दे दिए।"),
+]
+VO_BATCH_IDS = {k for k, _ in VO_LINES}
+assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
+def vo_clip(name, text):
+    """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.ogg, trimmed / levelled / encoded like tts_clip."""
+    src = os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    assert os.path.exists(src), "[L02-VO-BATCH] missing recording " + src
+    aud[name] = "assets/Audio/" + name + ".ogg"; txt[name] = text
+    if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src): return   # remade only for a newer WAV (not, like bed_fresh — defined further down — for a newer build.py: 61 encodes take ~2 min; delete the .ogg to force one)
+    out = ff("-i", src, "-af", "silencedetect=n=-45dB:d=0.15", "-f", "null", "-")
+    h, mnt, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", out).groups(); dur = int(h) * 3600 + int(mnt) * 60 + float(sec)
+    sil = re.findall(r"silence_start: ([\d.]+)(?:.*?silence_end: ([\d.]+))?", out, re.S)
+    starts = [float(x) for x, y in sil]; ends = [float(y) if y else dur for x, y in sil]
+    speech0 = ends[0] if starts and starts[0] < 0.05 else 0.0
+    speech1 = starts[-1] if starts and ends[-1] >= dur - 0.05 and starts[-1] > speech0 else dur
+    t0 = max(0.0, speech0 - 0.10); t1 = min(dur, speech1 + 0.33)
+    cut = ["-ss", "%.3f" % t0, "-t", "%.3f" % (t1 - t0), "-i", src]
+    m = json.loads((lambda o: o[o.rindex("{"):o.rindex("}") + 1])(ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:print_format=json" % VO_TARGET_I, "-f", "null", "-")))
+    ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:measured_I=%s:measured_TP=%s:measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true,"
+       "aresample=48000,afade=t=in:st=0:d=0.02,afade=t=out:st=%.3f:d=0.1" % (VO_TARGET_I, m["input_i"], m["input_tp"], m["input_lra"], m["input_thresh"], m["target_offset"], t1 - t0 - 0.1),
+       "-ac", "1", "-ar", "48000", "-c:a", "libopus", "-b:a", "64k", dst)
+    assert os.path.exists(dst), "ffmpeg did not write " + dst
+    print("wrote", dst, "speech %.2f-%.2f of %.2f s" % (speech0, speech1, dur))
+for _k, _t in VO_LINES: vo_clip(_k, _t)
+# the story pages' words are the recordings' words (the deck's sentences; T8 / T9 are set where T8 is split, above)
+for _s in story:
+    if _s["id"] == "T3": _s["data"]["words"] = [{"text": w} for w in ["पर,", "माधव", "को", "तो", "नींद", "ही", "नहीं", "आ", "रही", "थी।"]]
+    if _s["id"] == "T4": _s["data"]["words"] = [{"text": w} for w in ["माँ", "के", "सोते", "ही", "वह", "उठ", "गया।"]]
+assert [w["text"] for w in next(s for s in story if s["id"] == "T3")["data"]["words"]] == "पर, माधव को तो नींद ही नहीं आ रही थी।".split()
 def sfx_cut_start(src, length=POP_S):
     out = ff("-i", src, "-af", "aresample=24000,asetnsamples=n=%d,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-" % int(24000 * SFX_WIN), "-f", "null", "-")
     vals = [(-120.0 if x == "-inf" else float(x)) for x in re.findall(r"RMS_level=(-?[\d.]+|-inf)", out)]
@@ -708,6 +830,7 @@ def tts_clip(name, text, target_i=-15.9):
     ...mp3 (made once; kept), then assets/Audio/<name>.ogg: edge's leading / trailing silence found with silencedetect (-45 dB, 0.15 s) and
     cut to 0.10 s before the speech and 0.33 s after it; two-pass loudnorm (linear) to target_i LUFS / -1.1 dBTP; a 20 ms fade-in and a
     100 ms fade-out; Opus 64 k mono 48 k like every other clip. Registered in the card's audio / audio_text."""
+    if name in VO_BATCH_IDS: return                       # [L02-VO-BATCH] the recorded line (vo_clip above) replaces the placeholder: nothing to make, nothing to register
     src = os.path.join(SCR, name + "_source_edge-tts_hi-IN-SwaraNeural.mp3"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
     if not os.path.exists(src):
         subprocess.run([sys.executable, "-m", "edge_tts", "-v", "hi-IN-SwaraNeural", "-t", text, "--write-media", src], check=True)
@@ -867,10 +990,10 @@ def vorbis_clip(name, src, q=5):
     ff("-i", s, "-c:a", "libvorbis", "-q:a", str(q), dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, os.path.getsize(dst), "bytes")
-vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_source_vo_1.wav")
+# vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_source_vo_1.wav")   # [L02-VO-BATCH] the batch's recording of the line is the clip now (vo_clip above)
 # the recording's words, as the user gave them on 2026-10-03 ("इस बटन पर टैप करिए और वाक्य पढिए"; the lesson's spelling पढ़िए, as in
 # vo_read_instr) — so the clip has its audio_text entry like every other line of the card after all
-txt["vo_tap_speaker_sentence_story"] = "इस बटन पर टैप करिए और वाक्य पढ़िए।"
+assert txt["vo_tap_speaker_sentence_story"] == "इस बटन पर टैप करिए और वाक्य पढ़िए।"   # [L02-VO-BATCH] registered with the batch
 # ---- [L02-T1-CUE-2S] (2026-10-03, user request) page 2 (T1) speaks that cue shortly after it opens — "once the page opens and after
 # N seconds the VO should be played along with the same button animation in sync with the VO": first 2 s, then (later the same day)
 # 1 s — instead of the 4 s every story page waits (the reference spacing, kept on pages 3-10). The chip pulse is the cue's own
@@ -1270,9 +1393,8 @@ i3["data"]["correct_sfx"] = {"src": "sfx_pop_2", "hold_ms": 2000, "vol": 1.0}
 i3["data"]["prompt_idle_ms"] = 5000
 I3_WT = {}
 for _o in i3["data"]["options"]: I3_WT[_o["audio"]] = word_times_for(_o["audio"], _o["label_hi"].split())
-_ok3_words = "शाबाश! माँ माधव को सुला रही हैं।".split(); _ok3_t = word_times_for("vo_ok_sula", _ok3_words)
-I3_WT["vo_ok_sula"] = _ok3_t[2:8]     # माधव, को, सुला, रही, हैं। start … हैं। end — the correct pill's five words inside the praise line
-assert _ok3_words[2:] == "माधव को सुला रही हैं।".split() and len(I3_WT["vo_ok_sula"]) == 6, (_ok3_words, I3_WT["vo_ok_sula"])
+# [L02-VO-BATCH] the praise line is the deck's one word "शाबाश।" now (no sentence part), so the correct pill's words are not lit during it
+assert txt["vo_ok_sula"] == "शाबाश।", txt["vo_ok_sula"]
 i3["data"]["word_times_by_audio"] = I3_WT
 i3["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_maa_kya") * 1000))
 SULA_SRC = os.path.join(SCR, "i3_sula_source.png"); SULA_DST = os.path.join(CUR, "assets", "Images", "i3_sula.webp"); SULA_X0 = 285
@@ -1565,6 +1687,26 @@ if not os.path.exists(BGM_DST) or os.path.getmtime(BGM_DST) < os.path.getmtime(B
 _ids = [s["id"] for s in card["slides"]]
 assert _ids[0] == "T1" and _ids[-2] == "M2" and _ids[-1] == "CEL", "the bed's range T1..M2 does not fit the slide order: %r" % _ids
 card["bgm"] = {"src": "assets/Audio/bgm_standard_2.mp3", "first": 0, "last": _ids.index("M2"), "landing": True, "base": 0.13, "duck": 0.03}
+# ---- [L02-VO-BATCH] wiring (2026-10-06): the recorded lines in their places (the clips + texts are registered where they are made, above).
+# I1's three sentence options speak their sentences (vo_p1_khana, vo_opt_kitab_padhi, vo_opt_khilono_se_khela — the words it shows; the
+# one-word clips vo_opt_khana / book / toys spoke "खाना / किताब / खिलौने"), I2's three place options theirs (vo_opt_khilono_ke_beech /
+# palang_par / kursi_par for "खिलौनों के बीच / पलंग पर / कुर्सी पर"; vo_opt_toys / bed / chair said "खिलौने / बिस्तर / कुर्सी"). Every
+# question page's reveal (the third wrong tap: the engine speaks audio.reveal while the answer pulses — mountTapOptions revealAnswer; the
+# sentence pages let that call through) is its own deck line "… यह सही उत्तर है, इसपर टैप कीजिए।" instead of the generic vo_q_reveal.
+# RC1 (the first car screen) opens with the deck's "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?" (data.rc.intro, RC1 only — the later
+# car screens are copies made before this line is set): adapt.js applyRC speaks it through the engine's play() and the car sets off
+# start_ms after it ends. This block runs BEFORE the card is serialised into index.html (card_json, next line). Checked at the end: the lines the lesson speaks are exactly the batch's 61 ([L02-VO-MANIFEST]).
+_by_id = {s["id"]: s for s in card["slides"]}
+for _sid, _ids in (("I1", ["vo_p1_khana", "vo_opt_kitab_padhi", "vo_opt_khilono_se_khela"]), ("I2", ["vo_opt_khilono_ke_beech", "vo_opt_palang_par", "vo_opt_kursi_par"])):
+    _opts = _by_id[_sid]["data"]["options"]; assert len(_opts) == 3, _sid
+    for _o, _id in zip(_opts, _ids): _o["audio"] = _id
+assert [o["label_hi"] for o in _by_id["I1"]["data"]["options"]] == ["माधव ने खाना खाया ।", "माधव ने किताब पढ़ी ।", "माधव ने खिलौनों से खेला ।"]
+assert [o["label_hi"] for o in _by_id["I2"]["data"]["options"]] == ["खिलौनों के बीच ।", "पलंग पर ।", "कुर्सी पर ।"]
+for _sid, _rid in (("G3", "vo_reveal_khel"), ("I1", "vo_reveal_khana"), ("I2", "vo_reveal_khilone_beech"), ("I3", "vo_reveal_sula"), ("P1", "vo_reveal_utha"), ("M1", "vo_reveal_kitab"), ("M2", "vo_reveal_thak")):
+    assert _by_id[_sid]["audio"].get("reveal") == "vo_q_reveal", (_sid, _by_id[_sid]["audio"])
+    _by_id[_sid]["audio"]["reveal"] = _rid
+assert "intro" not in _by_id["RC1"]["data"]["rc"] and all("intro" not in _by_id[k]["data"]["rc"] for k in ("RC2", "RC3", "RC4"))
+_by_id["RC1"]["data"]["rc"]["intro"] = "vo_rc_intro"
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----
@@ -1673,7 +1815,8 @@ print("wrote", len(style_css), len(app_js), len(index_html))
 # touched: its clips still speak the old words until the new recordings arrive — this manifest is the recording script for them. Still
 # left out, as before: the registered leftovers of removed pages and the cue's dead fallback (no page plays them); sound effects and the
 # music (no script). Every set is asserted against the card, and the engine's spoken ids against app.js's literals, so drift is loud.
-# Rewritten only when its rows change (no churn).
+# Rewritten only when its rows change (no churn). Third pass (2026-10-06, [L02-VO-BATCH]): the recordings arrived and are wired in, so
+# the CHANGED / NEW / DROPPED sets are gone — the lesson now speaks exactly these 61 lines with exactly these words (asserted below).
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 ENGINE_LINES = ["vo_landing", "vo_pt_tutorial", "vo_pt_guided", "vo_pt_practice", "vo_tap_speaker_sentence_story"]   # welcome, three gates, story cue
@@ -1689,98 +1832,15 @@ def _vo_walk(o, out):
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
 _spoken = set(_all_slide) | set(ENGINE_LINES)                      # what the lesson plays today
-assert len(_spoken) == 55 and len(aud) - len(_spoken) == 14, "[L02-VO-MANIFEST] expected 55 spoken lines of 69 registered: " + str((len(_spoken), len(aud)))
-MANIFEST = [   # (audio id, the line) — the 2026-10-04 deck's words, in the lesson's play order
-    # the title page (deck slide 3)
-    ("vo_landing", "नमस्ते दोस्त! मैं हूँ स्विफ़्टी, आज हम एक कहानी पढ़ेंगे - सोना नहीं, खेलना है।"),
-    # the first transition screen (deck slide 4)
-    ("vo_pt_tutorial", "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!"),
-    # the story pages T1-T9 (deck slides 5-13): the mic cue, then each sentence
-    ("vo_tap_speaker_sentence_story", "इस बटन पर टैप करिए और वाक्य पढ़िए।"),
-    ("vo_story_1", "दोपहर का खाना हो चुका था।"),
-    ("vo_story_2", "माधव की माँ उसे सुलाने लगी।"),
-    ("vo_story_3", "पर, माधव को तो नींद ही नहीं आ रही थी।"),
-    ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
-    ("vo_story_5", "उसने दीवार पर चित्र बनाए।"),
-    ("vo_story_6", "उसने किताब पढ़ी।"),
-    ("vo_story_7", "वह खिलौनों से खेलने लगा।"),
-    ("vo_story_8a", "खेलते-खेलते उसे नींद आने लगी।"),
-    ("vo_story_8b", "वह थककर सो गया।"),
-    # the guided transition (the fleet's line; the deck has no line for it)
-    ("vo_pt_guided", "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!"),
-    # G2 — find Madhav in the picture (deck slide 14): prompt, the three hints, the correct line (the lesson's; the deck has none)
-    ("vo_tap_madhav", "इस चित्र में माधव कहाँ है? माधव को पहचानिए और उसपर टैप कीजिए।"),
-    ("vo_tap_try_madhav", "ध्यान से देखिए और माधव को पहचानिए।"),
-    ("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।"),
-    ("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।"),
-    ("vo_tap_ok", "शाबाश! सही जगह।"),
-    # G3 — माधव किससे खेल रहा है? (deck slide 15): prompt, hint 1, the options, the reveal (hint 3), the correct line (the lesson's)
-    ("vo_q_khel", "चित्र में माधव किससे खेल रहा है?"),
-    ("vo_q_hint", "चित्र को ध्यान से देखिए।"),
-    ("vo_opt_khilono_se", "खिलौनों से"),
-    ("vo_opt_bartano_se", "बर्तनों से"),
-    ("vo_opt_kitabo_se", "किताबों से"),
-    ("vo_reveal_khel", "चित्र में माधव खिलौनों से खेल रहा है। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    ("vo_ok_khel", "शाबाश! माधव खिलौनों से खेल रहा है।"),
-    # I1 — कहानी में माधव ने सबसे पहले क्या किया? (deck slide 16): prompt, hint 1, the sentence options, the reveal, the correct line
-    ("vo_q_khana", "कहानी में माधव ने सबसे पहले क्या किया?"),
-    ("vo_q_try", "फिर से कोशिश कीजिए, कहानी याद करिए।"),
-    ("vo_p1_khana", "माधव ने खाना खाया।"),
-    ("vo_opt_kitab_padhi", "माधव ने किताब पढ़ी।"),
-    ("vo_opt_khilono_se_khela", "माधव ने खिलौनों से खेला।"),
-    ("vo_reveal_khana", "माधव ने सबसे पहले खाना खाया। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    ("vo_q_correct", "शाबाश! यही सही जवाब है।"),
-    # I2 — आख़िर में माधव कहाँ सोया? (deck slide 17): prompt, the place options, the reveal (hint 1 is a wiggle, no line)
-    ("vo_q_kahan", "आख़िर में माधव कहाँ सोया?"),
-    ("vo_opt_khilono_ke_beech", "खिलौनों के बीच"),
-    ("vo_opt_palang_par", "पलंग पर"),
-    ("vo_opt_kursi_par", "कुर्सी पर"),
-    ("vo_reveal_khilone_beech", "माधव खिलौनों के बीच सो गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    # the practice transition (the fleet's line), then the RC-car screen's opener (deck slide 18)
-    ("vo_pt_practice", "वाह! अब आपकी बारी।"),
-    ("vo_rc_intro", "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?"),
-    # I3 — चित्र में माँ क्या कर रही हैं? (deck slide 19): prompt, options, the reveal, the correct line the deck gives ("शाबाश।")
-    ("vo_q_maa_kya", "चित्र में माँ क्या कर रही हैं?"),
-    ("vo_opt_khana_bana", "खाना बना रही हैं।"),
-    ("vo_opt_sula_rahi", "माधव को सुला रही हैं।"),
-    ("vo_opt_padha_rahi", "माधव को पढ़ा रही हैं।"),
-    ("vo_reveal_sula", "माँ माधव को सुला रही हैं। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    ("vo_ok_sula", "शाबाश।"),
-    # P1 — माँ के सोते ही माधव ने क्या किया? (deck slide 20): prompt, options (माधव ने खाना खाया। is listed under I1), the reveal
-    ("vo_q_maa_sote", "माँ के सोते ही माधव ने क्या किया?"),
-    ("vo_p1_utha", "माधव उठ गया।"),
-    ("vo_p1_rona", "माधव रोने लगा।"),
-    ("vo_reveal_utha", "माँ के सोते ही माधव उठ गया। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    # M1 — माधव ने क्या पढ़ा? (deck slide 21): prompt, options (माधव ने किताब पढ़ी। is listed under I1), the reveal, the correct line
-    ("vo_q_kitab", "माधव ने क्या पढ़ा?"),
-    ("vo_opt_akhbar_padha", "माधव ने अखबार पढ़ा।"),
-    ("vo_opt_patra_padha", "माधव ने पत्र पढ़ा।"),
-    ("vo_reveal_kitab", "माधव ने किताब पढ़ी। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    ("vo_ok_kitab_padhi", "शाबाश! माधव ने किताब पढ़ी।"),
-    # M2 — कहानी के अंत में माधव क्यों सो गया? (deck slide 22): prompt, options, the reveal, the correct line
-    ("vo_q_kyon_soya", "कहानी के अंत में माधव क्यों सो गया?"),
-    ("vo_opt_thak_gaya", "वह थक गया था।"),
-    ("vo_opt_bhookha_tha", "वह भूखा था।"),
-    ("vo_opt_dar_gaya", "वह डर गया था।"),
-    ("vo_reveal_thak", "माधव थक गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
-    ("vo_ok_thak_gaya", "शाबाश! वह थक गया था।"),
-    # the celebration (deck slide 23)
-    ("vo_celebrate", "शाबाश! आपने पूरी कहानी ध्यान से पढ़ी और सभी प्रश्नों के उत्तर दे दिए।"),
-]
-CHANGED = {"vo_landing", "vo_pt_tutorial", "vo_story_3", "vo_story_4", "vo_story_8a", "vo_story_8b", "vo_tap_madhav", "vo_q_khel", "vo_q_hint",
-           "vo_q_khana", "vo_q_try", "vo_ok_sula", "vo_celebrate"}                                   # the deck's words differ from the card's
-NEW = {"vo_reveal_khel", "vo_opt_khilono_se_khela", "vo_reveal_khana", "vo_opt_khilono_ke_beech", "vo_opt_palang_par", "vo_opt_kursi_par",
-       "vo_reveal_khilone_beech", "vo_rc_intro", "vo_reveal_sula", "vo_reveal_utha", "vo_reveal_kitab", "vo_reveal_thak"}   # no clip yet
-DROPPED = {"vo_q_reveal", "vo_opt_khana", "vo_opt_book", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair"}   # spoken today, replaced by the deck's lines
+assert len(_spoken) == 61 and len(aud) - len(_spoken) == 20, "[L02-VO-MANIFEST] expected 61 spoken lines of 81 registered: " + str((len(_spoken), len(aud)))
+MANIFEST = VO_LINES                                                 # the lines are defined with the clips ([L02-VO-BATCH] above)
+# [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.
 _ids = [k for k, _ in MANIFEST]
 assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines expected: " + str(len(_ids))
-assert {k for k in _ids if k not in aud} == NEW, "[L02-VO-MANIFEST] NEW"
-assert _spoken - set(_ids) == DROPPED and DROPPED <= _spoken, "[L02-VO-MANIFEST] DROPPED: " + str(sorted(_spoken - set(_ids)))
-assert CHANGED <= set(aud) and all(k in _spoken for k in CHANGED), "[L02-VO-MANIFEST] CHANGED"
+assert set(_ids) == _spoken, "[L02-VO-MANIFEST] the lines the lesson speaks are not the manifest's: " + str(sorted(set(_ids) ^ _spoken))
 for _k, _t in MANIFEST:
     assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
-    if _k in aud and _k not in CHANGED: assert txt[_k].strip() == _t, "[L02-VO-MANIFEST] the card's text drifted from the deck's for " + _k
-    if _k in CHANGED: assert txt[_k].strip() != _t, "[L02-VO-MANIFEST] " + _k + " is listed as CHANGED but equals the card's text"
+    assert txt[_k] == _t and os.path.exists(os.path.join(CUR, aud[_k])), "[L02-VO-MANIFEST] " + _k
 _man = os.path.join(CUR, "VO_Manifest.xlsx"); _new = list(MANIFEST)
 _old = None
 if os.path.exists(_man):

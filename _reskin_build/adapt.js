@@ -334,7 +334,13 @@
     if(placing.length) setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;   // [L02-RC2] the won picture pops into its checkpoint under a glow, with the chime
       if(R.place_sfx){ try{ var chime = new Audio("assets/Audio/" + R.place_sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); chime.play().catch(function(){}); }catch(e){} }
       placing.forEach(function(tok){ tok.classList.add("placed", "placing"); }); }, (typeof R.place_ms === "number") ? R.place_ms : 500);
-    setTimeout(drive, R.start_ms || 600);
+    // [L02-VO-BATCH] data.rc.intro (RC1 only): the screen's opening line "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?" speaks first,
+    // through the engine's play() (so it is the page's current line: the music ducks under it, a page change stops it); the car sets off
+    // data.rc.start_ms after the line has ended. A short beat after the page opens, as the music and the picture settle.
+    if(R.intro && typeof play === "function"){
+      var introSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio[R.intro]) || ("assets/Audio/" + R.intro + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg"));
+      setTimeout(function(){ if(CARD.slides[state.idx] !== s) return; play(introSrc, function(){ setTimeout(drive, R.start_ms || 600); }); }, 300);
+    } else setTimeout(drive, R.start_ms || 600);
   }
   function applyBed(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, bed = !!(s && s.bed_fig === true);
