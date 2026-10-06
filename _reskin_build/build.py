@@ -1651,3 +1651,151 @@ wr(os.path.join(CUR, "style.css"), style_css)
 wr(os.path.join(CUR, "app.js"), app_js)
 wr(os.path.join(CUR, "index.html"), index_html)
 print("wrote", len(style_css), len(app_js), len(index_html))
+
+# ---- [L02-VO-MANIFEST] (2026-10-06, user request) "Regenerate and replace the current manifest file; all the dialogues of this file should
+# be there." The fleet's VO manifest is the workbook beside a lesson's HTML (the reference's HI02H04_L01_S01/VO_Manifest.xlsx, 2026-09-22;
+# the same file sits at the FLN root): one sheet "VO Manifest", two columns Audio ID | Script, the header Calibri 12 bold white on #1F3864,
+# the ids in Consolas 11, the scripts in Calibri 12, every cell vertically centred, widths 26 / 118, the header row frozen, an autofilter over
+# the table — the recording script handed to the voice team, whose batch comes back as <Audio ID>.wav (voiceovers_batch.zip). This lesson had
+# none, so it is written here as HI02H04_L02_S01_dist/VO_Manifest.xlsx. First pass (same day): every line the lesson SPEAKS, from the
+# finished card, in play order. Second pass (2026-10-06, user: "based on the new changes I have made in this file, the manifest you are
+# generating is containing the old dialogues — update it as per the latest dialogues"): the lines now come from the user's LATEST review
+# deck, Bindu's File/HI02H04_L02_S01_review (1).pptx (2026-10-04 14:22; the same text as Downloads/HI02H04_L02_S01_review.pptx of
+# 2026-10-03; its on-slide text is dumped to _reskin_build/deck_dialogues_2026-10-04.json for the next diff), read page by page and laid
+# out in the lesson's play order (MANIFEST below). Where the deck gives a line it wins over the card's text (CHANGED: the welcome's
+# punctuation, the first transition's new line, story sentences 3 / 4 / 8a / 8b, G2's prompt, G3's prompt and its "look at the picture"
+# hint, I1's prompt and the "try again" hint, I3's correct line "शाबाश।", the celebration). Lines the deck does not mention keep the
+# lesson's current words (the guided / practice transitions, every other "correct" line, G2's "शाबाश! सही जगह।"). Lines the deck adds get
+# new ids (NEW: the RC-car screen's opener, the seven page-specific "… यह सही उत्तर है, इसपर टैप कीजिए।" reveal lines that replace the
+# generic vo_q_reveal, I1's sentence options — two of them are lines the lesson already has, vo_p1_khana and vo_opt_kitab_padhi — and I2's
+# place options). The lines those replace are not listed (DROPPED: vo_q_reveal, vo_opt_khana / book / toys / bed / chair). The deck's
+# "Hint 2: सभी options का vo आएगा" is a behaviour (the option lines play), not a line; "wiggle" hints have no VO. The card itself is NOT
+# touched: its clips still speak the old words until the new recordings arrive — this manifest is the recording script for them. Still
+# left out, as before: the registered leftovers of removed pages and the cue's dead fallback (no page plays them); sound effects and the
+# music (no script). Every set is asserted against the card, and the engine's spoken ids against app.js's literals, so drift is loud.
+# Rewritten only when its rows change (no churn).
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+ENGINE_LINES = ["vo_landing", "vo_pt_tutorial", "vo_pt_guided", "vo_pt_practice", "vo_tap_speaker_sentence_story"]   # welcome, three gates, story cue
+_lits = set(re.findall(r'["\'](vo_[A-Za-z0-9_]+)["\']', app_js)) & set(aud)
+assert _lits == set(ENGINE_LINES) | {"vo_tap_speaker_sentence"}, "[L02-VO-MANIFEST] the engine's spoken lines changed: " + str(sorted(_lits))
+def _vo_walk(o, out):
+    if isinstance(o, str):
+        if o in aud and o not in out: out.append(o)
+    elif isinstance(o, dict):
+        for v in o.values(): _vo_walk(v, out)
+    elif isinstance(o, list):
+        for v in o: _vo_walk(v, out)
+_all_slide = []
+for _s in card["slides"]: _vo_walk(_s, _all_slide)
+_spoken = set(_all_slide) | set(ENGINE_LINES)                      # what the lesson plays today
+assert len(_spoken) == 55 and len(aud) - len(_spoken) == 14, "[L02-VO-MANIFEST] expected 55 spoken lines of 69 registered: " + str((len(_spoken), len(aud)))
+MANIFEST = [   # (audio id, the line) — the 2026-10-04 deck's words, in the lesson's play order
+    # the title page (deck slide 3)
+    ("vo_landing", "नमस्ते दोस्त! मैं हूँ स्विफ़्टी, आज हम एक कहानी पढ़ेंगे - सोना नहीं, खेलना है।"),
+    # the first transition screen (deck slide 4)
+    ("vo_pt_tutorial", "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!"),
+    # the story pages T1-T9 (deck slides 5-13): the mic cue, then each sentence
+    ("vo_tap_speaker_sentence_story", "इस बटन पर टैप करिए और वाक्य पढ़िए।"),
+    ("vo_story_1", "दोपहर का खाना हो चुका था।"),
+    ("vo_story_2", "माधव की माँ उसे सुलाने लगी।"),
+    ("vo_story_3", "पर, माधव को तो नींद ही नहीं आ रही थी।"),
+    ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
+    ("vo_story_5", "उसने दीवार पर चित्र बनाए।"),
+    ("vo_story_6", "उसने किताब पढ़ी।"),
+    ("vo_story_7", "वह खिलौनों से खेलने लगा।"),
+    ("vo_story_8a", "खेलते-खेलते उसे नींद आने लगी।"),
+    ("vo_story_8b", "वह थककर सो गया।"),
+    # the guided transition (the fleet's line; the deck has no line for it)
+    ("vo_pt_guided", "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!"),
+    # G2 — find Madhav in the picture (deck slide 14): prompt, the three hints, the correct line (the lesson's; the deck has none)
+    ("vo_tap_madhav", "इस चित्र में माधव कहाँ है? माधव को पहचानिए और उसपर टैप कीजिए।"),
+    ("vo_tap_try_madhav", "ध्यान से देखिए और माधव को पहचानिए।"),
+    ("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।"),
+    ("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।"),
+    ("vo_tap_ok", "शाबाश! सही जगह।"),
+    # G3 — माधव किससे खेल रहा है? (deck slide 15): prompt, hint 1, the options, the reveal (hint 3), the correct line (the lesson's)
+    ("vo_q_khel", "चित्र में माधव किससे खेल रहा है?"),
+    ("vo_q_hint", "चित्र को ध्यान से देखिए।"),
+    ("vo_opt_khilono_se", "खिलौनों से"),
+    ("vo_opt_bartano_se", "बर्तनों से"),
+    ("vo_opt_kitabo_se", "किताबों से"),
+    ("vo_reveal_khel", "चित्र में माधव खिलौनों से खेल रहा है। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_khel", "शाबाश! माधव खिलौनों से खेल रहा है।"),
+    # I1 — कहानी में माधव ने सबसे पहले क्या किया? (deck slide 16): prompt, hint 1, the sentence options, the reveal, the correct line
+    ("vo_q_khana", "कहानी में माधव ने सबसे पहले क्या किया?"),
+    ("vo_q_try", "फिर से कोशिश कीजिए, कहानी याद करिए।"),
+    ("vo_p1_khana", "माधव ने खाना खाया।"),
+    ("vo_opt_kitab_padhi", "माधव ने किताब पढ़ी।"),
+    ("vo_opt_khilono_se_khela", "माधव ने खिलौनों से खेला।"),
+    ("vo_reveal_khana", "माधव ने सबसे पहले खाना खाया। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_q_correct", "शाबाश! यही सही जवाब है।"),
+    # I2 — आख़िर में माधव कहाँ सोया? (deck slide 17): prompt, the place options, the reveal (hint 1 is a wiggle, no line)
+    ("vo_q_kahan", "आख़िर में माधव कहाँ सोया?"),
+    ("vo_opt_khilono_ke_beech", "खिलौनों के बीच"),
+    ("vo_opt_palang_par", "पलंग पर"),
+    ("vo_opt_kursi_par", "कुर्सी पर"),
+    ("vo_reveal_khilone_beech", "माधव खिलौनों के बीच सो गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    # the practice transition (the fleet's line), then the RC-car screen's opener (deck slide 18)
+    ("vo_pt_practice", "वाह! अब आपकी बारी।"),
+    ("vo_rc_intro", "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?"),
+    # I3 — चित्र में माँ क्या कर रही हैं? (deck slide 19): prompt, options, the reveal, the correct line the deck gives ("शाबाश।")
+    ("vo_q_maa_kya", "चित्र में माँ क्या कर रही हैं?"),
+    ("vo_opt_khana_bana", "खाना बना रही हैं।"),
+    ("vo_opt_sula_rahi", "माधव को सुला रही हैं।"),
+    ("vo_opt_padha_rahi", "माधव को पढ़ा रही हैं।"),
+    ("vo_reveal_sula", "माँ माधव को सुला रही हैं। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_sula", "शाबाश।"),
+    # P1 — माँ के सोते ही माधव ने क्या किया? (deck slide 20): prompt, options (माधव ने खाना खाया। is listed under I1), the reveal
+    ("vo_q_maa_sote", "माँ के सोते ही माधव ने क्या किया?"),
+    ("vo_p1_utha", "माधव उठ गया।"),
+    ("vo_p1_rona", "माधव रोने लगा।"),
+    ("vo_reveal_utha", "माँ के सोते ही माधव उठ गया। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    # M1 — माधव ने क्या पढ़ा? (deck slide 21): prompt, options (माधव ने किताब पढ़ी। is listed under I1), the reveal, the correct line
+    ("vo_q_kitab", "माधव ने क्या पढ़ा?"),
+    ("vo_opt_akhbar_padha", "माधव ने अखबार पढ़ा।"),
+    ("vo_opt_patra_padha", "माधव ने पत्र पढ़ा।"),
+    ("vo_reveal_kitab", "माधव ने किताब पढ़ी। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_kitab_padhi", "शाबाश! माधव ने किताब पढ़ी।"),
+    # M2 — कहानी के अंत में माधव क्यों सो गया? (deck slide 22): prompt, options, the reveal, the correct line
+    ("vo_q_kyon_soya", "कहानी के अंत में माधव क्यों सो गया?"),
+    ("vo_opt_thak_gaya", "वह थक गया था।"),
+    ("vo_opt_bhookha_tha", "वह भूखा था।"),
+    ("vo_opt_dar_gaya", "वह डर गया था।"),
+    ("vo_reveal_thak", "माधव थक गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
+    ("vo_ok_thak_gaya", "शाबाश! वह थक गया था।"),
+    # the celebration (deck slide 23)
+    ("vo_celebrate", "शाबाश! आपने पूरी कहानी ध्यान से पढ़ी और सभी प्रश्नों के उत्तर दे दिए।"),
+]
+CHANGED = {"vo_landing", "vo_pt_tutorial", "vo_story_3", "vo_story_4", "vo_story_8a", "vo_story_8b", "vo_tap_madhav", "vo_q_khel", "vo_q_hint",
+           "vo_q_khana", "vo_q_try", "vo_ok_sula", "vo_celebrate"}                                   # the deck's words differ from the card's
+NEW = {"vo_reveal_khel", "vo_opt_khilono_se_khela", "vo_reveal_khana", "vo_opt_khilono_ke_beech", "vo_opt_palang_par", "vo_opt_kursi_par",
+       "vo_reveal_khilone_beech", "vo_rc_intro", "vo_reveal_sula", "vo_reveal_utha", "vo_reveal_kitab", "vo_reveal_thak"}   # no clip yet
+DROPPED = {"vo_q_reveal", "vo_opt_khana", "vo_opt_book", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair"}   # spoken today, replaced by the deck's lines
+_ids = [k for k, _ in MANIFEST]
+assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines expected: " + str(len(_ids))
+assert {k for k in _ids if k not in aud} == NEW, "[L02-VO-MANIFEST] NEW"
+assert _spoken - set(_ids) == DROPPED and DROPPED <= _spoken, "[L02-VO-MANIFEST] DROPPED: " + str(sorted(_spoken - set(_ids)))
+assert CHANGED <= set(aud) and all(k in _spoken for k in CHANGED), "[L02-VO-MANIFEST] CHANGED"
+for _k, _t in MANIFEST:
+    assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
+    if _k in aud and _k not in CHANGED: assert txt[_k].strip() == _t, "[L02-VO-MANIFEST] the card's text drifted from the deck's for " + _k
+    if _k in CHANGED: assert txt[_k].strip() != _t, "[L02-VO-MANIFEST] " + _k + " is listed as CHANGED but equals the card's text"
+_man = os.path.join(CUR, "VO_Manifest.xlsx"); _new = list(MANIFEST)
+_old = None
+if os.path.exists(_man):
+    try: _old = [(r[0], r[1]) for r in openpyxl.load_workbook(_man, read_only=True).active.iter_rows(min_row=2, values_only=True)]
+    except Exception: _old = None
+if _old != _new:
+    _wb = openpyxl.Workbook(); _ws = _wb.active; _ws.title = "VO Manifest"
+    _ws.append(["Audio ID", "Script"])
+    for _k, _t in _new: _ws.append([_k, _t])
+    _hdr = Font(name="Calibri", size=12, bold=True, color="FFFFFFFF"); _fill = PatternFill("solid", fgColor="FF1F3864"); _mid = Alignment(vertical="center")
+    for _c in _ws[1]: _c.font = _hdr; _c.fill = _fill; _c.alignment = _mid
+    for _r in _ws.iter_rows(min_row=2):
+        _r[0].font = Font(name="Consolas", size=11); _r[0].alignment = _mid; _r[1].font = Font(name="Calibri", size=12); _r[1].alignment = _mid
+    _ws.column_dimensions["A"].width = 26; _ws.column_dimensions["B"].width = 118
+    _ws.freeze_panes = "A2"; _ws.auto_filter.ref = "A1:B%d" % (len(_new) + 1)
+    _wb.save(_man); print("wrote", _man, len(_new), "lines")
+else:
+    print("VO_Manifest.xlsx unchanged:", len(_new), "lines")

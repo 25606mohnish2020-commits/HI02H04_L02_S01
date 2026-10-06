@@ -1,0 +1,340 @@
+{
+ "source": "Bindu's File/HI02H04_L02_S01_review (1).pptx (2026-10-04 14:22; same text as Downloads/HI02H04_L02_S01_review.pptx of 2026-10-03)",
+ "slides": [
+  {
+   "slide": 1,
+   "lines": [
+    "HI02H04_L02_S01 — सोना नहीं, खेलना है",
+    "Page-by-page review · 20 pages"
+   ]
+  },
+  {
+   "slide": 2,
+   "lines": [
+    "Overall recommendations & open questions",
+    "• {'title': 'सोना नहीं, खेलना है — HI02H04_L02_S01', 'what_it_teaches': \"Grade-2 picture-cued sentence READING + comprehension. The child reads each story sentence (tappable word chips) and presses '🔊 पूरा पढ़िए' to hear it when they need help; then answers simple comprehension questions. Story: माधव won't nap → sneaks off while माँ sleeps → draws on the wall, reads a book, plays with toys → falls asleep among the toys.\", 'arc': '19 slides · Tutorial 8 (the story as read-pages) → Guided 3 → Independent 3 → Practice 2 → Mastery 3, following the SME deck (story in tutorial; guided/independent/mastery comprehension). Polite आप register throughout.', 'mechanics': \"STORY_READ_PAGE ×8 (read the sentence with the picture cue; 🔊 for help — the deck's 'audio only on button press'), STORY_QUESTION ×7 (picture-option comprehension: what/where + a recall thumbnail of the relevant scene; recall hidden at mastery), TAP_IN_SCENE ×3 (find माधव / the wall-drawings / the toys). Story-led like the shipped reference (बंदर-टोपीवाला / तोता).\", 'art_vo': '8 AI-generated storybook scene illustrations (consistent माधव + माँ + home) + 8 picture-option cutouts; 35 Hindi voice clips, polite आप.', 'please_check': ['⚠️ GRADE-2 CODE: HI02H04_L02_S01 is not in the local master map (grade-2 not loaded there yet) — please confirm against the live master sheet. LO taken from your deck.', \"SCENE ART is AI-GENERATED (storybook style, best-effort match to your illustrator's watercolour samples). Character consistency is good but not perfect, and माँ appears in two solo scenes (drawing/playing) though she's meant to be asleep. Swap in the illustrator's finished watercolour scenes for the final if you prefer that exact look.\", 'Character name = माधव (per the written briefs; your sample images used रोहन).', 'Word chips are SILENT by design — help is the whole-sentence 🔊, exactly per the deck. OK?', 'Comprehension question set + the polite आप register.', \"Engine note: I tightened the STORY_READ_PAGE layout (scoped CSS) so longer grade-2 sentences don't collide with the आगे button — this improves the reading module for all future story-reading games.\"], 'status': 'For SME review'}"
+   ]
+  },
+  {
+   "slide": 3,
+   "lines": [
+    "Page 1 · 01_landing.png",
+    "Recommendations",
+    "• नमस्ते दोस्त मैं हूँ swiftee, आज हम एक कहानी पढ़ेंगे-  सोना नहीं, खेलना है ।",
+    "HEADING TEXT- सोना नहीं, खेलना है",
+    "Image- 2-3 साल के बच्चे को माँ की तरफ मुँह करके लेटे हुए दिखाना है, बच्चा एक आँख खोलकर माँ को चुपके से देख रहा है । माँ को सोते हुए दिखाना है ।",
+    "चित्र के साथ कोई TEXT नहीं जाएगा ।"
+   ]
+  },
+  {
+   "slide": 4,
+   "lines": [
+    "Swiftee transition screen",
+    "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!\""
+   ]
+  },
+  {
+   "slide": 5,
+   "lines": [
+    "Page 2 · 02_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image- माँ और माधव को खाना खाने बैठे हुए दिखाना है, थाली में थोड़ा-सा खाना दिखाना है । बर्तन सामने रखे हुए दिखाने हैं ।",
+    "Text- दोपहर का खाना हो चुका था।",
+    "Text चित्र के नीचे आएगा ।",
+    "Vo- दोपहर का खाना हो चुका था।",
+    "Vo - इस बटन पर टैप करिए और वाक्य पढ़िए ।",
+    "mic button glow krega, जब बच्चा वाक्य पढ़ेगा तो waves दिखनी चाहिए ।",
+    "वाक्य का शब्द एक-एक करके highlight होगा ।",
+    "10 sec के बाद वाक्य का vo आएगा और वाक्य पूरा होने के बाद आगे का button enable होगा ।"
+   ]
+  },
+  {
+   "slide": 6,
+   "lines": [
+    "Page 3 · 03_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image- माँ और माधव को बेड पर लेटे हुए दिखाना है, माँ का हाथ माधव के ऊपर है, माधव आँखे बंद करके लेटा हुआ है।",
+    "Text-माधव की माँ उसे सुलाने लगी ।",
+    "Vo- माधव की माँ उसे सुलाने लगी ।"
+   ]
+  },
+  {
+   "slide": 7,
+   "lines": [
+    "Page 4 · 04_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image- 2-3 साल के बच्चे को माँ की तरफ मुँह करके लेटे हुए दिखाना है, बच्चा एक आँख खोलकर माँ को चुपके से देख रहा है । माँ को सोते हुए दिखाना है ।",
+    "चित्र के साथ कोई TEXT नहीं जाएगा ।",
+    "Same image jo landing page pr hai",
+    "Text- पर, माधव को तो नींद ही नहीं आ रही थी ।"
+   ]
+  },
+  {
+   "slide": 8,
+   "lines": [
+    "Page 5 · 05_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image- बच्चा चुपके से बेड से उतर के जाता हुआ दिखाना है, बच्चा चित्र में दिखाए बच्चे से छोटा होगा, कपड़े घर के होंगे।",
+    "Text - माँ  के सोते ही वह उठ गया ।"
+   ]
+  },
+  {
+   "slide": 9,
+   "lines": [
+    "Page 6 · 06_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image – माधव को crayon से दीवार पर चित्र बनाते हुए दिखाना है। कुछ चित्र दीवार पर पहले से बने हुए दिखाने हैं ।",
+    "Text-उसने दीवार पर चित्र बनाए ।"
+   ]
+  },
+  {
+   "slide": 10,
+   "lines": [
+    "Page 7 · 07_STORY_READ_PAGE.png",
+    "Recommendations",
+    "Heading text- आइए कहानी पढ़ें।",
+    "Image – माधव को book shelf से एक किताब लेकर बैठे हुए दिखाना है, बाकी 6-7 किताबें बिखरी हुई दिखानी है।",
+    "Text-  उसने किताब पढ़ी ।"
+   ]
+  },
+  {
+   "slide": 11,
+   "lines": [
+    "Page 8 · 08_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image – माधव को खिलौने से खेलते हुए दिखाना है, बाकी खिलौने जमीन पर बिखरे हुए दिखाने हैं।",
+    "Text- वह खिलौनों से खेलने लगा ।"
+   ]
+  },
+  {
+   "slide": 12,
+   "lines": [
+    "Page 9 · 09_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image - माधव को खिलौनों के बीच में बैठा हुआ दिखाना है । उबासी लेते हुए ।",
+    "Text- खेलते-खेलते उसे नींद आने लगी ।"
+   ]
+  },
+  {
+   "slide": 13,
+   "lines": [
+    "Page 9 · 09_STORY_READ_PAGE.png",
+    "Recommendations",
+    "• Heading text- आइए कहानी पढ़ें।",
+    "Image - माधव को खिलौनों के बीच में सोया हुआ दिखाना है । आसपास खिलौने बिखरे हुए दिखाने हैं । माँ को उठकर हैरान होता हुआ दिखाना है ।",
+    "Text- वह थककर सो गया ।"
+   ]
+  },
+  {
+   "slide": 14,
+   "lines": [
+    "Page 11 · 11_TAP_IN_SCENE.png",
+    "Recommendations",
+    "Guided start-",
+    "Text - इस चित्र में माधव कहाँ है?",
+    "vo- इस चित्र में माधव कहाँ है? माधव को पहचानिए और उसपर टैप कीजिए ।",
+    "image – टेबल पर एक teddy रखा हुआ दिखाना है ।",
+    "Teddy, माँ और माधव तीनों पर white box ( outline ) बना आएगा ।",
+    "जब बच्चा माधव पर click करेगा तो box white से green हो जाएगा ।",
+    "गलत box पर hint vo-",
+    "Hint 1 : ध्यान से देखिए और माधव को पहचानिए ।",
+    "Hint 2 : माधव एक लड़का है, चित्र में लड़के को पहचानिए ।",
+    "Hint 3 : यह माधव है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 15,
+   "lines": [
+    "Page 14 · 14_TAP_IN_SCENE.png",
+    "Recommendations",
+    "•text- माधव किससे खेल रहा है?",
+    "Vo- चित्र में माधव किससे खेल रहा है?",
+    "Image- माधव कई खिलौनों के साथ खेल रहा है",
+    "Options- वाक्य लिखे होंगे",
+    "खिलौनों से",
+    "बर्तनों से",
+    "किताबों से",
+    "Correct answer- खिलौनों से",
+    "Vo-",
+    "खिलौनों से",
+    "बर्तनों से",
+    "किताबों से",
+    "हर वाक्य के साथ स्पीकर बटन देना है । जब बच्चा स्पीकर बटन दबाएगा तभी आवाज़ आनी चाहिए ।",
+    "लत box पर hint vo-",
+    "Hint 1 : चित्र को ध्यान से देखिए ।",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "hint 3 : चित्र में माधव खिलौनों से खेल रहा है।",
+    "यह सही उत्तर है, इसपर टैप कीजिए ।"
+   ]
+  },
+  {
+   "slide": 16,
+   "lines": [
+    "Page 10 · 10_STORY_QUESTION.png",
+    "Recommendations",
+    "• heading text – कहानी में माधव ने सबसे पहले क्या किया?",
+    "Text- माधव ने खाना खाया।",
+    "माधव ने किताब पढ़ी।",
+    "माधव ने खिलौनों से खेला।",
+    "Image-",
+    "माधव को खाना खाते हुए दिखाना है ।",
+    "माधव को किताब पढ़ते हुए दिखाना है ।",
+    "माधव को खिलौनों से खेलते हुए दिखाना है ।",
+    "Vo- माधव ने खाना खाया।",
+    "माधव ने किताब पढ़ी।",
+    "माधव ने खिलौनों से खेला।",
+    "Correct answer- खाना खाया",
+    "गलत box पर hint vo-",
+    "Hint 1 : फिर से कोशिश कीजिए, कहानी याद करिए ।",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "Hint 3 : माधव ने सबसे पहले खाना खाया ।",
+    "यह सही उत्तर है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 17,
+   "lines": [
+    "Page 18 · 18_STORY_QUESTION.png",
+    "Recommendations",
+    "• text - आख़िर में माधव कहाँ सोया?",
+    "Vo- आख़िर में माधव कहाँ सोया?",
+    "Options-",
+    "खिलौनों के बीच",
+    "पलंग पर",
+    "कुर्सी पर",
+    "Image",
+    "खिलौनों के बीच सोया माधव",
+    "पलंग पर सोया माधव",
+    "कुर्सी पर सोया माधव",
+    "Correct answer- खिलौनों के बीच",
+    "Vo- खिलौनों के बीच",
+    "पलंग पर",
+    "कुर्सी पर",
+    "गलत box पर hint vo-",
+    "Hint 1 : wiggle",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "hint 3:  माधव खिलौनों के बीच सो गया था । यह सही उत्तर है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 18,
+   "lines": [
+    "Page 12 · 12_STORY_QUESTION.png",
+    "Recommendations",
+    "game start होगा ।",
+    "vo- अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ ?",
+    "हर गोले पर ? आएगा, उसके बाद 1 प्रश्न आएगा, सही उत्तर देने के बाद उस प्रश्न की image यहाँ आ जाएगी ।",
+    "1. बिस्तर पर सुलाती माँ का चित्र",
+    "2. बिस्तर से उठ के जाता हुआ माधव",
+    "3. किताब पढ़ता हुआ माधव",
+    "4. खिलौनों के बीच सोता हुआ माधव ।"
+   ]
+  },
+  {
+   "slide": 19,
+   "lines": [
+    "Page 13 · 13_STORY_QUESTION.png",
+    "Recommendations",
+    "• text- चित्र में माँ क्या कर रही हैं ?",
+    "Image- माँ माधव को बिस्तर पर सुला रही हैं।",
+    "Options- वाक्य लिखे होंगे",
+    "खाना बना रही हैं।",
+    "माधव को सुला रही हैं।",
+    "माधव को पढ़ा रही हैं।",
+    "Correct answer- माधव को सुला रही हैं",
+    "correct answer vo- शाबाश ।",
+    "Vo- खाना बना रही हैं।",
+    "माधव को सुला रही हैं।",
+    "माधव को पढ़ा रही हैं।",
+    "वाक्य के लिए स्पीकर बटन देना है । जब बच्चा स्पीकर बटन दबाएगा तभी आवाज़ आनी चाहिए ।",
+    "गलत box पर hint vo-",
+    "Hint 1 : wiggle",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "Hint 3 :  माँ माधव को सुला रही हैं । यह सही उत्तर है, इसपर टैप कीजिए ।"
+   ]
+  },
+  {
+   "slide": 20,
+   "lines": [
+    "Page 12 · 12_STORY_QUESTION.png",
+    "Recommendations",
+    "Practice",
+    "• STORY_QUESTION (guided) —",
+    "माँ के सोते ही माधव ने क्या किया?",
+    "Text- माधव उठ गया।",
+    "माधव रोने लगा।",
+    "माधव ने खाना खाया।",
+    "Vo- माधव उठ गया।",
+    "माधव रोने लगा।",
+    "माधव ने खाना खाया।",
+    "Image-",
+    "माधव को उठ के जाते हुए दिखाना है ।",
+    "माधव को रोते हुए दिखाना है ।",
+    "माधव को खाना खाते हुए दिखाना है ।",
+    "गलत box पर hint vo-",
+    "Hint 1 : wiggle",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "Hint 3 : माँ के सोते ही माधव उठ गया । यह सही उत्तर है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 21,
+   "lines": [
+    "Page 15 · 15_STORY_QUESTION.png",
+    "Recommendations",
+    "• heading text-  माधव ने क्या पढ़ा?",
+    "Text- माधव ने किताब पढ़ी ।",
+    "माधव ने अखबार पढ़ा ।",
+    "माधव ने पत्र पढ़ा ।",
+    "Image-",
+    "माधव को किताब पढ़ते हुए दिखाना है ।",
+    "vo- माधव ने क्या पढ़ा?",
+    "Vo- माधव ने किताब पढ़ी ।",
+    "माधव ने अखबार पढ़ा ।",
+    "माधव ने पत्र पढ़ा ।",
+    "Correct answer- वह थक गया था।",
+    "गलत box पर hint vo-",
+    "Hint 1 : wiggle",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "Hint 3 : माधव ने किताब पढ़ी । यह सही उत्तर है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 22,
+   "lines": [
+    "Page 15 · 15_STORY_QUESTION.png",
+    "Recommendations",
+    "• heading text- कहानी के अंत में माधव क्यों सो गया?",
+    "Text- वह थक गया था।",
+    "वह भूखा था।",
+    "वह डर गया था।",
+    "Image-",
+    "माधव को खिलौनों के बीच सोता हुआ दिखाना है ।",
+    "vo- कहानी के अंत में माधव क्यों सो गया?",
+    "Vo- वह थक गया था।",
+    "वह भूखा था।",
+    "वह डर गया था।",
+    "Correct answer- वह थक गया था।",
+    "गलत box पर hint vo-",
+    "Hint 1 : wiggle",
+    "Hint 2 : सभी options का vo आएगा, options vo के साथ highlight होंगे ।",
+    "Hint 3 : माधव थक गया था । यह सही उत्तर है, इसपर टैप कीजिए।"
+   ]
+  },
+  {
+   "slide": 23,
+   "lines": [
+    "Page 20 · 20_CELEBRATION.png",
+    "Recommendations",
+    "• CELEBRATION —शाबाश ! आपने पूरी कहानी ध्यान से पढ़ी  और सभी प्रश्नों के उत्तर दे दिए।"
+   ]
+  }
+ ]
+}
