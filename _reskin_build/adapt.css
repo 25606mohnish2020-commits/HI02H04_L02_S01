@@ -581,3 +581,11 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
    its look, place and words are untouched. */
 .phase-gate img,#phaseGateImg{height:calc(clamp(120px,26vh,250px) * .8008) !important;}
 .phase-gate:not(.pg-talk) .pg-title,.phase-gate:not(.pg-talk) #phaseGateTitle{visibility:hidden !important;}
+/* [L02-P1-WORDS] (2026-10-06, user request) "At page 17 P1 once the user taps the correct option then each word in the correct option
+   will highlight along with the animation in sync with the VO as on the other pages." The sentence pages' word boxes (.p2-word — the
+   engine's .sent-opt .so-pill rules) on a Figma card's sentence (.story-q-opt-label; card slide.opt_words, sent_q_page.js): the lit
+   word turns the same orange and pops the same way (the engine's p2WordPop). The boxes' .12em side padding is taken back by the
+   margin, so the centred sentence does not move. */
+.stage.l02-q3 .opt-cell .story-q-opt-label .p2-words{display:inline;}
+.stage.l02-q3 .opt-cell .story-q-opt-label .p2-word{display:inline-block;border-radius:10px;padding:0 .12em;margin:0 -.12em;transform-origin:50% 60%;}
+.stage.l02-q3 .opt-cell .story-q-opt-label .p2-word.on{color:#E86A00;animation:p2WordPop .28s ease-out 1;}

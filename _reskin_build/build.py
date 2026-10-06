@@ -1589,6 +1589,20 @@ p1["data"]["options"] = [
     {"img": "p1_utha",  "emoji": "🧒", "label_hi": "माधव उठ गया ।",       "audio": "vo_p1_utha", "correct": True},
 ]
 for k in P1_CUTS: card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
+# ---- [L02-P1-WORDS] (2026-10-06, user request) "At page 17 P1 once the user taps the correct option then each word in the correct option
+# will highlight along with the animation in sync with the VO as on the other pages in this file." The sentence pages (G3 / I3 / M1 / M2,
+# sent_q_page.js) light their pills word by word from data.word_times_by_audio; the same module now does it for a Figma-card page that
+# sets slide.opt_words (CSS [L02-P1-WORDS]: the same orange + pop on the card's sentence). Only the ANSWER's line gets timings here —
+# the engine speaks the tapped card's own line on every tap, so the words of "माधव उठ गया ।" light up exactly when the correct card is
+# tapped (first try, second try, or the guided tap after the reveal) while vo_p1_utha speaks; a wrong card's line lights nothing. The
+# card's sentence ends in a standalone danda ("गया ।", the Figma text) — the JS joins it to the word before, so three word boxes follow
+# the recording's three words (measured like every other line: word_times_for, the envelope method, cached by md5 in word_times.json).
+p1["opt_words"] = True
+_p1_ok = next(o for o in p1["data"]["options"] if o.get("correct") is True)
+_p1_words = txt[_p1_ok["audio"]].split()
+assert _p1_words == ["माधव", "उठ", "गया।"] and [w for w in _p1_ok["label_hi"].split() if w != "।"] == ["माधव", "उठ", "गया"], (_p1_words, _p1_ok["label_hi"])
+p1["data"]["word_times_by_audio"] = {_p1_ok["audio"]: word_times_for(_p1_ok["audio"], _p1_words)}
+assert len(p1["data"]["word_times_by_audio"][_p1_ok["audio"]]) == 4
 # ---- [L02-I2-FIG] (2026-10-03, user request) I2 (the independent find page until now, the user's "page 13", ?slide=12) is laid out from
 # Figma "FLN by MJ" node 233-25 — the 113-198 card design ([L02-Q3-FIG]: fig_q3 / .l02-q3 / applyQ3; band, no header chip, NO आगे pill,
 # three 252x314.113 cards @ x 232/514/796, y 247) with this frame's content: band "आखिर में माधव कहाँ सोया ?" over the cards खिलोनों के

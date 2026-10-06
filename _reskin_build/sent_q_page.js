@@ -11,6 +11,10 @@
               of the line (data.prompt_pop_ms), and so on for as long as the page is open; any pointerdown restarts the count.
      words    each pill's text is split into .p2-word spans; whenever one of the page's option lines (or the praise line, for the
               correct pill) is spoken, its words light up in time (data.word_times_by_audio: starts + the end of the last word).
+              [L02-P1-WORDS] card slide.opt_words on a page that is NOT sent_ref (P1's Figma cards): this word-lighting ALONE — the
+              card sentences (.story-q-opt-label) whose line has timings light up while it speaks (P1: the answer's line only, so
+              the words light when the correct card is tapped); a standalone danda ("गया ।") joins the word before it. Nothing else
+              of this module touches such a page.
      wrong 1  the kit's wiggle + soft buzz on the tapped pill; the pill's own line is NOT spoken (its words stay still); after the
               WRONG_BEAT_MS beat the try_again line (audio.try_again) speaks, then the pill reads normal again.
      wrong 2  the wiggle; then, instead of the engine's hint/try line, the READ-OUT: every pill in row order, REVIEW_GAP_MS apart,
@@ -68,11 +72,16 @@
     for(var i = 0; i < pill.childNodes.length; i++){ var c = pill.childNodes[i]; if(c.nodeType === 3 && c.nodeValue.trim()){ node = c; break; } }
     if(!node) return null;
     var frag = document.createDocumentFragment(), els = [];
-    node.nodeValue.split(/(\s+)/).forEach(function(t){
-      if(!t) return;
-      if(/^\s+$/.test(t)){ frag.appendChild(document.createTextNode(t)); return; }
+    var toks = node.nodeValue.split(/(\s+)/).filter(function(t){ return !!t; });
+    for(var k = 0; k < toks.length; k++){
+      var t = toks[k];
+      if(/^\s+$/.test(t)){
+        // [L02-P1-WORDS] a space before a standalone punctuation mark ("गया ।"): both join the word before them
+        if(els.length && k + 1 < toks.length && /^[।॥!?.,]+$/.test(toks[k + 1])){ els[els.length - 1].textContent += t + toks[k + 1]; k++; continue; }
+        frag.appendChild(document.createTextNode(t)); continue;
+      }
       var sp = document.createElement("span"); sp.className = "p2-word"; sp.textContent = t; frag.appendChild(sp); els.push(sp);
-    });
+    }
     var disp = ""; try{ disp = getComputedStyle(pill).display; }catch(e){}
     if(/flex|grid/.test(disp)){ var wrap = document.createElement("span"); wrap.className = "p2-words"; wrap.appendChild(frag); frag = wrap; }
     pill.replaceChild(frag, node);
@@ -87,7 +96,7 @@
     var WT = (sl.data && sl.data.word_times_by_audio) || {};
     var opts = (sl.data && Array.isArray(sl.data.options)) ? sl.data.options : [];
     var map = {}, n = 0;
-    Array.prototype.slice.call(document.querySelectorAll("#slideHost .sent-opt .so-pill")).forEach(function(pill){
+    Array.prototype.slice.call(document.querySelectorAll("#slideHost .sent-opt .so-pill, #slideHost .opt-cell .story-q-opt-label")).forEach(function(pill){   // [L02-P1-WORDS] a Figma card's sentence as well
       var label = (pill.textContent || "").trim(), opt = null;
       for(var i = 0; i < opts.length; i++){ if(opts[i] && (opts[i].label_hi || "").trim() === label){ opt = opts[i]; break; } }
       if(!opt || !opt.audio || !Array.isArray(WT[opt.audio])) return;
@@ -317,7 +326,7 @@
     if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", flagged(idx));
       st.classList.toggle("l02-sentq-shadow", flagged(idx) && !!(sl && sl.sentq_shadow === true));     // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
       st.classList.toggle("l02-q3-band", flagged(idx) && !!(sl && sl.q3_band === true)); }             // [L02-Q3-BAND] P1's Figma title bar (header variables + mascot circle + band shadow + ink; card slide.q3_band)
-    if(!flagged(idx)) return;
+    if(!flagged(idx)){ if(sl && sl.opt_words === true) wireOptWords(idx); return; }   // [L02-P1-WORDS] the word-lighting alone on a card page
     wireOptWords(idx); wireIdlePrompt(idx);
   }
   var origMount = window.mountSlide;

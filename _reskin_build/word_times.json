@@ -460,5 +460,20 @@
    2.68
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_p1_utha": {
+  "words": [
+   "माधव",
+   "उठ",
+   "गया।"
+  ],
+  "md5": "cb3450ed258d794860668e710357c2f0",
+  "times": [
+   0.1,
+   0.8,
+   1.06,
+   1.43
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
 }
