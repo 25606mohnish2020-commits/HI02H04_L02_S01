@@ -425,7 +425,7 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
    The rules of the reference's <style id="P2-READ-ALOUD-CSS"> ([P2-READ-ALOUD] rev 2, 2026-09-30), value for value — they are
    scoped to .stage.tut .tut-audio, which this lesson's story-page chip is. The cue line now asks the child to tap the mic and
    READ the sentence (vo_tap_speaker_sentence_story = the user's vo_1.wav, the very recording the reference speaks), so the FIRST
-   tap on the chip starts the 12 s read-aloud beat (story_read_page.js): the white mic glyph inside the chip (the .mic paths of
+   tap on the chip starts the read-aloud beat (story_read_page.js; a second per word since [L02-READ-WORD-1S] 2026-10-07, 12 s before): the white mic glyph inside the chip (the .mic paths of
    the chip art) dissolves away and the chip art's sound wave (.mic-wave: five white level bars, otherwise invisible and still)
    fades in and bounces like a voice level meter — a recording look; the chip itself stays put (its stillness lock is untouched)
    while the sentence's words light one by one at an even pace over the beat. Afterwards the wave fades, the mic returns and the

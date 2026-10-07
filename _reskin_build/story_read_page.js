@@ -10,9 +10,10 @@
      PULSES with the cue line "इस बटन पर टैप करिए और वाक्य पढ़िए।" and ONLY the chip takes the tap.
      [L02-READ-ALOUD] (2026-10-03; the reference lesson's [P2-READ-ALOUD] rev 2 + [STORY-CUE-VO], value for value): the cue
      line is the re-recorded vo_tap_speaker_sentence_story (the user's vo_1.wav — tap the mic and READ the sentence), so the
-     FIRST tap on the chip no longer speaks the sentence: it starts a REC_MS (12 s) read-aloud beat — whatever is speaking
+     FIRST tap on the chip no longer speaks the sentence: it starts a REC_MS read-aloud beat (ONE SECOND PER WORD of the sentence,
+     [L02-READ-WORD-1S] 2026-10-07 — the reference's flat 12 s until then) — whatever is speaking
      stops, the white mic glyph inside the chip dissolves away and the chip art's sound wave bounces in its place (.p2-rec,
-     CSS [L02-READ-ALOUD]), and the sentence's words light one by one at an even pace over the 12 s (wordPace: the same
+     CSS [L02-READ-ALOUD]), and the sentence's words light one by one, a second each (wordPace: the same
      .p2-word.on orange as the word sync, one word at a time), while nothing speaks (the cue and its idle repeat wait, the
      header mascot's narration replay is ignored, आगे बढ़ें stays disabled). When the beat is over the wave goes, the mic
      returns, the chip is disabled for good (.p2-rec-done: greyed, not tappable) and the sentence speaks exactly as a tap did
@@ -28,10 +29,15 @@
   STORY_READ_PAGE: {
     mount(host, slide){
       const d = slide.data || {};
-      const REC_MS = 12000;                           // [L02-READ-ALOUD] the read-aloud beat: the sound wave plays and the words pace over these ms (the reference's REC_MS)
       const wrap = document.createElement("div"); wrap.className = "story-scene story-read-page";
       const fb = String(d.emoji || "📖").replace(/'/g,"");
       const words = (d.words || []).map(w => (w && w.text) || "").filter(Boolean);
+      // [L02-READ-WORD-1S] (2026-10-07, user request) the read-aloud beat lasts ONE SECOND PER WORD of the sentence (page 1's six
+      // words → 6 s, page 3's ten → 10 s, page 6's three → 3 s), no longer the reference's flat REC_MS = 12000: wordPace divides
+      // REC_MS evenly, so each word is lit for exactly a second, and the moment the last word's second is over the beat ends and
+      // the flow goes on exactly as before (the chip disabled, the sentence with its word sync, the picture's pop, आगे बढ़ें).
+      const READ_WORD_MS = 1000;
+      const REC_MS = READ_WORD_MS * Math.max(1, words.length);   // [L02-READ-ALOUD] the read-aloud beat: the sound wave plays and the words pace over these ms
       wrap.innerHTML =
         '<div class="story-frame"><img class="story-img" src="assets/Images/' + d.image_id + '.' + IMG_EXT + '" alt="' + (d.alt_hi || '') + '" ' +
           'onerror="var s=document.createElement(\'span\');s.className=\'story-fallback\';s.textContent=\'' + fb + '\';this.replaceWith(s);"/></div>' +

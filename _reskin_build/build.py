@@ -975,7 +975,7 @@ card["gate"] = {"anim": "assets/UI/gate_swiftee.webp", "talk_ms": GATE_TALK_MS, 
 # = Vorbis 24 kHz mono, nominal 50 kb/s, the same 28565-byte file (the fleet's generic lines are Vorbis; the lesson's own
 # recordings Opus). No level change (the recording is -17.7 LUFS; the fleet's old cue line -18.4). The words of the recording were
 # not supplied in writing at first (the reference lists this clip by path only); the user gave them later the same day — see the
-# audio_text line below. story_read_page.js prefers this id for the cue; the FIRST chip tap then starts the 12 s read-aloud beat
+# audio_text line below. story_read_page.js prefers this id for the cue; the FIRST chip tap then starts the read-aloud beat (a second per word, [L02-READ-WORD-1S] 2026-10-07; 12 s before)
 # (the mic glyph dissolves into the chip art's sound wave, the words pace evenly, nothing speaks), after which the chip is greyed
 # out for good and the sentence speaks with its words lit in time with the recording (data.word_times below). CSS: adapt.css
 # [L02-READ-ALOUD]; the chip art gets the .mic classes and the .mic-wave bars in _mic_glyph. The old cue vo_tap_speaker_sentence
