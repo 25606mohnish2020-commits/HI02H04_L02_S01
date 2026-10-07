@@ -227,8 +227,31 @@ m = re.search(r'<script type="application/json" id="cardData">(.*?)</script>', c
 card = json.loads(m.group(1))
 # page 1 shows no hero picture and no sentence pill any more (Figma "FLN by MJ" node 98-2): the card itself is the
 # picture frame (see index.html [L02-LANDING-FRAME] and adapt.css), so landing_hero / landing_caption_hi are not set
-LANDING_PIC = "assets/Images/landing_title.webp"
-assert os.path.exists(os.path.join(CUR, LANDING_PIC)), "missing " + LANDING_PIC
+# ---- [L02-LANDING-PIC-2] (2026-10-07, user request) "At the title page replace the image with this image as shown in this Figma frame;
+# rest keep everything exactly the same, just replace the image inside." Figma "FLN by MJ" node 316-200 (start_activity_html_layout,
+# 1280x720): the same card (Frame 1410086448, 1114x456 @ 76,125) now holds the sleeping-pair bedroom scene ("ChatGPT Image Sep 26,
+# 2026, 04_40_09 PM 1", 1114x627 @ (-10,-86) of the card — the picture's middle band, centred) with the title sticker "सोना नहीं,
+# खेलना है !" ("Object", 416x113 @ frame (432,155) = card (356,30)) over it. Both are the Figma file's own source images (the MCP's
+# raw fills: the scene 1672x941 = 1.5x the layer, the sticker 725x197), composed here at the scene's 1.5x into ONE picture — as the
+# user's export of the layer shows it — and encoded to assets/Images/landing_title_2.webp. The frame's CSS places it at the Figma
+# offsets inside the 9px stroke ([L02-LANDING-PIC-2] in adapt.css: -18/-95; the design's -19 would leave the last column of the
+# stroke's box bare, so a 1px nudge). The old scene (landing_title.webp, the Figma 98-2 picture) leaves the dist; its source stays in
+# _reskin_build/landing_title_source.png. Nothing else on the page moves: the card box, the bird, the play button, the reveal.
+LANDING_PIC = "assets/Images/landing_title_2.webp"
+_L2_SCENE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_scene_source.png")
+_L2_TITLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_title_source.png")
+_L2_DST = os.path.join(CUR, LANDING_PIC)
+assert os.path.exists(_L2_SCENE) and os.path.exists(_L2_TITLE), "[L02-LANDING-PIC-2] missing sources"
+if not os.path.exists(_L2_DST) or os.path.getmtime(_L2_DST) < max(os.path.getmtime(_L2_SCENE), os.path.getmtime(_L2_TITLE)):
+    from PIL import Image as _Img
+    _scene = _Img.open(_L2_SCENE).convert("RGB"); _sticker = _Img.open(_L2_TITLE).convert("RGBA")
+    _S = _scene.size[0] / 1114.0                                     # the scene's pixels per layer px (1.5)
+    assert abs(_scene.size[1] / 627.0 - _S) < 0.01, _scene.size
+    _st = _sticker.resize((round(416 * _S), round(113 * _S)), _Img.LANCZOS)
+    _scene.paste(_st, (round(366 * _S), round(116 * _S)), _st)     # the sticker at card (356,30) = picture (366,116), 416x113
+    _scene.save(_L2_DST, "WEBP", quality=88, method=6)
+    print("wrote", _L2_DST, _scene.size)
+assert os.path.exists(_L2_DST), "missing " + LANDING_PIC
 for s in card["slides"]:
     if s["type"] == "STORY_READ_PAGE": s["caption_chip"] = True
     if s["type"] == "STORY_QUESTION": s["bare_recall"] = True

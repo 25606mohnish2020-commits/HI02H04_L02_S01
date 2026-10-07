@@ -2327,14 +2327,15 @@ body.is-start #navBtn{display:none !important;}
    The white card, the title, the hero picture and the sentence pill are gone. The card keeps the fleet box (1114x456,
    centred — the Figma frame is exactly that size) and IS the picture frame now: 9px white stroke, 44px corners, a 65%
    white fill under the picture, and the title scene drawn at the Figma placement — 1147.36x474 at (-40,-37) inside the
-   stroke, clipped by the corners. The bird, the play button and their rules are untouched: both are still positioned from
+   stroke, clipped by the corners (the 98-2 scene; [L02-LANDING-PIC-2] 2026-10-07: the 316-200 scene, 1114x627 at (-18,-95) — see
+   build.py, the picture is the only thing that changed). The bird, the play button and their rules are untouched: both are still positioned from
    the card's box (bird left:-24/bottom:-12, play pill bottom:26), so they sit on the frame as they sat on the card. */
 .start-gate .sg-card{height:456px;background:none !important;}
 .start-gate .sg-content{display:none !important;}
 .start-gate .sg-title[hidden]{display:none !important;}
 .start-gate .sg-frame{position:absolute;inset:0;z-index:1;box-sizing:border-box;border:9px solid #FFFFFF;border-radius:44px;
   overflow:hidden;background:rgba(255,255,255,.65);}
-.start-gate .sg-frame img{position:absolute;left:-40px;top:-37px;width:1147.36px;height:474px;max-width:none;max-height:none;
+.start-gate .sg-frame img{position:absolute;left:-18px;top:-95px;width:1114px;height:627px;max-width:none;max-height:none;   /* [L02-LANDING-PIC-2] the 316-200 picture: the layer's 1114x627 at the Figma offsets inside the stroke (-19 nudged to -18 to cover the box) */
   object-fit:cover;display:block;pointer-events:none;}
 /* the frame arrives with the landing's own reveal (the pop-in the hero picture had), the moment the loader starts to fade */
 body:not(.tota-landing-in) .start-gate .sg-frame{opacity:0;}
