@@ -437,9 +437,14 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
 ]
 VO_BATCH_IDS = {k for k, _ in VO_LINES}
 assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
+# [L02-CUE-VO-2] (2026-10-07, user request) "Replace this VO on the mic button (pages T1-T9)": the user's new recording
+# (Downloads/audio_1.wav, 3.28 s, 24 kHz mono — kept as _reskin_build/vo_tap_speaker_sentence_story_2026-10-07.wav) takes the place of
+# the batch's vo_tap_speaker_sentence_story.wav as the SOURCE of that clip; the batch folder is left as delivered. Same trim / level /
+# encode as every other line. The manifest words stay "इस बटन पर टैप करिए और वाक्य पढ़िए।" (the new take was not checked by ear).
+VO_OVERRIDE = {"vo_tap_speaker_sentence_story": os.path.join(SCR, "vo_tap_speaker_sentence_story_2026-10-07.wav")}
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.ogg, trimmed / levelled / encoded like tts_clip."""
-    src = os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    src = VO_OVERRIDE.get(name) or os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")   # [L02-CUE-VO-2] a later take may stand in for a batch WAV
     assert os.path.exists(src), "[L02-VO-BATCH] missing recording " + src
     aud[name] = "assets/Audio/" + name + ".ogg"; txt[name] = text
     if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src): return   # remade only for a newer WAV (not, like bed_fresh — defined further down — for a newer build.py: 61 encodes take ~2 min; delete the .ogg to force one)
@@ -1121,6 +1126,17 @@ def clip_s(name):
     """The length of a lesson clip (assets/Audio/<name>.ogg) in seconds, read with ffmpeg."""
     h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"))).groups()
     return int(h) * 3600 + int(m) * 60 + float(sec)
+# ---- [L02-CUE-SILENT] (2026-10-07, user request) "From T2 to T9 the mic button should only pulsate without any VO, but the mic button's
+# VO comes along with the pulsating animation after 7 seconds of inactivity from the user's end, and repeats." Pages 2-9 get
+# data.cue_silent_first (the first cue, 4 s in, is the chip's pulse ALONE), data.cue_pulse_ms (that pulse lasts as long as the line
+# would — the clip's length, so it looks the same with or without the voice) and data.cue_repeat_ms 7000 (the line + pulse once the
+# child has done nothing for 7 s after a cue, and again after every further 7 s; a tap anywhere on the page restarts the count). Page 1
+# is untouched: its cue speaks at once, 1 s in, and repeats 5 s after its end as before. story_read_page.js reads the three fields.
+_cue_pulse_ms = int(round(clip_s("vo_tap_speaker_sentence_story") * 1000))
+for _s in card["slides"]:
+    if _s["type"] == "STORY_READ_PAGE" and _s["id"] != "T1":
+        _s["data"]["cue_silent_first"] = True; _s["data"]["cue_repeat_ms"] = 7000; _s["data"]["cue_pulse_ms"] = _cue_pulse_ms
+assert [s["id"] for s in card["slides"] if s["data"].get("cue_silent_first")] == ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
 # ---- [L02-G3-REF] G3's lines and the word timings its pills light up with (see the G3 block above; tts_clip and clip_s exist by now)
 tts_clip("vo_q_khel", "माधव किससे खेल रहा है?")
 tts_clip("vo_opt_khilono_se", "खिलौनों से")
