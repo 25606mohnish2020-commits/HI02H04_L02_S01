@@ -1127,16 +1127,17 @@ def clip_s(name):
     h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"))).groups()
     return int(h) * 3600 + int(m) * 60 + float(sec)
 # ---- [L02-CUE-SILENT] (2026-10-07, user request) "From T2 to T9 the mic button should only pulsate without any VO, but the mic button's
-# VO comes along with the pulsating animation after 7 seconds of inactivity from the user's end, and repeats." Pages 2-9 get
+# VO comes along with the pulsating animation after 7 seconds of inactivity from the user's end, and repeats." (7 s → 4 s by the
+# third request of the day.) Pages 2-9 get
 # data.cue_silent_first (the first cue is the chip's pulse ALONE — 1 s after the page opens: data.cue_delay_ms 1000, the user's
 # second request of the day, 4 s at first), data.cue_pulse_ms (that pulse lasts as long as the line
-# would — the clip's length, so it looks the same with or without the voice) and data.cue_repeat_ms 7000 (the line + pulse once the
-# child has done nothing for 7 s after a cue, and again after every further 7 s; a tap anywhere on the page restarts the count). Page 1
+# would — the clip's length, so it looks the same with or without the voice) and data.cue_repeat_ms 4000 (the line + pulse once the
+# child has done nothing for 4 s after a cue, and again after every further 4 s; a tap anywhere on the page restarts the count). Page 1
 # is untouched: its cue speaks at once, 1 s in, and repeats 5 s after its end as before. story_read_page.js reads the three fields.
 _cue_pulse_ms = int(round(clip_s("vo_tap_speaker_sentence_story") * 1000))
 for _s in card["slides"]:
     if _s["type"] == "STORY_READ_PAGE" and _s["id"] != "T1":
-        _s["data"]["cue_silent_first"] = True; _s["data"]["cue_repeat_ms"] = 7000; _s["data"]["cue_pulse_ms"] = _cue_pulse_ms; _s["data"]["cue_delay_ms"] = 1000
+        _s["data"]["cue_silent_first"] = True; _s["data"]["cue_repeat_ms"] = 4000; _s["data"]["cue_pulse_ms"] = _cue_pulse_ms; _s["data"]["cue_delay_ms"] = 1000
 assert [s["id"] for s in card["slides"] if s["data"].get("cue_silent_first")] == ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
 # ---- [L02-G3-REF] G3's lines and the word timings its pills light up with (see the G3 block above; tts_clip and clip_s exist by now)
 tts_clip("vo_q_khel", "माधव किससे खेल रहा है?")
