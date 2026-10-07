@@ -6,7 +6,8 @@
      pages 3-10 lost their "इस वाक्य को पढ़िए।" ([L02-NO-READ-INSTR]) and page 2 its "आप खुद कहानी पढ़ने की कोशिश करिए…"
      (vo_help, [L02-NO-HELP-VO] 2026-10-03, together with the chip pulse that was timed to its "यह बटन…" words through
      data.chip_pulse_at — the code below still honours both fields for a card that has them) — so every page opens silently,
-     straight into the beats below → 4 s later (1 s on page 2: data.cue_delay_ms, [L02-T1-CUE-2S] 2026-10-03) ONLY the chip
+     straight into the beats below → 4 s later (1 s on page 2: data.cue_delay_ms, [L02-T1-CUE-2S] 2026-10-03; 1 s on pages 3-10 too
+     since [L02-CUE-SILENT] 2026-10-07, build.py) ONLY the chip
      PULSES with the cue line "इस बटन पर टैप करिए और वाक्य पढ़िए।" and ONLY the chip takes the tap.
      [L02-READ-ALOUD] (2026-10-03; the reference lesson's [P2-READ-ALOUD] rev 2 + [STORY-CUE-VO], value for value): the cue
      line is the re-recorded vo_tap_speaker_sentence_story (the user's vo_1.wav — tap the mic and READ the sentence), so the
