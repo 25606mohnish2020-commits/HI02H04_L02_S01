@@ -18,7 +18,7 @@
      .p2-word.on orange as the word sync, one word at a time), while nothing speaks (the cue and its idle repeat wait, the
      header mascot's narration replay is ignored, आगे बढ़ें stays disabled). When the beat is over the wave goes, the mic
      returns, the chip is disabled for good (.p2-rec-done: greyed, not tappable) and the sentence speaks exactly as a tap did
-     before (at data.sentence_rate — 0.8 since [L02-SENT-RATE] 2026-10-07: 20% slower, pitch kept; the highlight follows the clip's own
+     before (at data.sentence_rate — 0.72 since [L02-SENT-RATE] 2026-10-07 (0.8, then 0.9 for an hour each): 28% slower, pitch kept; the highlight follows the clip's own
      clock, so it slows with it): the word being said turning dark orange with a tiny pop, in time with the recording (data.word_times — each
      word's start and the end of the last word, measured on the clip by the build like the reference's WORD_TIMES tables; a
      page without them falls back to the words' character shares) → the clip ends → the picture pops out and holds (2 s,
@@ -170,7 +170,7 @@
           if(!heard){ heard = true; SwiftPAL.emit("sentence_heard", { slide_id: slide.id, phase: slide.phase }); }
           popPicture(()=> setNavActive(true));   // [L02-POP-AFTER-SENTENCE] आगे बढ़ें only once the picture's pop is over
         });
-        // [L02-SENT-RATE] (2026-10-07, user request) the sentence is heard 20% slower (card data.sentence_rate 0.8) with its pitch kept —
+        // [L02-SENT-RATE] (2026-10-07, user request) the sentence is heard slower (card data.sentence_rate: 0.72 = 10% slower, then 20% more; 0.8 / 0.9 before) with its pitch kept —
         // the browser's time-stretch on this clip's own element (play() makes a fresh one per clip, so nothing else is slowed); the
         // highlight below follows the clip's clock (currentTime vs data.word_times), so it slows with the voice by itself
         if(currentAudio && typeof d.sentence_rate === "number" && d.sentence_rate > 0){

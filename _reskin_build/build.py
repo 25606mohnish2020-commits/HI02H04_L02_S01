@@ -257,12 +257,13 @@ for s in card["slides"]:
     if s["type"] == "STORY_QUESTION": s["bare_recall"] = True
     if s["type"] == "CELEBRATION": s.setdefault("audio", {})["sfx"] = "sfx_celebrate"
 # ---- [L02-SENT-RATE] (2026-10-07, user request) "From page 1 T1 to page 9 T9 reduce the speed of the VO of the Hindi sentence when it is
-# played, and the in-synced highlight along with it, by 20%." Every story page gets data.sentence_rate 0.8: story_read_page.js plays the
+# played, and the in-synced highlight along with it, by 20%" — then "by 10%", then "by 20% more" (three requests in a row). Every story
+# page gets data.sentence_rate 0.72 (= 0.9 x 0.8: the 10% slower speed slowed by a further 20%; 0.8, then 0.9 before): story_read_page.js plays the
 # sentence clip (data.whole_audio) at that playbackRate with the pitch kept (the browser's time-stretch — the voice as a slowed take),
 # and the word highlight follows the clip's own clock (currentTime against data.word_times), so it slows with it by itself; the pop and
 # आगे बढ़ें follow the clip's (later) end as before. The clips, their measured timings and the cue line are untouched (the cue plays at 1.0).
 for _s in card["slides"]:
-    if _s["type"] == "STORY_READ_PAGE": _s["data"]["sentence_rate"] = 0.8
+    if _s["type"] == "STORY_READ_PAGE": _s["data"]["sentence_rate"] = 0.72
 aud, txt = card["assets"]["audio"], card["assets"]["audio_text"]
 for k, v in {
     "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",   # [L02-GATE-LINE] → [L02-VO-BATCH] the recorded line; the headline is its last words, चलिए, शुरू करें!
