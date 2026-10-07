@@ -333,13 +333,20 @@ POP_S, SFX_MEAN_DB, SFX_PEAK_DB, SFX_AUDIBLE_DB, SFX_WIN = 2.0, -26.0, -1.0, -35
 # pop itself stays 2 s, the sound runs on for its length (the card carries it as data.pop_sfx_s) and then stops. A start of
 # "onset" means the point where the track's sound begins (its first 50 ms window at or above -40 dB RMS), so the sound is
 # heard from the pop's first frame.
-# [L02-POP-5S] pages whose picture pop is longer than the fleet's 2 s: pages 2, 4, 5 and 10 hold 3 s longer (5 s; CSS
+# [L02-POP-5S] (OFF since [L02-POP-2S] 2026-10-07, below — kept for the record) pages whose picture pop is longer than the fleet's 2 s:
+# pages 2, 4, 5 and 10 hold 3 s longer (5 s; CSS
 # .p2-pop-5s, card data.pop_ms = 5000) — their sound is the pop's 5 s of their track and stops with the pop; the length is
 # the pop's, so no data.pop_sfx_s is written. Cut start: "onset" for pages 4 and 5 (their track opens with ~2.5 s of silence,
 # which would have left the pop itself mute); None = the automatic rule above (the track's start when its first 5 s are
 # audible, else its loudest 5 s) for pages 2 and 10.
-POP_LEN = {1: 5.0, 3: 5.0, 4: 5.0, 9: 5.0}
-SFX_CUT = {1: (None, POP_LEN[1]), 3: ("onset", POP_LEN[3]), 4: ("onset", POP_LEN[4]), 9: (None, POP_LEN[9])}
+# ---- [L02-POP-2S] (2026-10-07, user request) "From page 1 T1 to page 9 T9 the duration of the image animation and the sound effect in
+# sync with it should be equal to that of page 2 T2, and then the next button should be enabled." T2's pop is the fleet's 2 s one with a
+# 2 s sound — so the 5 s pops of pages 1, 3, 4 and 9 (the user's old pages 2, 4, 5 and 10) go: POP_LEN is empty (no page writes
+# data.pop_ms; the module's 5 s path and the CSS stay for a card that sets it) and their sounds are cut to the pop's 2 s like the others'
+# (pages 3 and 4 keep their "onset" start — their track opens in ~2.5 s of silence); आगे बढ़ें lights 2 s after the sentence on every page,
+# as on T2. T8's sound stays its whole 1.66 s track (shorter than 2 s), as before.
+POP_LEN = {}                                                   # was {1: 5.0, 3: 5.0, 4: 5.0, 9: 5.0} ([L02-POP-5S])
+SFX_CUT = {3: ("onset", POP_S), 4: ("onset", POP_S)}           # was 1 / 9 at (None, 5.0) and 3 / 4 at ("onset", 5.0)
 def sfx_onset(src):
     out = ff("-i", src, "-af", "aresample=24000,asetnsamples=n=1200,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-", "-f", "null", "-")
     vals = [(-120.0 if x == "-inf" else float(x)) for x in re.findall(r"RMS_level=(-?[\d.]+|-inf)", out)]

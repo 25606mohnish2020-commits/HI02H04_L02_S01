@@ -22,7 +22,8 @@
      clock, so it slows with it): the word being said turning dark orange with a tiny pop, in time with the recording (data.word_times — each
      word's start and the end of the last word, measured on the clip by the build like the reference's WORD_TIMES tables; a
      page without them falls back to the words' character shares) → the clip ends → the picture pops out and holds (2 s,
-     [L02-POP-AFTER-SENTENCE]; 5 s on pages 2, 4, 5 and 10, data.pop_ms, [L02-POP-5S]) with its own sound (data.pop_sfx,
+     [L02-POP-AFTER-SENTENCE]; 5 s on pages 2, 4, 5 and 10 — data.pop_ms, [L02-POP-5S] — until [L02-POP-2S] 2026-10-07: every page 2 s
+     now, no page sets data.pop_ms, the 5 s path stays for a card that does) with its own sound (data.pop_sfx,
      [L02-POP-SFX]: starts with the pop, stops with it) → only then आगे बढ़ें lights up (the disabled pill was there from the
      start). With no tap the cue (pulse + line) repeats after 5 s of silence — page 1; on pages 2-9 ([L02-CUE-SILENT], 2026-10-07)
      the first cue is the pulse ALONE and the line joins the pulse only after 4 s of no tap (data.cue_repeat_ms; 7 s at first), then
@@ -142,7 +143,7 @@
       // heard, not after the narration: the child taps the chip → the sentence speaks → the clip ends → the picture pops out and
       // holds → only when that pop is over does आगे बढ़ें light up. Every completed hearing pops the picture again; a clip cut
       // short (another tap) pops nothing. The wait is a timer, not animationend, so it also holds under html.no-anim.
-      // p2BirdPop's duration in the CSS: 2 s, or 5 s on a page whose card says data.pop_ms = 5000 (pages 2, 4, 5, 10, [L02-POP-5S]:
+      // p2BirdPop's duration in the CSS: 2 s, or 5 s on a page whose card says data.pop_ms = 5000 (pages 2, 4, 5, 10 until [L02-POP-2S] 2026-10-07; none now, [L02-POP-5S]:
       // the frame gets .p2-pop-5s, the same pop with a 3 s longer hold; the sound and आगे बढ़ें follow this length)
       const POP_MS = (d.pop_ms === 5000) ? 5000 : 2000;
       if(POP_MS === 5000) frame.classList.add("p2-pop-5s");
