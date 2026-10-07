@@ -456,7 +456,13 @@ assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
 # (Downloads/audio_1.wav, 3.28 s, 24 kHz mono — kept as _reskin_build/vo_tap_speaker_sentence_story_2026-10-07.wav) takes the place of
 # the batch's vo_tap_speaker_sentence_story.wav as the SOURCE of that clip; the batch folder is left as delivered. Same trim / level /
 # encode as every other line. The manifest words stay "इस बटन पर टैप करिए और वाक्य पढ़िए।" (the new take was not checked by ear).
-VO_OVERRIDE = {"vo_tap_speaker_sentence_story": os.path.join(SCR, "vo_tap_speaker_sentence_story_2026-10-07.wav")}
+# [L02-GATE-VO-2] (2026-10-08, user request) "After page 9 T9, in the transition screen where the pink Hindi text comes, replace the VO
+# of that screen with this VO" (Downloads/"audio_2 .wav", 5.6 s, 24 kHz mono — kept as _reskin_build/vo_pt_guided_2026-10-08.wav): the
+# guided gate's line vo_pt_guided takes it as its source the same way. The headline ("चलिए, साथ में करें!"), the bird, the 1250 ms talk
+# point and the close 300 ms after the line are as they were ([L02-STD-GATE]); the screen is as long as the new line needs. The manifest
+# words stay "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!" (the new take was not checked by ear).
+VO_OVERRIDE = {"vo_tap_speaker_sentence_story": os.path.join(SCR, "vo_tap_speaker_sentence_story_2026-10-07.wav"),
+               "vo_pt_guided": os.path.join(SCR, "vo_pt_guided_2026-10-08.wav")}
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.ogg, trimmed / levelled / encoded like tts_clip."""
     src = VO_OVERRIDE.get(name) or os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")   # [L02-CUE-VO-2] a later take may stand in for a batch WAV
