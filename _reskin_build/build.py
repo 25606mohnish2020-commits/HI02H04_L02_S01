@@ -1756,6 +1756,17 @@ story_cut(7, "story_7_source.png", STORY7_TOP)
 # picture exactly, so the card is unchanged.
 STORY8_TOP = 132
 story_cut(8, "story_8_source.png", STORY8_TOP)
+# ---- [L02-T9-PIC] (2026-10-08, user request) page 9 (T9, "वह थककर सो गया।") shows the user's new picture — the boy asleep on his
+# front on the striped rug, head on his hand, the mother kneeling behind him with a startled hand at her mouth, teddy, blocks, truck,
+# car, ball and train around (_reskin_build/story_9_source.png, 1448x1086) — in place of the Figma picture story_9.webp was (the
+# designer's crop, a static asset until now; _reskin_build/story_9_fig_source.png stays as a record). Same cut as T5..T8: the full width
+# at 1380:708 = 743 of the 1086 rows. The two figures together span more rows than the window holds (her hair top row ~48, his hand
+# under his head ends row ~845), so the window keeps the BOY whole — the subject of the sentence — with a small margin under his hand
+# (rows 108-851) and lets the frame trim the top of the mother's head (her eyebrows at row ~135 stay well inside); the rocket poster
+# and the lowest toys are trimmed too. The alt text "माधव खिलौनों के बीच सो गया, माँ हैरान खड़ी है।" still describes it, so the card
+# is unchanged.
+STORY9_TOP = 108
+story_cut(9, "story_9_source.png", STORY9_TOP)
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for k in aud:
