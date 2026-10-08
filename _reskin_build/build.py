@@ -1739,6 +1739,14 @@ story_cut(5, "story_5_source.png", STORY5_TOP)
 # "माधव एक किताब पढ़ रहा है, बाकी किताबें बिखरी हैं।" describes this picture as well, so the card is unchanged.
 STORY6_TOP = 83
 story_cut(6, "story_6_source.png", STORY6_TOP)
+# ---- [L02-T7-PIC] (2026-10-08, user request) page 7 (T7, "वह खिलौनों से खेलने लगा।") shows the user's new picture — the boy sitting
+# cross-legged on the striped rug, a toy plane in one raised hand and a red car in the other, teddy, blocks, dump truck, dinosaur, ball and
+# train around him (_reskin_build/story_7_source.png, 1454x1082) — in place of the picture it had. Same cut as T5 / T6: the full width at
+# 1380:708 = 746 of the 1082 rows, the window placed so the boy is whole — his hair (row 201) with a 21-row margin above, his feet well
+# inside — so the rocket poster at the top and the lowest toys (the truck's wheels, the train track) are trimmed (rows 180-926). The
+# alt text stays (it describes a boy playing with his toys), so the card is unchanged.
+STORY7_TOP = 180
+story_cut(7, "story_7_source.png", STORY7_TOP)
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for k in aud:
