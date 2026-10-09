@@ -698,7 +698,30 @@ def cut_q3_option(key, spec):
     out.save(dst, "WEBP", quality=88, method=6)
     print("wrote", dst, "crop", tuple(round(v, 1) for v in crop))
     return True
-for k, spec in Q3_CUTS.items(): cut_q3_option(k, spec)
+# ---- [L02-I1-PICS-2] (2026-10-09, user request) "replace these images in the image options on page 12 I1": the two pictures the user
+# attached go on I1's two non-answer cards — the boy with the toy plane among his toys (the same scene as T7 / G3, byte for byte) on
+# the खिलौनों से खेला card (q3_khilone) and the boy reading the green book on the rug (the same scene as T6) on the किताब पढ़ी card
+# (q3_kitab); the खाना खाया card (q3_khana, the answer) keeps the designer's picture — no third picture was sent. Sources
+# _reskin_build/q3_khilone_source_2.png (1454x1082) / q3_kitab_source_2.png (1448x1086); the Figma crops above were made for the
+# designer's 1671x941 pictures, so these two are cut like the lesson's other picture swaps instead: the card window's 243.679:194.84
+# shape (1.2507:1) at the picture's FULL HEIGHT, the window centred (I1_CARD_X0 None → centred; a number = its left column), resized
+# to the same 731x585 the other cards have (Q3_WIN x 3), WEBP q88; remade when the source (or this file) is newer. Those two keys are
+# left out of the Q3_CUTS loop (their old sources stay on disk as a record; the dict entries stay — the I1 asserts and the asset
+# registration read it). The card is unchanged (same ids, same cards, same order / labels / clips).
+I1_PICS_2 = {"q3_khilone": ("q3_khilone_source_2.png", None), "q3_kitab": ("q3_kitab_source_2.png", None)}
+def cut_card_pic(key, src, x0=None):
+    s = os.path.join(SCR, src); d = os.path.join(CUR, "assets", "Images", key + ".webp")
+    assert os.path.exists(s), "missing " + s
+    if os.path.exists(d) and os.path.getmtime(d) >= max(os.path.getmtime(s), os.path.getmtime(os.path.abspath(__file__))): return
+    from PIL import Image
+    im = Image.open(s).convert("RGB"); W, H = im.size; w = int(round(H * Q3_WIN[0] / Q3_WIN[1]))
+    assert w <= W, "%s: the picture is too tall for the card window" % key
+    x0 = (W - w) // 2 if x0 is None else max(0, min(x0, W - w))
+    im.crop((x0, 0, x0 + w, H)).resize((int(round(Q3_WIN[0] * Q3_SCALE)), int(round(Q3_WIN[1] * Q3_SCALE))), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
+    print("wrote", d, "columns %d-%d of %d" % (x0, x0 + w, W))
+for k, spec in Q3_CUTS.items():
+    if k not in I1_PICS_2: cut_q3_option(k, spec)
+for k, (src, x0) in I1_PICS_2.items(): cut_card_pic(k, src, x0)
 # NOTE 2026-10-03: G3 has since moved to the reference's page-5 layout ([L02-G3-REF] right below); the Q3 cuts above stay for P1 (q3_khana).
 # ---- [L02-G3-REF] (2026-10-03, user request) G3 ("page 11" in the user's count, ?slide=10) is now laid out — and behaves — like page 5
 # (G2, ?slide=4) of the DEPLOYED reference lesson https://hi-02-h04-l01-s01-dun.vercel.app/ (byte-identical to Suresh's live
