@@ -1739,14 +1739,16 @@ story_cut(5, "story_5_source.png", STORY5_TOP)
 # "माधव एक किताब पढ़ रहा है, बाकी किताबें बिखरी हैं।" describes this picture as well, so the card is unchanged.
 STORY6_TOP = 83
 # story_cut(6, "story_6_source.png", STORY6_TOP)   # superseded by [L02-T6-PIC-2] below (2026-10-09); the source stays as the M1 / RC4 record
-# ---- [L02-T6-PIC-2] (2026-10-09, user request) page 6 (T6, "उसने किताब पढ़ी।") shows the user's newly attached picture — the boy sitting
-# cross-legged on the striped rug, a toy plane in one raised hand and a red car in the other, teddy, blocks, dump truck, dinosaur, ball
-# and train around him (_reskin_build/story_6_source_2.png, 1454x1082) — in place of the reading-boy picture of [L02-T6-PIC]. NOTE: the
-# attached file is BYTE-IDENTICAL to story_7_source.png (T7's picture since [L02-T7-PIC]), so T6 and T7 show the same scene now — told
-# the user. Same cut as T7 (full width at 1380:708 = 746 of the 1082 rows, the window placed so the boy is whole: rows 180-926). The
-# old story_6_source.png is NOT touched: m1_padha_source.png (M1's picture, page 19) and rc_done_3.webp (the RC4 checkpoint) are cut
-# from their own copy of it, so those pages keep the reading-boy picture. The alt text and the card are unchanged.
-STORY6_TOP_2 = 180
+# ---- [L02-T6-PIC-2] (2026-10-09, user request, two steps) page 6 (T6, "उसने किताब पढ़ी।") shows the user's new picture — the boy
+# sitting cross-legged on the striped rug reading a green book, smiling, picture books (lion, tree, rocket, an open one with a car) and
+# a toy car / train / blocks around him, a yellow beanbag with a teddy behind (_reskin_build/story_6_source_2.png, 1448x1086) — in place
+# of the reading-boy picture of [L02-T6-PIC]. (The first file attached that day was byte-identical to T7's plane scene and sat here for
+# one commit; the user then sent this one.) Same cut as T7/T8/T9: the full width at 1380:708 = 743 of the 1086 rows, the window placed
+# so the boy is whole — his hair (row 236) with a 21-row margin above, his feet well inside — so the lowest books on the rug are
+# trimmed (rows 215-958). The old story_6_source.png is NOT touched: m1_padha_source.png (M1's picture, page 19) and rc_done_3.webp
+# (the RC4 checkpoint) are cut from their own copy of it, so those pages keep the earlier reading-boy picture. The alt text
+# "माधव एक किताब पढ़ रहा है, बाकी किताबें बिखरी हैं।" describes this picture as well, so the card is unchanged.
+STORY6_TOP_2 = 215
 story_cut(6, "story_6_source_2.png", STORY6_TOP_2)
 # ---- [L02-T7-PIC] (2026-10-08, user request) page 7 (T7, "वह खिलौनों से खेलने लगा।") shows the user's new picture — the boy sitting
 # cross-legged on the striped rug, a toy plane in one raised hand and a red car in the other, teddy, blocks, dump truck, dinosaur, ball and
