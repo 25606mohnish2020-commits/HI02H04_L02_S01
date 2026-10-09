@@ -1635,7 +1635,13 @@ M2_WT["vo_ok_thak_gaya"] = _ok5_t[1:6]     # वह, थक, गया, था�
 assert _ok5_words[1:] == "वह थक गया था।".split() and len(M2_WT["vo_ok_thak_gaya"]) == 5, (_ok5_words, M2_WT["vo_ok_thak_gaya"])
 m2["data"]["word_times_by_audio"] = M2_WT
 m2["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_kyon_soya") * 1000))
-SOYA_SRC = os.path.join(SCR, "m2_soya_source.png"); SOYA_DST = os.path.join(CUR, "assets", "Images", "m2_soya.webp"); SOYA_X0 = 79
+# ---- [L02-M2-PIC-2] (2026-10-09, user request) page 21 M2's picture is the user's new scene — the boy asleep on his front on the striped
+# rug, head on his hand, the mother kneeling behind him with a startled hand at her mouth, teddy, blocks, truck, car, ball and train
+# around (_reskin_build/m2_soya_source_2.png, 1448x1086; the same picture as T9's story_9_source.png, byte for byte) — in place of the
+# earlier sleeping-boy picture (m2_soya_source.png stays on disk as a record). Same cut as before: the full height, the 1411:1188 window
+# = 1290 of the 1448 columns at SOYA_X0 = 79 (the centred window: the mother and the boy whole, a sliver of the blocks at the left and
+# of the train at the right trimmed). M2's picture is placed on no RC checkpoint. The card is unchanged.
+SOYA_SRC = os.path.join(SCR, "m2_soya_source_2.png"); SOYA_DST = os.path.join(CUR, "assets", "Images", "m2_soya.webp"); SOYA_X0 = 79
 assert os.path.exists(SOYA_SRC), "missing " + SOYA_SRC
 if not os.path.exists(SOYA_DST) or os.path.getmtime(SOYA_DST) < os.path.getmtime(SOYA_SRC):
     from PIL import Image
