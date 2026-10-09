@@ -1420,7 +1420,14 @@ RC4_START = (RC4_CAR_IMG[0] + 25.0, RC4_CAR_IMG[1] + 25.0)                      
 RC4_CAR_BOX = (RC4_CAR_IMG[0] - 2.202, RC4_CAR_IMG[1] - 2.202)
 RC_CP4 = (RC_TOKENS[3][0] + 52.0, RC_TOKENS[3][1] + 51.0)                                      # (882, 300): the fourth checkpoint's centre
 RC_LEG4 = rc_leg("leg4", RC4_START, RC_CP4)
-rc_done("rc_done_3.webp", "m1_padha_source.png", (56, 4, 156, 102, 194, 109))               # the Figma's asset is byte-identical to m1_padha_source.png (= story_6_source.png, md5 35ec8e4f…)
+# ---- [L02-RC4-PIC-2] (2026-10-09, user request) "at page 20 RC4 the same image as of page 19 M1 should come with the animation inside
+# the circle instead of the current image": the checkpoint-3 picture is now cut from M1's own source ([L02-M1-PIC-2], m1_padha_source_2.png,
+# the boy reading the green book, 1448x1086) instead of the old stand-in's. The window is given in SOURCE pixels (the last two numbers =
+# the picture's own size, so the first four are plain pixel edges): columns 380-1080 x rows 190-876, a 700x686 window (= the token's
+# 100:98 inner box) tight on the boy and his book — his hair with a margin above, his crossed legs inside, the car at his side; the
+# beanbag at the right and the books on the rug below fall outside, as the small circle (104 px) wants one clear subject, like the other
+# two tokens' windows. The placing animation / chime / timing are the card's (placed[2].animate, place_ms, sfx_place) — unchanged.
+rc_done("rc_done_3.webp", "m1_padha_source_2.png", (380, 190, 1080, 876, 1448, 1086))
 card["assets"]["image"]["rc_done_3"] = "assets/Images/rc_done_3.webp"
 rc4 = copy.deepcopy(rc3); rc4["id"] = "RC4"; rc4["phase"] = "mastery"
 rc4["data"]["alt_hi"] = "माधव का कमरा: तीसरे प्रश्नचिह्न पर किताब पढ़ते माधव की तस्वीर लग गई; माधव रिमोट से अपनी खिलौना कार चौथे प्रश्नचिह्न तक चलाता है।"
