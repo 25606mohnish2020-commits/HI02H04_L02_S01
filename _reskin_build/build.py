@@ -735,7 +735,14 @@ g3["data"]["options"] = [
 ]
 g3["data"]["correct_sfx"] = {"src": "sfx_pop_7", "hold_ms": 2000, "vol": 1.0}
 g3["data"]["prompt_idle_ms"] = 5000
-KHEL_SRC = os.path.join(SCR, "q3_khel_source.png"); KHEL_DST = os.path.join(CUR, "assets", "Images", "q3_khel.webp"); KHEL_X0 = 201
+# ---- [L02-G3-PIC-2] (2026-10-09, user request) page 11 G3's picture is the user's newly attached scene — the boy sitting cross-legged on
+# the striped rug, a toy plane in one raised hand and a red car in the other, teddy, blocks, dump truck, dinosaur, ball and train around
+# him (_reskin_build/q3_khel_source_2.png, 1454x1082; the same picture as T7's story_7_source.png, byte for byte — fitting, since G3 asks
+# what Madhav played with) — in place of the block-building picture (q3_khel_source.png stays on disk as a record). Same recipe as before:
+# the full height, the 1411:1188 window = 1285 of the 1454 columns, placed at KHEL_X0 = 85 (the centred window: the boy, the plane, the
+# teddy, the truck, the dinosaur and the ball whole; the blocks at the far left and the train at the far right are trimmed a little).
+# The card is unchanged (same id q3_khel, same size 1411x1188; the engine draws it object-fit cover in its 374x315 box).
+KHEL_SRC = os.path.join(SCR, "q3_khel_source_2.png"); KHEL_DST = os.path.join(CUR, "assets", "Images", "q3_khel.webp"); KHEL_X0 = 85
 assert os.path.exists(KHEL_SRC), "missing " + KHEL_SRC
 if not os.path.exists(KHEL_DST) or os.path.getmtime(KHEL_DST) < os.path.getmtime(KHEL_SRC):
     from PIL import Image
