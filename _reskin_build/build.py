@@ -1713,12 +1713,21 @@ assert len(p1["data"]["word_times_by_audio"][_p1_ok["audio"]]) == 4
 I2_SRC = os.path.join(SCR, "i2_frame_233-25_source.png")
 I2_WINS = {"i2_toys": (236, 251, 480, 446), "i2_bed": (518, 251, 762, 446), "i2_chair": (800, 251, 1044, 446)}   # the picture windows on the export
 assert os.path.exists(I2_SRC), "missing " + I2_SRC
+# ---- [L02-I2-PIC-2] (2026-10-09, user request) "replace this image with one of the image options on page 13 I2": the attached picture —
+# the boy asleep on the rug among his toys with the mother kneeling startled behind him (the same scene as T9's story_9_source.png,
+# byte for byte) — goes on the card it shows, खिलौनों के बीच (i2_toys, the answer); पलंग पर / कुर्सी पर keep their Figma-export cuts.
+# Source _reskin_build/i2_toys_source_2.png (1448x1086), cut like I1's new cards ([L02-I1-PICS-2] below, cut_card_pic: the card window's
+# 243.679:194.84 shape at the picture's full height, centred, 731x585 WEBP — the CSS fills the window, so the 1x 244x195 export cuts of
+# the other two cards and this 3x one sit in identical boxes; cut_card_pic is defined up in the Q3 block). i2_toys is left out of
+# the frame loop right below (its old cut would otherwise be written when the export is newer) and cut after it. The card is unchanged.
+I2_PICS_2 = {"i2_toys": ("i2_toys_source_2.png", None)}
 for _k, _box in I2_WINS.items():
     _dst = os.path.join(CUR, "assets", "Images", _k + ".webp")
-    if not os.path.exists(_dst) or os.path.getmtime(_dst) < os.path.getmtime(I2_SRC):
+    if _k not in I2_PICS_2 and (not os.path.exists(_dst) or os.path.getmtime(_dst) < os.path.getmtime(I2_SRC)):   # [L02-I2-PIC-2]: only the cut is skipped for i2_toys; it is still registered below
         from PIL import Image
         Image.open(I2_SRC).convert("RGB").crop(_box).save(_dst, "WEBP", quality=92, method=6); print("wrote", _dst, _box)
     card["assets"]["image"][_k] = "assets/Images/" + _k + ".webp"
+for _k, (_src, _x0) in I2_PICS_2.items(): cut_card_pic(_k, _src, _x0)   # [L02-I2-PIC-2]
 card.setdefault("_emoji_fallback", {}).update({"i2_toys": "🧸", "i2_bed": "🛏️", "i2_chair": "🪑"})
 assert i2["type"] == "TAP_IN_SCENE" and "bed" not in i2["data"], "I2 should still be the untouched find card here"
 i2["type"] = "STORY_QUESTION"; i2["eis"] = "iconic"
