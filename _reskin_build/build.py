@@ -1568,7 +1568,14 @@ M1_WT["vo_ok_kitab_padhi"] = _ok4_t[1:6]     # माधव, ने, कित�
 assert _ok4_words[1:] == "माधव ने किताब पढ़ी।".split() and len(M1_WT["vo_ok_kitab_padhi"]) == 5, (_ok4_words, M1_WT["vo_ok_kitab_padhi"])
 m1["data"]["word_times_by_audio"] = M1_WT
 m1["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_kitab") * 1000))
-PADHA_SRC = os.path.join(SCR, "m1_padha_source.png"); PADHA_DST = os.path.join(CUR, "assets", "Images", "m1_padha.webp"); PADHA_X0 = 277
+# ---- [L02-M1-PIC-2] (2026-10-09, user request) page 19 M1's picture is the user's new reading-boy scene — the boy cross-legged on the
+# striped rug with a green book, picture books and a toy car / train / blocks around him, a yellow beanbag with a teddy behind
+# (_reskin_build/m1_padha_source_2.png, 1448x1086; the same picture as T6's story_6_source_2.png, byte for byte) — in place of the
+# stand-in (the old story_6 reading boy). Same cut as before: the full height, the 1411:1188 window = 1290 of the 1448 columns at
+# PADHA_X0 = 79 (the centred window, as M2's SOYA_X0 on its same-size picture: the boy and the books whole, a sliver of the lion book
+# at the left and of the beanbag at the right trimmed). m1_padha_source.png stays on disk: the RC4 checkpoint picture rc_done_3.webp is
+# still cut from it (page 20 was not named — told the user). The card is unchanged.
+PADHA_SRC = os.path.join(SCR, "m1_padha_source_2.png"); PADHA_DST = os.path.join(CUR, "assets", "Images", "m1_padha.webp"); PADHA_X0 = 79
 assert os.path.exists(PADHA_SRC), "missing " + PADHA_SRC
 if not os.path.exists(PADHA_DST) or os.path.getmtime(PADHA_DST) < os.path.getmtime(PADHA_SRC):
     from PIL import Image
