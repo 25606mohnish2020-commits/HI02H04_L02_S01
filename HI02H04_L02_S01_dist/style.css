@@ -2830,6 +2830,16 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
   height:110.4px !important;bottom:16.8px !important;}
 .start-gate .sg-btn:not(.ready){background-image:url("assets/UI/btn-play-std-waiting.svg") !important;}
 
+/* ===== [L02-PLAY-BTN-140] (2026-10-09, user request) "make the play button at the title page 140 x 140 pixels in size at the exact same
+   position and the exact same placement": the button's box is now 140x140 (was 214x110.4) and the user's 116x116 canvas is drawn at
+   140x140 (the disc 103.8 px across, was 81.6), its centre exactly where it was — 72 px above the card's bottom (16.8 + 110.4/2 before,
+   2 + 140/2 now) on the card's centre line (left 50% + translateX(-50%): the pop-in / breathing keyframes keep that percentage, so the
+   narrower box stays centred; the tapping hand is placed from the card, not the box). The width rules override the reference's 214
+   min/max. Everything else of [LANDING-PLAY-BTN] / [L02-STD-PLAY-BTN] above stands: the states, the pop-in, the breathing, the hold
+   while the bird cues, the tap, the grey waiting disc before .ready in the same box with no tap. Sizes above are superseded here. */
+.start-gate .sg-btn,.start-gate .sg-btn.ready{width:140px !important;min-width:140px !important;max-width:140px !important;height:140px !important;
+  bottom:2px !important;background-size:140px 140px !important;}
+
 /* ===== [L02-RC-FIG] (2026-10-05, user request) the RC-car screen between the अब आपकी बारी gate and page 14 (I3) — Figma "FLN by MJ" nodes
    264-664 (the car at the path's start) and 267-858 (the car on the first checkpoint), 1280x720 artboards mapped by --fs = 1333/1280.
    Stage class .l02-rc (adapt.js applyRC, card slide.rc_fig; the engine's TAP_IN_SCENE mounts the page, its picture box is the Figma box).
