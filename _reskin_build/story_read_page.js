@@ -205,6 +205,17 @@
         }, REC_MS);
       };
       state.replayAudio = ()=>{ if(recOn || recDone) return; startRec(); };   // the chip beside the pill (slide.caption_chip): its one tap starts the beat
+      // [L02-SPK-CHIP] (2026-10-10, user request) the title-bar speaker (adapt.js routes its tap here on story pages): the page's INSTRUCTION
+      // again - the narration where the page has one, else the cue line ("tap the mic and read the sentence") spoken at once with the mic
+      // chip's pulse, exactly as runCue speaks it (and the inactivity count goes on from its end as before); never over the cue itself,
+      // the read-aloud beat or a running clip, and not once the child has read (the mic chip is spent then - nothing left to instruct)
+      state.replayInstruction = ()=>{
+        if(cueOn || recOn || recDone || !alive()) return;
+        if(promptSrc){ narrate(); return; }
+        if(!cueSrc || isPlaying) return;
+        clearTimeout(cueTimer); cueWaitMs = 0; cueSilentNext = false; setCue(true);
+        play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });
+      };
       // [L02-SPK-CUE] the narration's "यह बटन दबाकर सुन सकते हैं" beat: from the moment the clip reaches data.chip_pulse_at
       // (seconds, measured on the clip by the build — 3.9 s into vo_help, where "यह बटन" starts) to the end of the clip the
       // speaker chip pulses, the same pulse as the cue. It is timed from the audio clock, so it lands on the words however late

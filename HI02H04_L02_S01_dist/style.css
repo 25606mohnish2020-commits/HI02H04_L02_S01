@@ -2945,3 +2945,31 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 @keyframes celArrowPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
 #endBtn.cel-ready{animation:celArrowPulse 1.3s ease-in-out infinite;}
 @media (prefers-reduced-motion:reduce){ #endBtn.cel-ready{animation:none;} }
+
+/* ===== L02-SPK-CHIP =====
+   [L02-SPK-CHIP] (2026-10-10, user request) the speaker button beside the birds, as the reference hindi-game-gender-identify.vercel.app
+   has it (measured live at 1280x720 and read from its CSS): the SAME inline-SVG icon (blue disc, white ring, speaker + two wave arcs -
+   the engine's own, restored on the header and landing chips in build.py), the same size (66 px CSS in the title bar, 70 px on the
+   landing) and the same places (title bar: at the bird's lower-right shoulder - its chip sits at (94.5,80) in the bar, ours anchors to
+   the bird and lands within 2 px of that on the default bar, and follows the bird on the pages whose Figma bar moves it; landing: left
+   83 / bottom -12 of the standing bird's box, 70x70, popping in at 0.78 s), the same two states - IDLE: full colour, still waves,
+   tappable; WHILE ANY VOICE PLAYS (.playing, which the engine's setPlaying toggles): half-transparent, grey, not tappable, the waves
+   blinking - and a tap when idle replays the page's instruction line (the engine's own chip handler; the landing's replays the welcome).
+   The title-bar chip shows on every page that shows the bird (the earlier per-page hides are undone below); it stays off where the bar
+   itself is hidden (the car pages) and on the celebration. The story pages' read-aloud microphone chip is a different control and is
+   untouched. */
+.stage.no-hdr-chip #audioChip,.stage.l02-story #audioChip,.stage.l02-find #audioChip,.stage.l02-q3 #audioChip,.stage.l02-bed #audioChip{display:flex !important;}
+.stage.l02-rc #audioChip,body.is-end #audioChip{display:none !important;}
+/* idle: the reference's look (its .audio-chip base rule); still waves (undoes WAVE-ALWAYS' continuous blink) */
+#audioChip:not(.playing) .wv,#sgVo:not(.playing) .wv{animation:none !important;opacity:1 !important;}
+/* while a voice plays: the reference's computed state - greyed, half-transparent, no taps; the waves blink (the engine's wv1 / wv2) */
+#audioChip.playing{pointer-events:none !important;opacity:.5 !important;filter:grayscale(1) brightness(1.2) !important;}
+#audioChip.playing .wv1,#sgVo.playing .wv1{animation:wv1 1.2s steps(1) infinite !important;}
+#audioChip.playing .wv2,#sgVo.playing .wv2{animation:wv2 1.2s steps(1) infinite !important;}
+/* the landing chip: back (TOTA-BANDAR-VOUI hid it), at the reference's spot and size, with its pop-in (the reference's sgVoIn; the
+   scale runs on the `scale` property because UIFIX-CONSIST locks `transform`) */
+.start-gate .sg-vo{display:block !important;left:83px !important;bottom:-12px !important;width:70px !important;height:70px !important;}
+@keyframes l02SgVoIn{0%{opacity:0;scale:.6;}70%{opacity:1;scale:1.08;}100%{opacity:1;scale:1;}}
+body.is-start .start-gate .sg-vo{animation:l02SgVoIn .34s ease-out .78s both !important;}
+/* the reference's off state: from the first frame until the welcome line has ended, and again whenever a line plays (adapt.js) */
+.sg-vo.sg-vo-off,.start-gate .sg-vo.sg-vo-off{pointer-events:none !important;opacity:.5 !important;filter:grayscale(1) brightness(1.2) !important;}

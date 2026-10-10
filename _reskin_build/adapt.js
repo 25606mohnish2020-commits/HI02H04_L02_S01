@@ -640,3 +640,47 @@
   setTimeout(()=>{ try { const A = CARD && CARD.end_anim; if(A && A.shabaash){
     window.__celWarm = [A.shabaash.src, A.talk.src, A.idle.src].map(u => { const i = new Image(); i.src = u; if(i.decode) i.decode().catch(()=>{}); return i; }); } } catch(e){} }, 1500);
 })();
+
+/* ===== L02-SPK-CHIP =====
+   [L02-SPK-CHIP] (2026-10-10) the landing speaker's OFF state, as the reference hindi-game-gender-identify.vercel.app runs it ("the
+   speaker button remains disabled when the VO is spoken; once the VO is complete it is enabled again"): #sgVo carries .sg-vo-off (grey,
+   half-transparent, no taps - CSS) from the first frame until the welcome line has ended, and again whenever a line is sounding (the
+   engine's setPlaying toggles .playing on it; this mirrors that into .sg-vo-off). The tap itself is the engine's: it replays the
+   welcome (playLanding). The title-bar chip needs no script: its .playing state is styled directly. */
+(function(){
+  var v = document.getElementById("sgVo"); if(!v) return;
+  var heard = false;
+  var sync = function(){
+    var on = v.classList.contains("playing"); if(on) heard = true;
+    var off = on || !heard;
+    if(v.classList.contains("sg-vo-off") !== off){ v.classList.toggle("sg-vo-off", off); v.setAttribute("aria-disabled", String(off)); }
+  };
+  sync();
+  new MutationObserver(sync).observe(v, { attributes: true, attributeFilter: ["class"] });
+})();
+
+/* ===== L02-SPK-CHIP (taps) =====
+   [L02-SPK-CHIP] (2026-10-10) the two replay taps, as the reference: a tap on an idle speaker plays the instruction again.
+   TITLE BAR: the engine's chip handler (state.replayAudio, else the slide's VO chain) already does that on the question, find and
+   sentence pages. On the STORY pages the module uses state.replayAudio for the caption's microphone (the read-aloud beat), so the
+   title-bar chip is routed to the module's state.replayInstruction instead (story_read_page.js: the narration, else the cue line).
+   LANDING: the engine's #sgVo handler only starts the FIRST welcome (playLanding is once-only); the welcome's REPLAY lives on the
+   bird's tap (replayWelcome: once the first welcome is done, never over the bird's own cue). The chip's tap now runs both: the
+   engine's handler (a no-op after the first welcome) and the bird's click (a no-op before it), so exactly one of them speaks. */
+(function(){
+  function wireHeaderChip(idx){
+    var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, chip = document.getElementById("audioChip");
+    if(!s || !chip || s.type !== "STORY_READ_PAGE") return;
+    chip.onclick = function(){
+      state.audioReplays++;
+      SwiftPAL.emit("audio_replay", { slide_id: s.id, phase: s.phase, count: state.audioReplays, src: "header_chip" });
+      if(typeof state.replayInstruction === "function") state.replayInstruction();
+    };
+  }
+  var _ms = window.mountSlide;
+  window.mountSlide = function(idx){ if(typeof state !== "undefined") state.replayInstruction = null; var r = _ms.apply(this, arguments); wireHeaderChip(idx); return r; };
+  if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .story-frame")) wireHeaderChip(state.idx);   // a ?slide=N dev load mounted before this ran
+  var sg = document.getElementById("sgVo");
+  if(sg){ var prev = sg.onclick; sg.onclick = function(e){ e.stopPropagation(); if(prev) prev.call(sg, e);
+    var b = document.querySelector(".start-gate .sg-mascot, .sg-mascot"); if(b) b.dispatchEvent(new MouseEvent("click", { bubbles: true })); }; }
+})();

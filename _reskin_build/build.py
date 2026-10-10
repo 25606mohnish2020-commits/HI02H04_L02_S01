@@ -2169,7 +2169,7 @@ index_html = f"""<!doctype html>
 </html>
 """
 
-# ---- [L02-MIC-CHIP] every speaker chip (header #audioChip, landing #sgVo, story-page SPK_SVG) carries the microphone
+# ---- [L02-MIC-CHIP] every speaker chip (header #audioChip, landing #sgVo, story-page SPK_SVG) carries the microphone (since [L02-SPK-CHIP]: the story-page chip only)
 #      glyph of the supplied icon instead of the reference's speaker + two wave arcs; the chip itself (circle, ring, shadow,
 #      size, position) is untouched. The glyph is scaled to the disc each chip actually shows: the header/landing SVG's own
 #      44px-tall rect, and the story page's CSS disc (.stage.tut.l02-story .tut-audio: 44px chip - 2x4px ring = 36px; that
@@ -2198,7 +2198,9 @@ def _mic_glyph(s, cx=31, cy=26):
     return mic + '<g class="mic-wave" fill="white">' + "".join(bars) + '</g>'
 _SPK_GLYPH = re.compile(r'<path d="M29\.8466 .*?33\.3868 21\.5044Z" fill="white"/>')
 assert len(_SPK_GLYPH.findall(index_html)) == 2 and len(_SPK_GLYPH.findall(app_js)) == 1, "speaker glyph anchors changed"
-index_html = _SPK_GLYPH.sub(lambda m: _mic_glyph(44 / 61), index_html)   # header + landing chips
+# [L02-SPK-CHIP] (2026-10-10, user request) the header (#audioChip) and landing (#sgVo) chips KEEP the engine's speaker glyph - the same
+#   icon the reference hindi-game-gender-identify.vercel.app shows (verified byte for byte against its chips); only the story page's
+#   read-aloud chip carries the microphone now. The chips' look, states and placement: adapt.css / adapt.js [L02-SPK-CHIP].
 app_js     = _SPK_GLYPH.sub(lambda m: _mic_glyph(36 / 61), app_js)       # story-page chip
 
 wr(os.path.join(CUR, "style.css"), style_css)
