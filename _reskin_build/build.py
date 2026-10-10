@@ -2241,6 +2241,12 @@ frame = "\n".join(ind + l for l in [
     '<div class="sg-title" id="sgTitle" hidden></div>',
 ])
 body = body[:m.start()] + "\n" + frame + body[m.end():]
+# [L02-END-FINISH-BTN] (2026-10-10, user request) the celebration button's markup = the HI02H04_L01_S01 reference's ([END-FINISH-BTN]
+# there, 2026-10-08: MTG204_L01_S01's arrow-only pill): no text, «आगे बढ़ें» as the accessible name only — the arrow is #endBtn::after
+# (adapt.css [L02-END-FINISH-BTN]). The engine never writes this button's text (it only toggles its classes), so the empty button is safe.
+_eb_old = '<button class="end-btn" id="endBtn">आगे बढ़ें →</button>'
+assert body.count(_eb_old) == 1, "[L02-END-FINISH-BTN] end button markup anchor"
+body = body.replace(_eb_old, '<button class="end-btn" id="endBtn" aria-label="आगे बढ़ें"></button>', 1)
 gate = re.search(r'<div class="phase-gate" id="phaseGate">.*?</div><img[^>]*></div>', html, re.S).group(0)
 assert gate.count(' src="assets/UI/peeking_pal.webp"') == 1, "[L02-STD-GATE] gate img anchor"
 gate = gate.replace(' src="assets/UI/peeking_pal.webp"', '', 1)   # [L02-STD-GATE] no art at rest: adapt.js hands the <img> the standard transition animation at each gate

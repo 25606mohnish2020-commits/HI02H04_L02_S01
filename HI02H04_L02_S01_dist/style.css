@@ -3004,3 +3004,47 @@ body.is-start .start-gate .sg-vo{animation:l02SgVoIn .34s ease-out .78s both !im
 .fx-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5000;--fx-size:1.5;}
 .fx-layer .fx-confetti .f{width:calc(var(--w) * var(--z) * var(--scale, 1) * var(--fx-size, 1));
   height:calc(var(--h) * var(--z) * var(--scale, 1) * var(--fx-size, 1));}
+/* ===== L02-NAV-PULSE =====
+   [L02-NAV-PULSE] (2026-10-10, user request: "C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001 —
+   apply the exact same animation to the next button icon just after it gets enabled as shown in this reference file.") That file's
+   <style id="NAV-PULSE"> (2026-10-09), rule for rule: the moment आगे is ENABLED it pulsates like the title page's play button does once it
+   is ready (scale 1 → 1.04 → 1, 1.4 s ease-in-out, repeating), on every page where the button exists and is enabled — here the story
+   pages' आगे बढ़ें (once the sentence has been heard and the picture has popped) and P1's pill (the correct option). "Enabled" is
+   #navBtn.active, which setNavActive(true) sets at the same instant it clears `disabled` (WHEN that happens is untouched). The pulse runs on
+   the ENABLED art layer (#navBtn::after = btn-next-pill + arrow, [NAV-NEXT-BTN] — the same two-layer button in both lessons), not on the
+   button box: the box keeps its translateX(-50%) centring and its hover lift / press transforms exactly as before, the disabled art
+   (::before) never moves, the hit area is unchanged. Still mode (html.no-anim, prefers-reduced-motion) stops it. */
+@keyframes navBreathe{0%,100%{scale:1;}50%{scale:1.04;}}
+#navBtn.active::after{animation:navBreathe 1.4s ease-in-out infinite;transform-origin:50% 50%;will-change:scale;}
+#navBtn:not(.active)::after{animation:none;scale:1;}
+@media (prefers-reduced-motion:reduce){ #navBtn.active::after{animation:none;scale:1;} }
+html.no-anim #navBtn.active::after{animation:none !important;scale:1;}
+/* ===== L02-END-FINISH-BTN =====
+   [L02-END-FINISH-BTN] (2026-10-10, user request: "...also replace the exact same button on the celebration screen at page 23 CEL as shown
+   in this reference file.") That file's <style id="END-FINISH-BTN"> (2026-10-08: MTG204_L01_S01's celebration button, value for value and
+   in its place — the arrow-only pill of its .end-btn, itself HI02H11_L02_S02's), rule for rule: #FCB717, a 4.54 px white ring, radius 44.56,
+   padding 14 x 44 around a 52 px «→» glyph (the content of ::after, Baloo 2, navy; so the pill is sized by the glyph + the padding, ~143 x 94
+   design px), the 0 6px 6px black shadow with the inner highlight / shade, hintPop in, a 3 px press. The markup is the reference's too
+   (build.py: no text, «आगे बढ़ें» as the aria-label). Every length is x --scale because this end screen is body-level and unscaled; the
+   button sits the reference's 22 design px under the mascot box (the .end-screen gap, scaled like the box — the last rule), the pair
+   centred on the screen. The tap does exactly what it did (eb.onclick in the celebration mount); the cel-wait / cel-ready states of
+   [L02-CEL-MTG204] apply unchanged (the two lessons share them). The user's finish-button art of [END-FINISH-BTN] (btn-finish-pill.svg +
+   btn-finish-arrow.svg on ::before / ::after over a ~209x81 text-sized box) is replaced; those files stay in assets/UI unused. */
+#endBtn{font-family:var(--font-hi);font-weight:800;color:var(--navy) !important;text-shadow:none !important;overflow:visible !important;
+  font-size:calc(28px * var(--scale,1)) !important;
+  background:#FCB717 !important;border:calc(4.54px * var(--scale,1)) solid #FFFFFF !important;
+  border-radius:calc(44.56px * var(--scale,1)) !important;
+  padding:calc(14px * var(--scale,1)) calc(44px * var(--scale,1)) !important;cursor:pointer;
+  box-shadow:0 calc(6px * var(--scale,1)) calc(6px * var(--scale,1)) rgba(0,0,0,.25),
+             inset calc(4.54px * var(--scale,1)) calc(9.09px * var(--scale,1)) calc(12.12px * var(--scale,1)) rgba(255,255,255,.25),
+             inset calc(-4.54px * var(--scale,1)) calc(-4.54px * var(--scale,1)) calc(13.63px * var(--scale,1)) rgba(116,60,0,.19) !important;}
+#endBtn:active{transform:translateY(calc(3px * var(--scale,1))) !important;
+  box-shadow:0 calc(3px * var(--scale,1)) calc(3px * var(--scale,1)) rgba(0,0,0,.25),
+             inset calc(4.54px * var(--scale,1)) calc(9.09px * var(--scale,1)) calc(12.12px * var(--scale,1)) rgba(255,255,255,.25),
+             inset calc(-4.54px * var(--scale,1)) calc(-4.54px * var(--scale,1)) calc(13.63px * var(--scale,1)) rgba(116,60,0,.19) !important;}
+/* the arrow: the reference's .end-btn::after glyph (the former ::before / ::after art layers are gone) */
+#endBtn::before{content:none !important;}
+#endBtn::after{content:"\2192" !important;position:static !important;inset:auto !important;background:none !important;
+  font-size:calc(52px * var(--scale,1));line-height:1;pointer-events:none;}
+/* the reference's 22 px between the mascot box and the button, scaled like the box itself */
+body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
