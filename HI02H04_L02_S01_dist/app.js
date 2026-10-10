@@ -3773,53 +3773,84 @@ const PHASE_GATE_TITLE = { tutorial:"चलिए, शुरू करें!", 
 const PHASE_GATE_VO    = { tutorial:"vo_pt_tutorial", guided:"vo_pt_guided", practice:"vo_pt_practice" };
 const _gatedPhases = new Set();   // each phase gate plays ONCE (Start→tutorial, →guided, →practice)
 let _gateToken = 0;
-function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] → [L02-GATE-ANIM] the reference's transition: the bird lifts in already talking, the line writes itself when the voice reaches it, the bird drops on the way out
+/* [L02-GATE-REF] the reference's _fitGateTitle (HI02H04_L01_S01 [GATE-REF-ANIM], from hindi-game-gender-identify [H11-210]): once the
+   headline is in, its real box is measured against the bird's — his crest is never higher than 38 % down his picture; if the line reaches
+   to within 12 px of it, it moves up; if there is no room above him, or it is wider than the screen, it is scaled down until it fits.
+   Re-run on resize while the gate is up. */
+function l02FitGateTitle(){
+  try{
+    const t = $("phaseGateTitle"), im = $("phaseGateImg"), g = $("phaseGate");
+    if(!t || !im || !t.textContent || !g || !g.classList.contains("show")){ window.removeEventListener("resize", l02FitGateTitle); return; }
+    t.style.removeProperty("top"); t.style.scale = "";
+    const ir = im.getBoundingClientRect(); if(!ir.height) return;
+    const crest = ir.top + ir.height * 0.38, GAP = 12, EDGE = 8, W = window.innerWidth;
+    const tr = t.getBoundingClientRect();
+    let sc = Math.min(1, (W - 2 * EDGE) / tr.width);                   // never wider than the screen
+    if(tr.top + tr.height * sc > crest - GAP){                          // reaches the bird: lift it
+      const room = crest - GAP - EDGE;
+      sc = Math.min(sc, room / tr.height); sc = Math.max(0.35, sc);
+      const top = Math.max(EDGE, crest - GAP - tr.height * sc);
+      t.style.setProperty("top", top + "px", "important");
+    }
+    if(sc < 0.999){ t.style.transformOrigin = "50% 0"; t.style.scale = String(sc); }
+  }catch(e){}
+}
+function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] → [L02-GATE-ANIM] → [L02-GATE-REF]: the HI02H04_L01_S01 reference's gate beat ([GATE-REF-ANIM] there), value for value
   const tok = ++_gateToken;
   stopNudge(); stopAudio();
-  const gate = $("phaseGate"), img = $("phaseGateImg");
-  const G = CARD.gate || {}, TOTAL = (G.total_ms != null) ? G.total_ms : 4000, TAIL = (G.tail_ms != null) ? G.tail_ms : 300, SINK = (G.sink_ms != null) ? G.sink_ms : 340;
-  const title = $("phaseGateTitle"); if(title){ title.textContent = ""; title.classList.remove("pg-pop"); }   // nothing written until the voice reaches the words (adapt.css: an empty title is not drawn)
-  gate.classList.remove("pg-sink"); gate.classList.add("pg-up");    // the bird lifts in the moment the gate shows (adapt.css l02PgUpIn)
+  const gate = $("phaseGate"), img = $("phaseGateImg"), title = $("phaseGateTitle");
+  const G = CARD.gate || {}, GATE_MS = (G.hold_ms != null) ? G.hold_ms : 4000, BEAT_MS = (G.beat_ms != null) ? G.beat_ms : 200, SINK_MS = (G.sink_ms != null) ? G.sink_ms : 340;
+  // the reference's bird, from its first frame: adapt.js hands the <img> a fresh object URL of the file (fetched once at boot); else the file with a cache-buster
+  if(window.l02GateBird && window.l02GateBird.start) window.l02GateBird.start(img);
+  else if(img){ img.removeAttribute("src"); void img.offsetWidth; img.src = (G.anim || "assets/UI/peeking_talk_up.webp") + "?r=" + Date.now(); }
+  if(title){ title.textContent = ""; title.classList.remove("pg-pop"); title.style.removeProperty("top"); title.style.scale = ""; }
+  gate.classList.remove("pg-say", "pg-sink");
+  gate.classList.add("pg-ref", "pg-up");                             // he lifts in over .3 s, already up and talking
+  gate.classList.toggle("pg-talk", toPhase === "tutorial");          // the first gate: he sinks on the way out, as in the reference
   $("stage").classList.add("blurred", "gating");
   document.body.classList.add("gating");
   gate.classList.add("show");
   SwiftPAL.emit("phase_transition", { to: toPhase });
-  const blank = ()=>{ if(title){ title.textContent = ""; title.classList.remove("pg-pop"); } };
-  const closeGate = ()=>{ clearTimeout(capT); gate.classList.remove("show", "pg-up", "pg-sink"); blank(); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
+  let capT = null;
+  const clearGate = ()=>{
+    gate.classList.remove("show", "pg-say", "pg-sink", "pg-up", "pg-talk");
+    clearTimeout(capT); window.removeEventListener("resize", l02FitGateTitle);
+    if(title){ title.textContent = ""; title.classList.remove("pg-pop"); title.style.removeProperty("top"); title.style.scale = ""; }
+  };
+  const closeGate = ()=>{ clearGate(); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
   // VO only if the card actually ships it; else a silent beat.
   const voId = PHASE_GATE_VO[toPhase];
   const voSrc = (voId && CARD.assets && CARD.assets.audio && CARD.assets.audio[voId]) || null;
   const cap = (CARD.phase_gate_caption && CARD.phase_gate_caption[toPhase]) || null;   // the line and the moment the voice reaches it
   const capText = (cap && cap.text != null) ? cap.text : (PHASE_GATE_TITLE[toPhase] || ""), capAt = (cap && cap.at_ms) || 0;
-  const openedAt = Date.now();
-  let capT = null;
-  // the animation restarts from its first frame — the bird already up — : adapt.js preloads the file once and hands the <img> a fresh
-  // object URL each gate; without it, the file with a cache-buster, as the reference restarted its loop
-  const started = (window.l02GateBird && window.l02GateBird.start) ? window.l02GateBird.start(img) : new Promise(res=>{
-    if(!img){ res(); return; } img.onload = img.onerror = ()=> res(); img.src = (G.anim || "assets/UI/gate_swiftee_up.webp") + "?r=" + Date.now(); setTimeout(res, 1500); });
-  started.then(()=>{
-    if(tok !== _gateToken) return;                                   // a newer gate superseded us
-    capT = setTimeout(()=>{                                          // the voice reaches the words: the line writes itself (adapt.css l02PgWipe)
-      if(tok !== _gateToken || !title) return;
-      title.textContent = capText; title.classList.remove("pg-pop"); void title.offsetWidth; title.classList.add("pg-pop");
-    }, capAt);
-    play(voSrc, ()=>{                                                // the voice speaks at once — the bird is up and talking from its first frame
-      if(tok !== _gateToken){ closeGate(); return; }
-      const hold = Math.max(TAIL, TOTAL - (Date.now() - openedAt));   // the screen lasts TOTAL from its opening; a longer line gets TAIL after its end (the drop's SINK ms at the least)
-      setTimeout(()=>{
-        if(tok !== _gateToken){ closeGate(); return; }
-        gate.classList.add("pg-sink");                               // the screen's last SINK ms: the bird drops out of sight (adapt.css l02PgPeekDown)
-        setTimeout(()=>{
-          if(tok !== _gateToken){ closeGate(); return; }
-          clearTimeout(capT);
-          gate.classList.remove("show", "pg-up", "pg-sink"); blank();
-          $("stage").classList.remove("blurred");
-          if(cb) cb();                              // mounts the next slide
-          $("stage").classList.remove("gating");    // header returns once the slide is in
-          document.body.classList.remove("gating");
-        }, SINK);
-      }, Math.max(0, hold - SINK));
-    });
+  const openedAt = Date.now(); let lineOver = false, timeUp = false, closed = false;
+  const tearDown = ()=>{
+    clearGate();
+    $("stage").classList.remove("blurred");
+    if(cb) cb();                              // mounts the next slide
+    $("stage").classList.remove("gating");    // header returns once the slide is in
+    document.body.classList.remove("gating");
+  };
+  const finish = ()=>{                                               // runs once BOTH the hold and the line are over
+    if(closed || !(lineOver && timeUp)) return; closed = true;
+    if(tok !== _gateToken){ closeGate(); return; }                   // a newer gate superseded us
+    if(gate.classList.contains("pg-talk")){ gate.classList.add("pg-sink"); setTimeout(tearDown, SINK_MS); }   // he goes back down first
+    else tearDown();
+  };
+  setTimeout(()=>{ timeUp = true; finish(); }, GATE_MS);
+  setTimeout(()=>{ lineOver = true; timeUp = true; finish(); }, GATE_MS + 7000);   // hard cap: never a stuck gate
+  // the headline arrives with its words: set and wiped in capAt into the line
+  capT = setTimeout(()=>{
+    if(tok !== _gateToken || !title) return;
+    title.textContent = capText;
+    gate.classList.add("pg-say");
+    title.classList.remove("pg-pop"); void title.offsetWidth; title.classList.add("pg-pop");
+    l02FitGateTitle(); window.addEventListener("resize", l02FitGateTitle);
+  }, capAt);
+  play(voSrc, ()=>{                                                  // the line starts at once: he is up and talking already
+    if(tok !== _gateToken){ closeGate(); return; }
+    const beat = (Date.now() - openedAt >= GATE_MS) ? BEAT_MS : 0;   // a line that outran the hold: a short beat after it, then close
+    setTimeout(()=>{ lineOver = true; finish(); }, beat);
   });
 }
 
@@ -4866,9 +4897,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
    with a cache-busting query, a download per gate), and the engine times the line against this image's load, which is the animation's
    first frame. If the fetch has not finished when the first gate opens, the gate waits for it; if it failed, the file itself with a
    cache-buster, as before. [L02-GATE-ANIM] (2026-10-10): the file is now the reference's cut — the bird up and talking from its first
-   frame (gate_swiftee_up.webp); the lift-in, the line's wipe and the drop are CSS (adapt.css) driven by patch 3j's classes. */
+   frame (gate_swiftee_up.webp); the lift-in, the line's wipe and the drop are CSS (adapt.css) driven by patch 3j's classes.
+   [L02-GATE-REF] (2026-10-10): the file is the HI02H04_L01_S01 reference's own peeking_talk_up.webp now (CARD.gate.anim); same handling. */
 (function(){
-  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/gate_swiftee_up.webp", blob = null, url = null, failed = false;
+  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/peeking_talk_up.webp", blob = null, url = null, failed = false;
   var pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true);
   function hand(img, res){
     var done = false, fin = function(){ if(done) return; done = true; res(); };

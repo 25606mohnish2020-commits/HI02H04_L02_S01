@@ -2921,21 +2921,26 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
    The pink headline is hidden until the gate carries .pg-talk, which the engine adds the moment the bird's beak first opens (patch 3j);
    its look, place and words are untouched. (Since [L02-GATE-ANIM] below: the animation is the reference's cut — the bird up from the first
    frame — and the headline is written when the voice reaches its words; the size rule here still holds.) */
-.phase-gate img,#phaseGateImg{height:calc(clamp(120px,26vh,250px) * .8008) !important;}
-/* [L02-GATE-ANIM] (2026-10-10, user request) the transition's motion is the reference hindi-game-gender-identify.vercel.app's (its engine
-   CSS, value for value — pgUpIn / pgWipe / pgPeekDown): the bird, already up and talking (gate_swiftee_up.webp), LIFTS IN over .3 s from
-   28 % of its height below its place the moment the gate shows (.pg-up), holds while the line is spoken, and DROPS out of sight over
-   .34 s (.pg-sink) as the screen's last beat; the pink line is empty — not drawn — until the voice reaches its words, then WRITES ITSELF
-   left to right over .9 s (.pg-pop: a clip-path wipe, 24 px of room around the text for the white outline and the matras). The line's
-   words, size, colour, outline and place are untouched; so are the bird's size and place. Every keyframe carries the -50% the base rule
-   centres the bird with (an animated transform replaces it). The earlier .pg-talk visibility rule is gone with the talk point. */
-.pg-title:empty,#phaseGateTitle:empty{display:none !important;}
-.pg-title.pg-pop,#phaseGateTitle.pg-pop{animation:l02PgWipe .9s cubic-bezier(.25,.6,.3,1) both !important;}
-@keyframes l02PgWipe{from{clip-path:inset(-24px 100% -24px -24px);}to{clip-path:inset(-24px -24px -24px -24px);}}
-.phase-gate.pg-up #phaseGateImg{animation:l02PgUpIn .3s ease-out both !important;}
-@keyframes l02PgUpIn{from{transform:translate(-50%,28%);}to{transform:translate(-50%,0);}}
-.phase-gate.pg-sink #phaseGateImg{animation:l02PgPeekDown .34s ease-in both !important;}
-@keyframes l02PgPeekDown{from{transform:translate(-50%,0);}to{transform:translate(-50%,100%);}}
+/* [L02-GATE-REF] (2026-10-10, user request) the transition screens' text + bird animation = the HI02H04_L01_S01 reference's (its
+   <style id="GATE-REF-ANIM-CSS">, 2026-10-09 — itself a value-for-value port of hindi-game-gender-identify), copied rule for rule: the
+   bird (its peeking_talk_up.webp) bottom-anchored, centred, SQUARE, 52.8 % of the screen height (never over 624 px or wider than 92 % of
+   the screen; svh where the browser has it), lifted in over .3 s from 28 % below (pgUpIn); on the FIRST gate only (.pg-talk) he sinks back
+   down over .34 s (pgPeekDown) before the screen clears; the headline — hidden until the gate carries .pg-say — WRITES ITSELF left to
+   right over .9 s (pgWipe), in front of the bird (z-index). The headline's look is unchanged (96 px #CD0FD5, 10 px white stroke, 271 px
+   from the top: the metrics both lessons share). The bird-size rule of [L02-STD-GATE] and the rules of [L02-GATE-ANIM] are gone with
+   their crops. */
+.phase-gate .pg-title,.phase-gate #phaseGateTitle{visibility:hidden !important;}
+.phase-gate.pg-say .pg-title,.phase-gate.pg-say #phaseGateTitle{visibility:visible !important;}
+.phase-gate.pg-ref #phaseGateImg{height:min(52.8vh,624px,92vw) !important;width:min(52.8vh,624px,92vw) !important;object-fit:contain !important;z-index:1;}
+@supports (height: 1svh){ .phase-gate.pg-ref #phaseGateImg{height:min(52.8svh,624px,92vw) !important;width:min(52.8svh,624px,92vw) !important;} }
+.phase-gate.pg-ref .pg-title,.phase-gate.pg-ref #phaseGateTitle{z-index:3 !important;}
+.phase-gate.pg-ref.pg-up #phaseGateImg{animation:pgUpIn .3s ease-out both !important;}
+@keyframes pgUpIn{from{transform:translate(-50%,28%);}to{transform:translate(-50%,0);}}
+.phase-gate.pg-ref.pg-talk.pg-sink #phaseGateImg{animation:pgPeekDown .34s ease-in both !important;}
+@keyframes pgPeekDown{from{transform:translate(-50%,0);}to{transform:translate(-50%,100%);}}
+.phase-gate.pg-ref .pg-title.pg-pop,.phase-gate.pg-ref #phaseGateTitle.pg-pop{animation:pgWipe .9s cubic-bezier(.25,.6,.3,1) both;}
+@keyframes pgWipe{from{clip-path:inset(-24px 100% -24px -24px);}to{clip-path:inset(-24px -24px -24px -24px);}}
+html.no-anim .phase-gate.pg-ref #phaseGateImg,html.no-anim .phase-gate.pg-ref .pg-title.pg-pop,html.no-anim .phase-gate.pg-ref #phaseGateTitle.pg-pop{animation:none !important;}
 /* [L02-P1-WORDS] (2026-10-06, user request) "At page 17 P1 once the user taps the correct option then each word in the correct option
    will highlight along with the animation in sync with the VO as on the other pages." The sentence pages' word boxes (.p2-word — the
    engine's .sent-opt .so-pill rules) on a Figma card's sentence (.story-q-opt-label; card slide.opt_words, sent_q_page.js): the lit
