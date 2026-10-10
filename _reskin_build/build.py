@@ -1627,6 +1627,60 @@ assert [s["id"] for s in card["slides"]][card["slides"].index(_m2_now):card["sli
 _cel = next(s for s in card["slides"] if s["id"] == "CEL")
 assert _cel.get("audio", {}).get("sfx") == "sfx_celebrate", _cel.get("audio")
 _cel["audio"]["sfx"] = "sfx_confetti"
+
+# ---- [L02-CEL-MTG204] (2026-10-10, user request) "Extract & apply the exact same celebration screen and the VO on the celebration page of
+# this file as shown in this repo": github.com/CodeWithPiyush0/MTG204_L01_S01 (the maths lesson MTG2A04_L01_S01, cloned at f47bd24). Its
+# celebration is this engine family's end screen (the same sunburst end_screen.webp — ours differs by a re-encode only, 0.9/255 —, the
+# star burst, the arrow pill) with the team's THREE-SHEET SWIFTIE driven frame by frame (its scripts/make_cel_sprite.py: cel_shabaash /
+# cel_talk / cel_idle, 6x6 frames of 329x440 on one shared canvas) in step with the VO: she jumps (the शाबाश sheet, 30 frames at 45 ms,
+# silent but for the celebration sfx), lands (6 frames), THEN the line speaks — «बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!» (its
+# vo_cel_prompt.ogg, 2.95 s) — her mouth opening on each syllable (a 25-ms loudness track measured off the clip picks open / shut talk
+# frames), then an idle loop of mouth-shut frames; the arrow waits greyed until the line has ended, then pulses. Ported: the sheets + the
+# clip copied byte for byte (_reskin_build/cel_mtg204/, with its _cel_sprite.json and make_cel_sprite.py for reference), its build's
+# cel_anim() verbatim (the bits equal its card's) -> card.end_anim, its page JS (driver + arrow wait) -> adapt.js [L02-CEL-MTG204] adapted
+# to this engine's play() / isPlaying, its CSS -> adapt.css. CEL speaks vo_cel_prompt — the page owns the audio (state.ownsAudio, so the
+# engine's auto-play is skipped) and starts the line as she lands; prompt_hi = the spoken line (never shown: the end screen draws no text).
+# vo_celebrate.ogg (the user's take of the deck's celebration line) stays in the dist and the VO manifest, spoken by no page now. Kept OURS:
+# the levelled standard confetti clip (the repo's sfx_celebrate is the same sound, 17 dB hotter) and the user's finish-pill art on the
+# arrow ([END-FINISH-BTN]; the repo's is the engine's plain pill) — only its wait-then-pulse behaviour is taken.
+CEL_SRC = os.path.join(SCR, "cel_mtg204")
+def _copy_same(src, dst):
+    if os.path.exists(dst) and open(dst, "rb").read() == open(src, "rb").read(): return
+    shutil.copyfile(src, dst); print("copied", dst)
+for _f in ("cel_shabaash.webp", "cel_talk.webp", "cel_idle.webp"): _copy_same(os.path.join(CEL_SRC, _f), os.path.join(CUR, "assets", "UI", _f))
+_copy_same(os.path.join(CEL_SRC, "vo_cel_prompt.ogg"), os.path.join(CUR, "assets", "Audio", "vo_cel_prompt.ogg"))
+def cel_anim():
+    """The reference build's cel_anim() (its scripts/build_skill_MTG2A04_L01_S01.py, rounds 2l/2m), verbatim but for the paths: the lip-sync
+    track for the celebration VO + the sprite facts. talk = one char per 25 ms of vo_cel_prompt, '1' on a syllable beat (open mouth), '0'
+    between them. Measured off the clip, so a re-record re-syncs on the next build."""
+    meta = json.load(open(os.path.join(CEL_SRC, "_cel_sprite.json")))
+    import array, math
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(CEL_SRC, "vo_cel_prompt.ogg"), "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout
+    a = array.array("h"); a.frombytes(raw[: len(raw) // 2 * 2])
+    step = 400                                                     # 25 ms at 16 kHz
+    rms = [math.sqrt(sum(x * x for x in a[i:i + step]) / step) for i in range(0, len(a) - step, step)]
+    mx = max(rms) or 1
+    # SYLLABLE beats, not just "voice on": the mouth is open where the clip is loud AND near its local peak (+-100 ms), so it opens on each
+    # syllable nucleus and closes in the dips between syllables.
+    W = 4
+    bits = ["1" if (r > 0.10 * mx and r >= 0.62 * max(rms[max(0, i - W):i + W + 1])) else "0" for i, r in enumerate(rms)]
+    t = "".join(bits)
+    t = t.replace("101", "111").replace("101", "111")             # a 25 ms close inside a syllable = flicker
+    t = t.replace("010", "000")                                   # a lone 25 ms open = flicker
+    sh = meta["sheets"]
+    return {"cols": meta["cols"], "fw": meta["fw"], "fh": meta["fh"], "step_ms": 25, "bits": t, "vo": "vo_cel_prompt",
+            "shabaash": {"src": sh["shabaash"]["src"], "pre": list(range(0, 6)),       # standing, mouth shut
+                         "word": list(range(6, 30)),                                    # the jump — «शाबाश!»
+                         "post": list(range(30, 36))},                                  # lands, mouth shut
+            "talk": {"src": sh["talk"]["src"], "open": sh["talk"]["open"]},            # per-syllable pick
+            "idle": {"src": sh["idle"]["src"], "loop": [0, 1, 2, 3, 4] + list(range(24, 36))}}   # after the VO: mouth-shut frames only
+card["end_anim"] = cel_anim()
+assert len(card["end_anim"]["bits"]) == 117 and card["end_anim"]["bits"].count("1") == 50, card["end_anim"]["bits"]   # = the reference card's track (its clip, its analysis)
+_cel["prompt_hi"] = "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!"
+_cel["audio"]["prompt"] = "vo_cel_prompt"
+# (vo_cel_prompt is NOT registered in card.assets.audio: the engine resolves assets/Audio/<id>.ogg by convention, and the VO manifest —
+#  the fleet's recording script, 61 deck lines of 81 registered ids — must not list a clip borrowed from another lesson)
+for _k in ("cel_shabaash", "cel_talk", "cel_idle"): card["assets"]["image"][_k] = "assets/UI/" + _k + ".webp"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
 # toys, a plate…, 313-466 px portrait), not scene pictures, so the card window shows each one WHOLE on the white card (fig_q3_contain →
@@ -2189,7 +2243,7 @@ def _vo_walk(o, out):
         for v in o: _vo_walk(v, out)
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
-_spoken = set(_all_slide) | set(ENGINE_LINES)                      # what the lesson plays today
+_spoken = set(_all_slide) | set(ENGINE_LINES) | {"vo_celebrate"}   # what the lesson plays today (+ [L02-CEL-MTG204]: the celebration now speaks the borrowed vo_cel_prompt; the deck's celebration line and its recorded take stay in the manifest and the dist, as the fleet's record of this lesson's lines)
 assert len(_spoken) == 61 and len(aud) - len(_spoken) == 20, "[L02-VO-MANIFEST] expected 61 spoken lines of 81 registered: " + str((len(_spoken), len(aud)))
 MANIFEST = VO_LINES                                                 # the lines are defined with the clips ([L02-VO-BATCH] above)
 # [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.

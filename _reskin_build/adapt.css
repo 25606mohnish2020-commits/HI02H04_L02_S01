@@ -606,3 +606,18 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 .stage.l02-q3 .opt-cell .story-q-opt-label .p2-words{display:inline;}
 .stage.l02-q3 .opt-cell .story-q-opt-label .p2-word{display:inline-block;border-radius:10px;padding:0 .12em;margin:0 -.12em;transform-origin:50% 60%;}
 .stage.l02-q3 .opt-cell .story-q-opt-label .p2-word.on{color:#E86A00;animation:p2WordPop .28s ease-out 1;}
+
+/* ===== L02-CEL-MTG204 =====
+   [L02-CEL-MTG204] (2026-10-10) the celebration Swiftie sprite + the arrow's wait-then-pulse, the reference MTG2A04_L01_S01's rules
+   (its rounds 2l-2p), verbatim. The LAYOUT box stays 358 px tall like the mascot it replaces, so the arrow keeps its place 22 px under
+   it; the art inside is 420 px tall, anchored at the bottom, with the jump's head-room rising above the box. */
+.end-screen .cel-sprite{position:relative;height:358px;width:300px;background:none;aspect-ratio:auto;z-index:2;animation:endPop .55s cubic-bezier(.34,1.5,.6,1);}
+.end-screen .cel-sprite .cel-art{position:absolute;left:50%;bottom:0;height:420px;transform:translateX(-50%);
+  background-repeat:no-repeat;background-size:600% 600%;filter:drop-shadow(0 12px 22px rgba(0,47,118,.22));}
+/* an invisible one-time paint of the talk / idle sheets (decode + upload before they are needed) */
+.end-screen .cel-sprite .cel-prepaint{opacity:.01;pointer-events:none;filter:none;}
+/* the celebration arrow waits for the line, then pulses (scale only — no glow, no border) */
+#endBtn.cel-wait{pointer-events:none;filter:grayscale(1);opacity:.55;animation:none !important;}
+@keyframes celArrowPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+#endBtn.cel-ready{animation:celArrowPulse 1.3s ease-in-out infinite;}
+@media (prefers-reduced-motion:reduce){ #endBtn.cel-ready{animation:none;} }
