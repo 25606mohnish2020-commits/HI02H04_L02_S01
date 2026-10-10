@@ -258,10 +258,20 @@ def car_hole(shape):
     return m
 
 
+EXPORT_RC2 = os.path.join(HERE, "rc2_frame_338-2198_export.png")   # [L02-RC2-FIG-2] the 338-2198 frame: the same room, the car elsewhere
+
+
 def clean(export_path=EXPORT):
     im = Image.open(export_path).convert("RGB"); a = np.array(im).astype(float); out = a.copy(); shape = a.shape[:2]
     cm = car_hole(shape)
-    info = _fill_car(a, out, cm)
+    if os.path.exists(EXPORT_RC2):
+        # [L02-RC2-FIG-2] (2026-10-10) the RC2 frame (338-2198) is the same room pixel for pixel with the car parked elsewhere, so the
+        # carpet under RC1's car is simply READ from it — exact, no reconstruction (which stays below as the fallback)
+        a2 = np.array(Image.open(EXPORT_RC2).convert("RGB")).astype(float)
+        same = (np.abs(a2 - a).sum(axis=2) <= 30); ring = _dilate(cm, 6) & ~cm
+        assert a2.shape == a.shape and same[ring].mean() > 0.97, "the RC2 export is not the same room around the car: %.3f" % same[ring].mean()
+        out[cm] = a2[cm]; info = {"hole": tuple(int(v) for v in (np.where(cm.any(0))[0].min(), np.where(cm.any(1))[0].min(), np.where(cm.any(0))[0].max(), np.where(cm.any(1))[0].max())), "car_hole_from": os.path.basename(EXPORT_RC2)}
+    else: info = _fill_car(a, out, cm)
     gif = Image.open(BOY_GIF); gif.seek(0); boy = gif.convert("RGBA").transpose(Image.FLIP_LEFT_RIGHT)
     bm = _dilate(_paste_alpha(shape, boy, BOY_CANVAS[0], BOY_CANVAS[1], (BOY_CANVAS[2], BOY_CANVAS[3])), 3)
     rows = np.where(bm.any(axis=1))[0]; fb = int(rows.max()); cols = np.where(bm[fb - 14:fb + 1].any(axis=0))[0]
@@ -276,7 +286,8 @@ def clean(export_path=EXPORT):
 
 def ensure_clean(export_path=EXPORT, clean_path=CLEAN):
     """Write the cleaned picture unless it is newer than both the export and this module; returns (path, info or None)."""
-    if os.path.exists(clean_path) and os.path.getmtime(clean_path) >= max(os.path.getmtime(export_path), os.path.getmtime(os.path.abspath(__file__))):
+    newest = max([os.path.getmtime(export_path), os.path.getmtime(os.path.abspath(__file__))] + ([os.path.getmtime(EXPORT_RC2)] if os.path.exists(EXPORT_RC2) else []))
+    if os.path.exists(clean_path) and os.path.getmtime(clean_path) >= newest:
         return clean_path, None
     img, info = clean(export_path); img.save(clean_path); return clean_path, info
 

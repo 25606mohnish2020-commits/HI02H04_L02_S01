@@ -5047,6 +5047,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B);
       // [L02-RC1-FIG-2] (2026-10-10) the box's own width / height when the card gives them (RC1's frame 338-3 draws the boy at 90.3x167.5; the CSS 76x142 stays the default)
       if(R.boy.length >= 4 && (R.boy[2] !== 76 || R.boy[3] !== 142)){ boy.style.width = px(R.boy[2]); boy.style.height = px(R.boy[3]); }
+      if(R.boy_flip === false) boy.style.transform = "none";                  // [L02-RC2-FIG-2] (2026-10-10) frame 338-2198 has the boy facing right as drawn (the CSS mirrors him by default)
       layer.appendChild(boy); }
     var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
     // [L02-RC-MOTION] one <img> per view, stacked in the car's slot, sorted by the heading each one shows
