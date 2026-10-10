@@ -279,12 +279,13 @@
       if(R.boy.length >= 4 && (R.boy[2] !== 76 || R.boy[3] !== 142)){ boy.style.width = px(R.boy[2]); boy.style.height = px(R.boy[3]); }
       if(R.boy_flip === false) boy.style.transform = "none";                  // [L02-RC2-FIG-2] (2026-10-10) frame 338-2198 has the boy facing right as drawn (the CSS mirrors him by default)
       layer.appendChild(boy); }
+    var noCar = (R.car === null);                                           // [L02-RC5-FINALE] (2026-10-10) data.rc.car = null: a page without the car (the finale after M2) — no car element, no leg, no motor
     var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
     // [L02-RC-MOTION] one <img> per view, stacked in the car's slot, sorted by the heading each one shows
     var views = (C.views && C.views.length) ? C.views.slice().sort(function(a, b){ return a.deg - b.deg; }) : [{ src: C.src || "rc_car", deg: 0 }];
     var car = bedEl("div", "l02-rc-car");
     car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B);
-    var imgs = views.map(function(v){ var im = bedImg("", imgSrc(v.src)); car.appendChild(im); return im; });
+    var imgs = noCar ? [] : views.map(function(v){ var im = bedImg("", imgSrc(v.src)); car.appendChild(im); return im; });
     // [L02-RC1-FIG-2] (2026-10-10) a card-given size other than the Figma's 54.404 box scales the slot and its renders with it (the
     // 2.202 inset and the 50 px picture keep their proportion); RC1's frame 338-3 shows the car at 70.6 px (box 76.82). The CSS keeps
     // the default for the other pages.
@@ -295,7 +296,7 @@
     function pose(heading){
       // the two renders bracketing the heading cross-fade between the lower one's `to` and the upper one's `from` (default: the 30..70%
       // stretch of the gap between their degs); each is turned to the heading
-      var n = views.length, lo = 0;
+      var n = views.length, lo = 0; if(noCar) return;
       while(lo < n - 2 && heading > views[lo + 1].deg) lo++;
       var a = views[lo], b = views[Math.min(n - 1, lo + 1)], w = 0;
       if(n > 1 && b.deg > a.deg){
@@ -308,7 +309,7 @@
       }
     }
     pose(rot0);
-    layer.appendChild(car); frame.appendChild(layer);
+    if(!noCar) layer.appendChild(car); frame.appendChild(layer);
     // the leg: the car's centre starts at the box's centre and lands exactly on the last point; the speed eases in and out over leg.s
     var pts = (R.leg && R.leg.pts) || [], cum = [0], L = 0;
     for(var i = 1; i < pts.length; i++){ L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); cum.push(L); }
@@ -360,7 +361,20 @@
     if(R.intro && typeof play === "function"){
       var introSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio[R.intro]) || ("assets/Audio/" + R.intro + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg"));
       setTimeout(function(){ if(CARD.slides[state.idx] !== s) return; play(introSrc, function(){ setTimeout(drive, R.start_ms || 600); }); }, 300);
-    } else setTimeout(drive, R.start_ms || 600);
+    } else if(!noCar) setTimeout(drive, R.start_ms || 600);
+    // [L02-RC5-FINALE] (2026-10-10, user request) the finale page after M2 (Figma 339-3089, no car): the last checkpoint's picture is
+    // placed as above (place_ms / place_sfx), then data.rc.finale pops the checkpoints one after another in token order (CSS .pop, from
+    // at_ms every gap_ms) — each pop with the lesson's correct-answer ding (sfx: "correct" → the engine's sfxCorrect) and, on the pops
+    // listed in `confetti`, the engine's correct-answer confetti burst (confettiCannon; its wrapper adds the confetti whoosh). The page
+    // leaves at data.rc.end_ms (completeSlide(true) → the celebration; the engine waits for the confetti to land first). A dev jump away
+    // cancels everything still pending (the slide check in each timer).
+    if(R.finale){ var Fn = R.finale, tAt = (typeof Fn.at_ms === "number") ? Fn.at_ms : 1800, gap = (typeof Fn.gap_ms === "number") ? Fn.gap_ms : 400, conf = Fn.confetti || [];
+      tokens.forEach(function(tok, i){ setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;
+        tok.classList.add("pop");
+        if(Fn.sfx === "correct" && typeof sfxCorrect === "function"){ try{ sfxCorrect(); }catch(e){} }
+        if(conf.indexOf(i) >= 0 && typeof confettiCannon === "function"){ try{ confettiCannon(); }catch(e){} }
+      }, tAt + i * gap); }); }
+    if(typeof R.end_ms === "number") setTimeout(leave, R.end_ms);
   }
   function applyBed(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, bed = !!(s && s.bed_fig === true);

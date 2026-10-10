@@ -1576,6 +1576,51 @@ for _k in ("rc_scene", "rc_done_1", "rc_done_2", "rc_done_3"):
     del card["assets"]["image"][_k]
     if os.path.exists(os.path.join(BED_IMG, _k + ".webp")): os.remove(os.path.join(BED_IMG, _k + ".webp"))
 
+# ---- [L02-RC5-FINALE] (2026-10-10, user request) "After page 21 M2 add this page for 6 seconds in which the last checkpoint is also shown
+# filled with the same animation of the images inside the checkpoints as before, and after that all the checkpoints show a little
+# sequence-wise pop animation along with the confetti and the sound effect used for the correct responses, and then the last celebration
+# screen should come." Figma 339-3089, exported flattened at 1x (_reskin_build/rc5_frame_339-3089_export.png): the 338-3043 frame pixel
+# for pixel except at checkpoint 4 (now holding M2's picture), RC4's car spot (bare carpet — no car on this page) and the BOY, who is
+# drawn cheering (a jump, fists up) instead of holding the remote: the user's GIF "Last.gif" (dropped into assets/RC Toy car animations on
+# 2026-10-09: 374x706, 36 frames at 60 ms, a dance loop, transparent; copied to _reskin_build/rc_boy_cheer_source.gif) — its FIRST frame is
+# the frame's figure (template-matched unflipped at scale 0.261: 97.6x184.3 at frame (389,236) → box (236,64); the other frames score 2-6x
+# worse) → rc_boy_cheer.webp, an animated WebP at twice the box, encoded like rc_boy; no shadow in the frame. (This page's first cut
+# lifted a still figure out of the flattened export against the clean room; the GIF arrived right after and replaced it.) Checkpoint 4's picture = M2's picture ([L02-M2-PIC-2],
+# m2_soya_source_2.png) in the window the frame shows, source px (441,301)-(1214,1059) → rc_done_4. The page: slide RC5 (mastery, like
+# M2 and CEL either side; TAP_IN_SCENE / rc_fig as the car pages, data.rc.car = null → adapt.js draws no car), tokens / boy unmirrored
+# as RC2-RC4, placed = [checkpoints 1-3 static (rc_done_1b/2b/3b), checkpoint 4 ← rc_done_4 animated + chime at place_ms 500 — "the same
+# animation as before"], then data.rc.finale: from 1800 ms the four checkpoints pop in sequence every 400 ms (CSS .pop), each with the
+# correct-answer confetti burst on the first (confettiCannon — it lands by ~4.9 s,
+# and the engine only changes pages once it has), end_ms 6000 → CEL. The music bed runs on through it (card.bgm.last → RC5); CEL stays
+# without, as before. Nothing else moves.
+def rc_boy_cheer():
+    """The user's Last.gif (36 frames, 60 ms, transparent) as an animated WebP at twice the box, like rc_boy()."""
+    s = os.path.join(SCR, "rc_boy_cheer_source.gif"); d = os.path.join(BED_IMG, "rc_boy_cheer.webp")
+    if bed_fresh(d, s): return
+    g = Image.open(s); frames = []; durs = []; size = (int(round(RC5_BOY_BOX[2] * 2)), int(round(RC5_BOY_BOX[3] * 2)))
+    for i in range(g.n_frames):
+        g.seek(i); frames.append(g.convert("RGBA").resize(size, Image.LANCZOS)); durs.append(int(g.info.get("duration", 60)))
+    frames[0].save(d, "WEBP", save_all=True, append_images=frames[1:], duration=durs, loop=0, quality=80, method=4)
+    print("wrote", d, len(frames), "frames", size)
+RC5_BOY_BOX = (236.0, 64.0, 97.6, 184.3)                                        # box coords: the GIF's frame as the Figma draws it (see above)
+rc_boy_cheer()
+card["assets"]["image"]["rc_boy_cheer"] = "assets/Images/rc_boy_cheer.webp"
+rc_done("rc_done_4.webp", "m2_soya_source_2.png", (441, 301, 1214, 1059, 1448, 1086))
+card["assets"]["image"]["rc_done_4"] = "assets/Images/rc_done_4.webp"
+rc5 = copy.deepcopy(rc4); rc5["id"] = "RC5"; rc5["phase"] = "mastery"
+rc5["data"]["image_id"] = "rc_scene_2"
+rc5["data"]["alt_hi"] = "माधव का कमरा: चौथे प्रश्नचिह्न पर सोते हुए माधव की तस्वीर लग गई; चारों तस्वीरें एक-एक करके उछलती हैं, कंफ़ेटी बरसती है और माधव खुशी से उछलता है।"
+rc5["data"]["rc"] = {"tokens": RC1B_TOKENS, "boy": list(RC5_BOY_BOX),
+                     "boy_src": "assets/Images/rc_boy_cheer.webp", "boy_flip": False,
+                     "placed": [{"token": 0, "image": "rc_done_1b", "animate": False}, {"token": 1, "image": "rc_done_2b", "animate": False},
+                                {"token": 2, "image": "rc_done_3b", "animate": False}, {"token": 3, "image": "rc_done_4", "animate": True}],
+                     "place_ms": 500, "place_sfx": "sfx_place", "car": None,
+                     "finale": {"at_ms": 1800, "gap_ms": 400, "sfx": None, "confetti": [0]}, "end_ms": 6000}   # [L02-RC5-NO-DING] (2026-10-10, user request) "when the one-by-one pop animation of the checkpoints comes the correct sound should not arrive": no ding with the pops — the confetti (and its whoosh) and the chime stay
+assert rc5["data"]["rc"]["boy"] == [236.0, 64.0, 97.6, 184.3] and rc5.get("rc_fig") is True and rc5["type"] == rc4["type"], (rc5["data"]["rc"]["boy"], rc5.get("rc_fig"), rc5["type"])
+_m2_now = next(s for s in card["slides"] if s["id"] == "M2")
+card["slides"].insert(card["slides"].index(_m2_now) + 1, rc5)
+assert [s["id"] for s in card["slides"]][card["slides"].index(_m2_now):card["slides"].index(_m2_now) + 3] == ["M2", "RC5", "CEL"], "RC5 must sit between M2 and CEL"
+
 # ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
 # standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in
 # the dist as the engine's fallback asset, unused.
@@ -1903,7 +1948,7 @@ i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
     assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
-assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "RC3", "M1", "RC4", "M2", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] / [L02-RC3] / [L02-RC4] the next legs after I3, P1 and M1
+assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "RC3", "M1", "RC4", "M2", "RC5", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] / [L02-RC3] / [L02-RC4] the next legs after I3, P1 and M1; [L02-RC5-FINALE] the finale after M2
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
 # the lesson (user, 2026-09-27). The guided phase now opens with the find-Madhav page G2 straight after the last story page:
 # the engine shows the guided transition screen on the phase change T9 → G2 exactly as it did before G1. G1's own assets
@@ -1998,8 +2043,8 @@ if not os.path.exists(BGM_DST) or os.path.getmtime(BGM_DST) < os.path.getmtime(B
     assert os.path.exists(BGM_DST), "ffmpeg did not write " + BGM_DST
     print("wrote", BGM_DST, os.path.getsize(BGM_DST), "bytes")
 _ids = [s["id"] for s in card["slides"]]
-assert _ids[0] == "T1" and _ids[-2] == "M2" and _ids[-1] == "CEL", "the bed's range T1..M2 does not fit the slide order: %r" % _ids
-card["bgm"] = {"src": "assets/Audio/bgm_standard_2.mp3", "first": 0, "last": _ids.index("M2"), "landing": True, "base": 0.13, "duck": 0.03}
+assert _ids[0] == "T1" and _ids[-3] == "M2" and _ids[-2] == "RC5" and _ids[-1] == "CEL", "the bed's range T1..RC5 does not fit the slide order: %r" % _ids   # [L02-RC5-FINALE] the finale page keeps the music; CEL has none, as before
+card["bgm"] = {"src": "assets/Audio/bgm_standard_2.mp3", "first": 0, "last": _ids.index("RC5"), "landing": True, "base": 0.13, "duck": 0.03}
 # ---- [L02-VO-BATCH] wiring (2026-10-06): the recorded lines in their places (the clips + texts are registered where they are made, above).
 # I1's three sentence options speak their sentences (vo_p1_khana, vo_opt_kitab_padhi, vo_opt_khilono_se_khela — the words it shows; the
 # one-word clips vo_opt_khana / book / toys spoke "खाना / किताब / खिलौने"), I2's three place options theirs (vo_opt_khilono_ke_beech /

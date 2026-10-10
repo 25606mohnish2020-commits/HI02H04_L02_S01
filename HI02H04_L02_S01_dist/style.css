@@ -2907,6 +2907,11 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 @keyframes l02-rc-glow{0%{box-shadow:0 0 0 0 rgba(255,236,150,0)}35%{box-shadow:0 0 calc(22px * var(--fs)) calc(8px * var(--fs)) rgba(255,236,150,.9)}100%{box-shadow:0 0 calc(6px * var(--fs)) 0 rgba(255,236,150,0)}}
 .stage.l02-rc .l02-rc-token.placing{animation:l02-rc-glow 1.2s ease-out both;}
 .stage.l02-rc .l02-rc-token.placing .l02-rc-done{animation:l02-rc-place .5s cubic-bezier(.3,1.2,.4,1) both;transform-origin:50% 50%;}
+/* [L02-RC5-FINALE] (2026-10-10) the finale page (after M2): each checkpoint pops once, in sequence (adapt.js adds .pop from
+   data.rc.finale.at_ms every gap_ms) — a quick swell to 1.22 and back, the picture and its rim with it. Later than .placing so it
+   takes over the token's animation once the last picture's glow has finished (the glow's end state is no shadow, like the base). */
+@keyframes l02-rc-pop{0%{transform:scale(1)}35%{transform:scale(1.22)}65%{transform:scale(.94)}100%{transform:scale(1)}}
+.stage.l02-rc .l02-rc-token.pop{animation:l02-rc-pop .6s cubic-bezier(.33,0,.2,1) both;transform-origin:50% 50%;will-change:transform;}
 /* ===== [L02-STD-GATE] (2026-10-05, user request) the transition screens' bird is the standard Swiftee transition animation
    (assets/UI/gate_swiftee.webp — build.py [L02-STD-GATE]: the user's "Standard Swiftee Transition Animation.gif", an animated WebP,
    cropped to the bird and retimed so its beak first opens 1250 ms in). It is drawn as tall as the old peeking bird's full pose was: the
