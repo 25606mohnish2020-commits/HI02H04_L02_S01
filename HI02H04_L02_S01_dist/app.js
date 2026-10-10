@@ -5006,7 +5006,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   // mirrored as in the Figma) over his soft shadow, the title picture at the top of the stage and the RC car. Nothing is tapped:
   // data.rc.start_ms after the page opens the car drives along data.rc.leg.pts (Figma box coords of the car's CENTRE: the carpet's traced
   // centre line, build.py / rc_path_trace.py) to the first checkpoint over leg.s seconds, pulling away and braking smoothly (ease-in-out),
-  // its motor sound (data.rc.sfx, own Audio element, looped, faded in over 250 ms and out over the last 400 ms) running with it.
+  // its motor sound (data.rc.sfx, own Audio element, looped, faded in over 250 ms and out over the last 400 ms) running with it —
+  // or, where the card says data.rc.motor = "speed" (RC1, [L02-RC1-SMOOTH]), its volume and pitch following the car's speed instead.
   // [L02-RC-MOTION] The car's ANGLE follows the line's heading (damped over ~110 ms) and its VIEW follows the angle: data.rc.car.views
   // lists the renders by the screen heading each one shows ({src, deg}: the side view at 0°, the front three-quarter view at 42°); every
   // frame the two renders bracketing the heading are cross-faded (over the 30..70% stretch of the gap between them) and each is turned by
@@ -5085,7 +5086,9 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
     function ease(k){ return 0.5 - 0.5 * Math.cos(Math.PI * k); }          // pulls away and brakes smoothly
     var cx0 = c0[0] + size / 2, cy0 = c0[1] + size / 2, dur = ((R.leg && R.leg.s) || 2.6) * 1000;
-    var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); motor.preload = "auto"; motor.loop = true; }catch(e){ motor = null; } }
+    var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); motor.preload = "auto"; motor.loop = true;
+      if(R.motor === "speed"){ motor.preservesPitch = false; motor.mozPreservesPitch = false; motor.webkitPreservesPitch = false; }   // [L02-RC1-SMOOTH] its pitch may follow the speed
+    }catch(e){ motor = null; } }
     function stopMotor(){ var a = motor; if(!a) return; motor = null; try{ a.pause(); }catch(e){} }
     var started = false, done = false;
     function leave(){ if(done) return; done = true; if(CARD.slides[state.idx] !== s) return; if(typeof completeSlide === "function") completeSlide(true); }
@@ -5103,7 +5106,13 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
         rot += (heading - rot) * (1 - Math.exp(-dt / 110));                   // the body turns into the heading, damped (frame-rate independent)
         car.style.transform = "translate(" + ((p[0] - cx0) * fs).toFixed(2) + "px," + ((p[1] - cy0) * fs).toFixed(2) + "px)";
         pose(rot);
-        if(motor){ try{ motor.volume = Math.min(1, el / 250) * Math.min(1, Math.max(0, (dur - el) / 400)); }catch(e){} }   // in over 250 ms, out over the last 400 ms as it brakes
+        if(motor){ try{
+          if(R.motor === "speed"){                                              // [L02-RC1-SMOOTH] (2026-10-10) the motor follows the car's SPEED (data.rc.motor = "speed", RC1 only):
+            var sp = Math.sin(Math.PI * k);                                     // idling as it pulls away, full at mid-leg, falling as it brakes, out as it stops — and a little higher-pitched the faster it goes
+            motor.volume = Math.min(1, el / 120) * (0.22 + 0.78 * sp) * Math.min(1, (1 - k) / 0.04);
+            motor.playbackRate = 0.9 + 0.18 * sp;
+          } else motor.volume = Math.min(1, el / 250) * Math.min(1, Math.max(0, (dur - el) / 400));   // in over 250 ms, out over the last 400 ms as it brakes
+        }catch(e){} }
         if(k < 1){ requestAnimationFrame(tick); return; }
         stopMotor();
         if(typeof R.reach === "number" && tokens[R.reach]) tokens[R.reach].classList.add("reached");

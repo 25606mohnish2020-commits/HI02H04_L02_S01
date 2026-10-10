@@ -1452,10 +1452,30 @@ assert [s["id"] for s in card["slides"]][card["slides"].index(_m1_now):card["sli
 # user's room-layer export would sharpen it). Only RC1 changes: RC2-RC4 keep rc_scene, their tokens, boy and legs (copied above, before
 # this block). adapt.js draws the boy and the car at card-given sizes now ([L02-RC1-FIG-2] there). The VO flow is untouched: data.rc.intro
 # speaks, then start_ms, the drive, hold_ms 2500, then I3.
+# ---- [L02-RC1-SMOOTH] (2026-10-10, user request) "At page 14 RC1 the carpet should not be blurrish from where the car is starting,
+# and the car should follow the exact centre line of the carpet path; also the car should show the smooth flow of the animation in sync
+# with the sound effect and the VO for this page. Rest keep everything exactly the same." Three things, RC1 only:
+# (1) the carpet patch where the baked car stood (rc1_scene_clean.py, the CAR): the old refill blended / interpolated pixels, so the
+#     patch was soft, the bead chain ragged and one stripe bent. Now every pixel is an exact copy: the floor row for row from the nearest
+#     clean column (a plank line that shows on one side only stops at the hole, as at a joint), the bead chain bead by bead from the
+#     band's bottom chain of the same columns (parallel, so nothing is sheared; rims re-composited for the ground they meet), the stripes
+#     from the hatch's own lattice of phase-preserving shifts (the diagonals continue exactly). The hole also takes the car's soft shadow.
+# (2) the leg (rc_path_trace_338.py -> rc_leg_338_source.json): the first trace took each column's vertical midpoint of the band as its
+#     centre — right on the straight run, wrong in the bend (where the top edge is still flat while the bottom edge dives, the midpoint
+#     rides the top edge), so the car cut the corner over the bead chain and its heading wobbled (19 -> 18 -> 23 -> 37 -> 49 -> 42 -> 32
+#     deg), which also made the side / front view cross-fade flicker. Now the ridge of a distance transform (the medial axis, as
+#     rc_path_trace.py does for the old picture; the "?" discs filled in as carpet, the car's columns from the cleaned picture): the car
+#     holds the Figma's rest spot, settles onto the ridge over 30-75 % of the way (through the start of the bend) and rides the ridge into
+#     the ring; headings now rise 0 -> 62 deg and ease back to ~30 deg at the ring without a reversal. 214.8 px, 3.15 s (the leg's
+#     seconds are capped at 3.15 so the drive fits the 3.2 s motor clip without a loop seam — 68 px/s instead of 66, not noticeable).
+# (3) the motor in sync with the motion (adapt.js [L02-RC1-SMOOTH], card data.rc.motor = "speed", RC1 only): the clip's volume follows
+#     the car's speed (idle 22 % as it pulls away, full at mid-leg, down as it brakes, out as it stops) and its pitch rises a little with
+#     it (playbackRate 0.9 -> 1.08, pitch not preserved) instead of a flat fade-in over 250 ms / fade-out over the last 400 ms, which ran
+#     ahead of the easing car. The VO flow is unchanged: the opener line, start_ms, the drive, hold_ms 2500, then I3. RC2-RC4 keep their
+#     scene, legs and the flat motor envelope (asserted).
 import rc1_scene_clean as _rc1c
-_RC1_EXPORT = os.path.join(SCR, "rc1_frame_338-3_export.png"); _RC1_CLEAN = os.path.join(SCR, "rc1_scene_338-3_clean.png"); _RC1_DST = os.path.join(CUR, "assets", "Images", "rc_scene_2.webp")
-if not os.path.exists(_RC1_CLEAN) or os.path.getmtime(_RC1_CLEAN) < max(os.path.getmtime(_RC1_EXPORT), os.path.getmtime(_rc1c.__file__)):
-    _img, _info = _rc1c.clean(_RC1_EXPORT); _img.save(_RC1_CLEAN); print("wrote", _RC1_CLEAN, _info)
+_RC1_CLEAN, _rc1_info = _rc1c.ensure_clean(); _RC1_DST = os.path.join(CUR, "assets", "Images", "rc_scene_2.webp")
+if _rc1_info: print("wrote", _RC1_CLEAN, _rc1_info)
 if not os.path.exists(_RC1_DST) or os.path.getmtime(_RC1_DST) < os.path.getmtime(_RC1_CLEAN):
     Image.open(_RC1_CLEAN).convert("RGB").crop((152, 137, 1128, 687)).save(_RC1_DST, "WEBP", quality=90, method=6); print("wrote", _RC1_DST, "976x550")
 card["assets"]["image"]["rc_scene_2"] = "assets/Images/rc_scene_2.webp"
@@ -1467,8 +1487,11 @@ assert _leg338["start"] == [round(RC1B_START[0], 3), round(RC1B_START[1], 3)] an
 assert _leg338["pts"][0] == [round(RC1B_START[0], 2), round(RC1B_START[1], 2)] and _leg338["pts"][-1] == [round(RC1B_CP1[0], 2), round(RC1B_CP1[1], 2)] and len(_leg338["pts"]) > 40
 rc["data"]["image_id"] = "rc_scene_2"
 rc["data"]["rc"].update({"tokens": RC1B_TOKENS, "boy": [252.0, 64.0, 90.3, 167.5], "shadow": [274.0, 227.0, 58, 12],
-                         "car": {"box": list(RC1B_CAR_BOX), "size": RC1B_CAR_SIZE, "rot": -3.0, "views": RC_VIEWS}, "leg": {"pts": _leg338["pts"], "s": _leg338["seconds"]}})
+                         "car": {"box": list(RC1B_CAR_BOX), "size": RC1B_CAR_SIZE, "rot": -3.0, "views": RC_VIEWS}, "leg": {"pts": _leg338["pts"], "s": _leg338["seconds"]},
+                         "motor": "speed"})                                                   # [L02-RC1-SMOOTH] the motor follows the car's speed (adapt.js)
+assert _leg338["seconds"] <= 3.2 and len(_leg338["pts"]) >= 100 and "band_halfwidth_box" in _leg338, "rc_leg_338_source.json is not the distance-transform trace: rerun rc_path_trace_338.py"
 assert rc2["data"]["rc"]["tokens"] == RC_TOKENS and rc2["data"]["image_id"] == "rc_scene" and rc4["data"]["rc"]["boy"] == [852.5, 102, 76, 142] and rc3["data"]["rc"]["leg"]["pts"][0] != _leg338["pts"][0], "RC2-RC4 must keep the old scene"
+assert all("motor" not in s_["data"]["rc"] for s_ in (rc2, rc3, rc4)), "RC2-RC4 keep the flat motor envelope"
 
 # ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
 # standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in
