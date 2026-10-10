@@ -2997,3 +2997,10 @@ body.is-start .start-gate .sg-vo{animation:l02SgVoIn .34s ease-out .78s both !im
    the grey waiting art of [L02-STD-PLAY-BTN]) and cannot be tapped - the reference's waiting button is pointer-events:none too; the
    start gate carries .l02-sg-replay for exactly that time (adapt.js). */
 .start-gate.l02-sg-replay .sg-btn,.start-gate.l02-sg-replay .sg-btn:not(.ready){pointer-events:none !important;}
+/* ===== L02-CONFETTI-REF =====
+   [L02-CONFETTI-REF] (2026-10-10, user request) the confetti layer of the HI02H04_L01_S01 reference (its <style id="CONFETTI-REF-CSS">,
+   rule for rule): a body-level fixed full-window layer over everything, and every piece 1.5x the kit's size, scaled with the stage.
+   The pieces themselves (.fx-confetti rules, keyframes) are the kit's, shared by both lessons. See adapt.js [L02-CONFETTI-REF]. */
+.fx-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5000;--fx-size:1.5;}
+.fx-layer .fx-confetti .f{width:calc(var(--w) * var(--z) * var(--scale, 1) * var(--fx-size, 1));
+  height:calc(var(--h) * var(--z) * var(--scale, 1) * var(--fx-size, 1));}

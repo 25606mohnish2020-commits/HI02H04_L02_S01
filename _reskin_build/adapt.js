@@ -29,6 +29,41 @@
   };
 })();
 
+/* ===== L02-CONFETTI-REF =====
+   [L02-CONFETTI-REF] (2026-10-10, user request: "C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001 —
+   apply the exact same confetti used in this reference file wherever used in this file; rest keep everything exactly the same.")
+   That file's <style id="CONFETTI-REF-CSS"> + <script id="CONFETTI-REF-JS"> (2026-10-08; itself a value-for-value port of
+   MTG2A04_L02_S01's burst), copied here. Both lessons draw the FLN animation kit's recipe 7 (the same M.confetti.burst: shapes, VIBGYOR
+   front/back pairs, flutter / tumble, lifetime) and both re-point the engine's confettiCannon at it (the kit's confetti-wire: inside
+   .stage-inner, 80 pieces, kit size, fall [1.1, 1.8] s, guided / practice / mastery only). What the reference changed, and changes here:
+   - WHERE IT FALLS: over the WHOLE window, in a body-level fixed layer (.fx-layer#fxLayer, z-index 5000; made here once, re-made if it
+     is ever missing) - the letterbox beside the stage included - instead of inside .stage-inner, where it was clipped to the stage;
+   - HOW MANY: 100 pieces; HOW BIG: every piece 1.5x the kit's size (--fx-size, adapt.css; same shapes and aspect ratios), sized with
+     the stage (--scale) so it looks the same next to the game at any window size; HOW FAST: fall [1.6, 2.6] s (the kit's [1.1, 1.8]
+     ~40 % slower, before the depth divisor) - the burst clears in ~3.8 s; WHEN: on every call, no phase gate (phases: []).
+   Every CALLER is untouched - the question pages' correct tap (engine), the find page, the sentence pages (sent_q_page.js), P1's and
+   the RC finale's bursts (adapt.js) - and so is the burst's sound: this block sits BEFORE [L02-STD-SFX-JS], whose wrapper adds
+   sfx_confetti to whatever confettiCannon is at that point, i.e. to this one. afterConfetti's wait for the pieces to land still finds
+   them (.fx-confetti, document-wide). The celebration page's gold star burst is not a confetti (starBurst) and keeps its no-confetti
+   rule (body.is-end .fx-confetti hidden wherever it falls). The I1 bypass of [L02-I1-CONFETTI-JS] is retired below: this cannon has no
+   phase gate to bypass (so I1's burst now also carries the sound every other burst has). */
+(function(){ "use strict";
+  var M = window.FLNMotion; if(!M || !M.confetti) return;
+  function layer(){
+    var l = document.getElementById("fxLayer");
+    if(!l){ l = document.createElement("div"); l.className = "fx-layer"; l.id = "fxLayer"; l.setAttribute("aria-hidden", "true"); document.body.appendChild(l); }
+    return l;
+  }
+  layer();
+  window.confettiCannon = function(){
+    M.guard(function(){
+      var sl = (typeof CARD !== "undefined" && typeof state !== "undefined" && CARD.slides) ? CARD.slides[state.idx] : null;
+      layer();
+      M.confetti.burst({ host: "#fxLayer", phase: sl ? sl.phase : undefined, phases: [], count: 100, fall: [1.6, 2.6] });
+    });
+  };
+})();
+
 /* ===== L02-STD-SFX-JS ===== (2026-10-05, user request: "I have added a Standard SFX folder — apply all these sound effects wherever
    they can be applied and replace the existing sound effect with these where one already exists.") The five standard sounds
    (assets/Audio/sfx_confetti / sfx_correct_feedback / sfx_incorrect_feedback / sfx_next_button / sfx_play_button, cut by build.py from
@@ -93,12 +128,9 @@
    and the praise line but no confetti; the user wants the same confetti there (2026-09-28). Only a flagged slide skips the
    gate (burst({phases: []}) — the kit's own "[] disables phase gating"); every other slide goes through the kit as before. */
 (function(){
-  var orig = window.confettiCannon; if(typeof orig !== "function" || !window.FLNMotion || !FLNMotion.confetti) return;
-  window.confettiCannon = function(){
-    var s = (typeof CARD !== "undefined" && typeof state !== "undefined" && CARD.slides) ? CARD.slides[state.idx] : null;
-    if(s && s.confetti === true){ FLNMotion.confetti.burst({ phases: [] }); return; }
-    return orig.apply(this, arguments);
-  };
+  // [L02-CONFETTI-REF] (2026-10-10) retired: the reference's cannon above fires on every phase (phases: []), so the flag needs no bypass -
+  // and I1's burst now goes through the sound wrapper like every other. The card flag stays (documentation; harmless).
+  return;
 })();
 
 /* ===== L02-FIND-FIG-JS =====
