@@ -36,7 +36,11 @@ START2 = (361.5, 344.5); END2 = (TOKENS[1][0] + 52.0, TOKENS[1][1] + 51.0)
 # (700,427) -> centre (728,455) = box (575,283), unrotated — i.e. at heading 34 (the front render's deg on this page) while the carpet
 # there runs steeper: the leg starts tangent to the car's own heading and steers onto the ridge over its first 30 % (START_HEADING)
 START3 = (575.0, 283.0); END3 = (TOKENS[2][0] + 52.0, TOKENS[2][1] + 51.0)
-LEGS = [("leg1", START, END, None), ("leg2", START2, END2, None), ("leg3", START3, END3, 34.0)]   # (name, start, end, start heading or None)
+# [L02-RC4-FIG-2] (2026-10-10) leg4 for RC4 from frame 338-3043: the rear-view car at rest, its 63 px picture at frame (891,491) ->
+# centre (922.5,522.5) = box (769.5,350.5), unrotated = heading -14 (the rear render's deg); the carpet climbs steeper there, so the leg
+# starts tangent to the car's heading as leg3 does, to checkpoint 4's centre
+START4 = (769.5, 350.5); END4 = (TOKENS[3][0] + 52.0, TOKENS[3][1] + 51.0)
+LEGS = [("leg1", START, END, None), ("leg2", START2, END2, None), ("leg3", START3, END3, 34.0), ("leg4", START4, END4, -14.0)]   # (name, start, end, start heading or None)
 DISC_R = 54                                            # the discs filled in as carpet (their radius is 52)
 RING_R = 52.0                                          # from the ring's rim the path curves straight into its centre (see trace)
 SPEED, MAX_S = 66.0, 3.15                              # px/s as the other legs; the drive must fit the 3.2 s motor clip (sfx_rc)
@@ -54,8 +58,8 @@ M[:, :int(BOX[0]) + 2] = False; M[:int(BOX[1]) + 2, :] = False            # noth
 mimg = Image.fromarray((M * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))   # close the beads' outlines
 M = np.asarray(mimg) > 0
 
-# chamfer (3,4) distance transform inside the carpet, over the region legs 1-3 live in
-Y0, Y1, X0, X1 = 350, 640, 150, 900
+# chamfer (3,4) distance transform inside the carpet, over the region legs 1-4 live in (to the box's right edge, 1127)
+Y0, Y1, X0, X1 = 350, 640, 150, 1130
 INF = 10 ** 6
 D = np.where(M[Y0:Y1, X0:X1], INF, 0).astype(np.int64); h, w = D.shape
 for y in range(1, h):
@@ -129,4 +133,4 @@ if os.environ.get("RC_TRACE_PREVIEW"):
     for name, start, end, _h0 in LEGS:
         dr.line([(p[0] + BOX[0], p[1] + BOX[1]) for p in out["legs"][name]["pts"]], fill=(255, 0, 0), width=2)
         for cx, cy in ((start[0] + BOX[0], start[1] + BOX[1]), (end[0] + BOX[0], end[1] + BOX[1])): dr.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), outline=(255, 255, 0), width=2)
-    pv.crop((150, 330, 900, 600)).resize((1500, 540), Image.NEAREST).save(os.environ["RC_TRACE_PREVIEW"]); print("preview", os.environ["RC_TRACE_PREVIEW"])
+    pv.crop((150, 330, 1130, 600)).resize((1960, 540), Image.NEAREST).save(os.environ["RC_TRACE_PREVIEW"]); print("preview", os.environ["RC_TRACE_PREVIEW"])

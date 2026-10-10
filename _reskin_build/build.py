@@ -1545,7 +1545,36 @@ rc3["data"]["rc"].update({"tokens": RC1B_TOKENS, "boy": [252.0, 64.0, 90.3, 167.
                           "placed": [{"token": 0, "image": "rc_done_1b", "animate": False}, {"token": 1, "image": "rc_done_2b", "animate": True}],
                           "car": {"box": [round(RC3B_BOX[0], 3), round(RC3B_BOX[1], 3)], "size": round(RC3B_SIZE, 3), "rot": 34, "views": RC3_VIEWS},
                           "leg": {"pts": _leg338_3["pts"], "s": _leg338_3["seconds"]}, "motor": "speed"})
-assert rc4["data"]["image_id"] == "rc_scene" and rc4["data"]["rc"]["tokens"] == RC_TOKENS and "boy_flip" not in rc4["data"]["rc"] and "motor" not in rc4["data"]["rc"] and all(p["image"] in ("rc_done_1", "rc_done_2", "rc_done_3") for p in rc4["data"]["rc"]["placed"]), "RC4 must keep the old scene"
+assert rc4["data"]["image_id"] == "rc_scene" and rc4["data"]["rc"]["tokens"] == RC_TOKENS and "boy_flip" not in rc4["data"]["rc"] and "motor" not in rc4["data"]["rc"] and all(p["image"] in ("rc_done_1", "rc_done_2", "rc_done_3") for p in rc4["data"]["rc"]["placed"]), "RC4 must keep the old scene (RC4 gets its own below)"
+# ---- [L02-RC4-FIG-2] (2026-10-10, user request) page 20 RC4 laid out from Figma 338-3043, the same words as for RC2 / RC3. The
+# flattened 1x export (_reskin_build/rc4_frame_338-3043_export.png) is the 338-2995 frame pixel for pixel except at checkpoint 3 (now
+# holding M1's picture), RC3's car spot (bare carpet) and the new car — so: the same scene rc_scene_2, the same tokens, the same
+# UNmirrored boy, checkpoints 1 and 2 with rc_done_1b / rc_done_2b (static). Measured (scratch measure of the export): the CAR = the REAR
+# three-quarter render at 63.0 px (RC2's size), unrotated, its picture at frame (891,491) -> centre box (769.5,350.5), i.e. a 68.549 box
+# at (735.225,316.225); it opens at heading -14 (RC2_VIEWS puts the rear render's deg at -14, so -14 shows it exactly as drawn) and the
+# leg starts tangent to that heading, steering onto the carpet's steeper climb over its first 30 % (rc_path_trace_338.py START_HEADING,
+# as leg3). Checkpoint 3's picture = a slightly wider window of M1's picture than [L02-RC4-PIC-2]'s (source px (362,188)-(1086,898) of
+# m1_padha_source_2.png, match 2.1/255 vs 17.5 for rc_done_3) -> a new asset rc_done_3b. leg4 re-traced on the new carpet as the
+# distance-transform ridge to checkpoint 4 (125 px, 1.9 s, the rear view all the way, parked at -13 = nearly as drawn); the motor follows
+# the speed like RC1-RC3. The flow is unchanged: chime + glow at place_ms, the drive at start_ms, hold_ms, then M2. With this every RC
+# page shows the 338 room, so the old-layout assets rc_scene / rc_done_1 / rc_done_2 / rc_done_3 are shown by no page any more: they are
+# unregistered and removed from the dist (the blocks above still cut them each build; their sources stay in _reskin_build).
+rc_done("rc_done_3b.webp", "m1_padha_source_2.png", (362, 188, 1086, 898, 1448, 1086))
+card["assets"]["image"]["rc_done_3b"] = "assets/Images/rc_done_3b.webp"
+with open(os.path.join(SCR, "rc_leg_338_source.json"), encoding="utf-8") as _f: _leg338_4 = json.load(_f)["legs"]["leg4"]
+RC4B_START = (769.5, 350.5); RC4B_CP4 = (RC1B_TOKENS[3][0] + 52.0, RC1B_TOKENS[3][1] + 51.0)
+RC4B_PIC = 63.0; RC4B_SIZE = RC4B_PIC * 54.404 / 50; RC4B_BOX = (RC4B_START[0] - RC4B_SIZE / 2, RC4B_START[1] - RC4B_SIZE / 2)
+assert _leg338_4["start"] == [RC4B_START[0], RC4B_START[1]] and _leg338_4["end"] == list(RC4B_CP4) and _leg338_4.get("start_heading") == -14.0, ("rc_leg_338_source.json's leg4 was traced for other end points / heading: rerun rc_path_trace_338.py", _leg338_4["start"], _leg338_4["end"], _leg338_4.get("start_heading"))
+assert _leg338_4["pts"][0] == [round(RC4B_START[0], 2), round(RC4B_START[1], 2)] and _leg338_4["pts"][-1] == [round(RC4B_CP4[0], 2), round(RC4B_CP4[1], 2)] and len(_leg338_4["pts"]) > 40 and _leg338_4["seconds"] <= 3.2
+rc4["data"]["image_id"] = "rc_scene_2"
+rc4["data"]["rc"].update({"tokens": RC1B_TOKENS, "boy": [252.0, 64.0, 90.3, 167.5], "boy_flip": False, "shadow": [274.0, 227.0, 58, 12],
+                          "placed": [{"token": 0, "image": "rc_done_1b", "animate": False}, {"token": 1, "image": "rc_done_2b", "animate": False}, {"token": 2, "image": "rc_done_3b", "animate": True}],
+                          "car": {"box": [round(RC4B_BOX[0], 3), round(RC4B_BOX[1], 3)], "size": round(RC4B_SIZE, 3), "rot": -14, "views": RC2_VIEWS},
+                          "leg": {"pts": _leg338_4["pts"], "s": _leg338_4["seconds"]}, "motor": "speed"})
+for _k in ("rc_scene", "rc_done_1", "rc_done_2", "rc_done_3"):
+    assert not any(s_["data"].get("image_id") == _k or any(p_["image"] == _k for p_ in (s_["data"].get("rc") or {}).get("placed", [])) for s_ in card["slides"] if isinstance(s_.get("data"), dict)), _k + " is still shown by a page"
+    del card["assets"]["image"][_k]
+    if os.path.exists(os.path.join(BED_IMG, _k + ".webp")): os.remove(os.path.join(BED_IMG, _k + ".webp"))
 
 # ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
 # standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in
