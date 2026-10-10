@@ -3048,3 +3048,58 @@ html.no-anim #navBtn.active::after{animation:none !important;scale:1;}
   font-size:calc(52px * var(--scale,1));line-height:1;pointer-events:none;}
 /* the reference's 22 px between the mascot box and the button, scaled like the box itself */
 body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
+/* ===== L02-REVEAL-DISABLED =====
+   [L02-REVEAL-DISABLED] (2026-10-10, user request: "C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001 —
+   when the user taps on the wrong option for the third time then the hand nudge on the correct option appears and the incorrect options
+   get blurred; instead of making them blurred make them disabled as shown in this reference file.") That file's
+   <style id="G1-P4-REVEAL-DISABLED-CSS"> (2026-10-08), rule for rule, on every option page of this lesson: on the THIRD wrong tap the
+   engine's reveal (revealAnswer, scaffold_rules.max_attempts = 3) still puts the pointing hand (.reveal-hand) and the green guide-pulse
+   (.opt-guided) on the right option, but the two wrong options are no longer BLURRED: .opt-dim's 3px blur (the TOTA-DECK-LADDER rule) is
+   replaced by a DISABLED look — greyed (grayscale) at half opacity, the look the lesson's own disabled mic chip wears (.p2-rec-done) — and
+   they stay dead to taps exactly as before (pointer-events:none here as in that rule, plus the TOTA-WRONG-LOCKOUT capture listener). The
+   .3s fade of .opt-dim is kept. The reference's own selectors (its picture grids .opt-grid.pic-opts, its sentence pills
+   .opt-grid.sent-opts) are kept verbatim — the sentence pages G3 / I3 / M1 / M2 here ARE .opt-grid.sent-opts — and the same rule is
+   written for this lesson's Figma card pages (.stage.l02-q3: I1, I2 and P1, whose cards sit in a plain .opt-grid). Nothing else of the
+   reveal changes: the reveal line, the guided tap and its flow, the revealed-answer record. The find page's third miss (the hand on the
+   answer's outline, nothing dimmed) is as it was — it never blurred anything. */
+.opt-grid.pic-opts .opt-cell.opt-dim,
+.opt-grid.sent-opts .opt-cell.opt-dim,
+.stage.l02-q3 .opt-cell.opt-dim{filter:grayscale(1) !important;opacity:.5 !important;pointer-events:none !important;cursor:default !important;}
+/* ===== L02-NO-RED-WRONG =====
+   [L02-NO-RED-WRONG] (2026-10-10, user request: "...also remove the red colored highlight from any wrong tap in this file; whenever the user
+   taps on any wrong option the red color should not appear, but all the feedbacks and responses should remain the same.") That file's
+   <style id="NO-RED-WRONG"> (2026-10-08), rule for rule, then the same switch for the wrong marks this lesson draws itself. A WRONG option
+   never turns red; everything else of the wrong beat stays exactly as it was — the tile's shake (the kit's wgNo), its timing, the
+   incorrect sound, the bird's "try again" mood, the feedback line, the .crossed hold while it speaks, the sentence pages' 2nd-tap read-out
+   and the 3rd-tap reveal (the hand, the greyed decoys); only the red colour is switched off. Where the red was in THIS lesson, measured in
+   Chrome before this change (scratch probe_wrong.py):
+   - the sentence pages G3 / I3 / M1 / M2 (.opt-grid.sent-opts): the kit's wrong-select beat (M.wrongSelect.play → .wg-wrong, then .wg-rel
+     for the release) drew a 6px red outline on the pill for ~0.85 s and a red ring (.wg-pulse) swelling out and fading over the first
+     ~0.25 s. Both are drawn TRANSPARENT now (the reference's rules, verbatim): the outline and the ring still exist and run, invisibly,
+     so the beat's timing is untouched;
+   - the Figma card pages I1 / I2 / P1 (.stage.l02-q3): the white card's stroke (the cell's ::before) went red (a .07 s fade) with .wg-wrong
+     and stayed red through the .crossed hold, fading back when the feedback line ended; the ring (.wg-pulse) was red. The stroke now keeps
+     its resting colour — #D5D8DF on the grey cards, #FCB717 on P1's yellow cards — through the whole beat (so there is nothing to fade);
+     the ring is the transparent one above. The green of the answer (.correct / .ck-correct / .opt-guided) is untouched (the :not() guards);
+   - the find page G2 (.stage.l02-find): a decoy's outline (.l02-shape.wrong, mirrored from the engine's .shake) went red for 1 s
+     ([L02-FIND-RED-1S]) with its wiggle; the outline now stays WHITE — the wiggle, the sound, the escalating lines and the hand after the
+     third miss are as they were (the class, its second and the .18 s stroke transition still run, invisibly);
+   - the reference's rules for grids / mechanics this lesson does not have (.opt-grid.pic-opts, the drag pages' .ref-wrong, the engine's
+     generic option card and its no-kit fallback .opt-redglow-1s / totaWrongPulse) are kept verbatim, as there — they match nothing here or
+     hold a card at its resting values. An !important declaration wins over a keyframe animation in the cascade, so this also silences
+     picWrongPulse / totaWrongPulse, which animate colours only. Not touched: the feedback popup's own text colour (.hint-text.wrong, never
+     shown here) and the wrong states of mechanics this lesson does not have (.dd-zone, .seq-slot, .cdm-box, .tis-hot — invisible on the
+     find page —, .prompt-band.fb-wrong, the sorting bins). */
+.opt-grid.pic-opts .opt-cell.wg-wrong,.opt-grid.pic-opts .opt-cell.wg-rel,.opt-grid.pic-opts .opt-cell.wg-out,.opt-grid.pic-opts .opt-cell.opt-redglow-1s,
+.opt-grid.sent-opts .opt-cell.wg-wrong .so-pill,.opt-grid.sent-opts .opt-cell.wg-rel .so-pill,.opt-grid.sent-opts .opt-cell.wg-out .so-pill,.opt-grid.sent-opts .opt-cell.opt-redglow-1s .so-pill{outline-color:transparent !important;}
+.wg-fx .wg-pulse{border-color:transparent !important;}
+.ref-opts .ref-opt.ref-wrong,.ref-pics .ref-pic.ref-wrong{outline-color:transparent !important;}
+.opt-cell.wg-wrong,.opt-cell.wg-rel,.opt-cell.wg-out,.opt-cell.opt-redglow,.opt-cell.opt-redglow-1s,.opt-cell.crossed.opt-redglow-1s,.opt-cell.wrong{
+  border-color:#EEF3FA !important;background:#fff !important;box-shadow:0 5px 14px rgba(11,61,140,.10) !important;}
+/* this lesson's own wrong marks: the Figma card's stroke keeps its resting colour (the [L02-Q3-FIG] / [L02-P1-FIG] red rules above are
+   out-ranked), the find page's outline keeps its white */
+.stage.l02-q3 .opt-cell.wg-wrong:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3 .opt-cell.wg-rel:not(.correct):not(.ck-correct):not(.opt-guided)::before,
+.stage.l02-q3 .opt-cell.crossed:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3 .opt-cell.opt-redglow-1s:not(.correct):not(.ck-correct):not(.opt-guided)::before{border-color:#D5D8DF;}
+.stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-rel:not(.correct):not(.ck-correct):not(.opt-guided)::before,
+.stage.l02-q3.l02-q3-yellow .opt-cell.crossed:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s:not(.correct):not(.ck-correct):not(.opt-guided)::before{border-color:#FCB717;}
+.stage.l02-find .l02-shape.wrong{stroke:#FFFFFF;}
