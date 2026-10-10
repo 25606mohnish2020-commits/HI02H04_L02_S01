@@ -1437,6 +1437,39 @@ rc4["data"]["rc"].update({"reach": 3, "placed": [{"token": 0, "image": "rc_done_
 _m1_now = next(s for s in card["slides"] if s["id"] == "M1")
 card["slides"].insert(card["slides"].index(_m1_now) + 1, rc4)
 assert [s["id"] for s in card["slides"]][card["slides"].index(_m1_now):card["slides"].index(_m1_now) + 3] == ["M1", "RC4", "M2"], "RC4 must sit between M1 and M2"
+# ---- [L02-RC1-FIG-2] (2026-10-10, user request) page 14 RC1 laid out from Figma 338-3: "the exact same layout and the exact same image
+# with the exact same placement of the elements and size as of this figma reference frame, in sync with the VO of this file and page".
+# The Figma server was not reachable, so the user exported the frame flattened (1x, 1280x720 = Figma px): _reskin_build/rc1_frame_338-3_export.png.
+# Against the current page rendered at 1280x720 and compared pixel by pixel: the title, the box (153,172, 974x480), checkpoints 2-4 and
+# the backdrop are identical; new are the ROOM picture (an archway with stairs at the left, a window, a plant at the right), checkpoint 1
+# at (203,306) (was (179,290)), the BOY now standing left of the middle (the same GIF, mirrored, drawn 90.3x167.5 at (252,64) — found by
+# template-matching the GIF onto the export, score 11.7; the soft shadow under his feet) and the CAR at the carpet's new start (the same
+# side-view render at 70.6 px -> box 76.82 at (49.09,208.09), tilted -3 deg; was 50 px / 54.404 at (64,230.6), -5.3 deg). The carpet
+# moved a few px too, so RC1's leg is re-traced on this picture (rc_path_trace_338.py -> rc_leg_338_source.json: the car's centre to the
+# new checkpoint 1, 66 px/s as the other legs -> ~3.7 s, the checkpoint is further). The scene picture = the export cut exactly where the
+# CSS draws .tis-img (976x550 at (-5,-39) of the frame's inner box = frame (152,137)-(1128,687)) with the baked car and boy lifted out by
+# rc1_scene_clean.py (the page draws them live) -> assets/Images/rc_scene_2.webp; at 1x it is softer than the old 1.71x picture (the
+# user's room-layer export would sharpen it). Only RC1 changes: RC2-RC4 keep rc_scene, their tokens, boy and legs (copied above, before
+# this block). adapt.js draws the boy and the car at card-given sizes now ([L02-RC1-FIG-2] there). The VO flow is untouched: data.rc.intro
+# speaks, then start_ms, the drive, hold_ms 2500, then I3.
+import rc1_scene_clean as _rc1c
+_RC1_EXPORT = os.path.join(SCR, "rc1_frame_338-3_export.png"); _RC1_CLEAN = os.path.join(SCR, "rc1_scene_338-3_clean.png"); _RC1_DST = os.path.join(CUR, "assets", "Images", "rc_scene_2.webp")
+if not os.path.exists(_RC1_CLEAN) or os.path.getmtime(_RC1_CLEAN) < max(os.path.getmtime(_RC1_EXPORT), os.path.getmtime(_rc1c.__file__)):
+    _img, _info = _rc1c.clean(_RC1_EXPORT); _img.save(_RC1_CLEAN); print("wrote", _RC1_CLEAN, _info)
+if not os.path.exists(_RC1_DST) or os.path.getmtime(_RC1_DST) < os.path.getmtime(_RC1_CLEAN):
+    Image.open(_RC1_CLEAN).convert("RGB").crop((152, 137, 1128, 687)).save(_RC1_DST, "WEBP", quality=90, method=6); print("wrote", _RC1_DST, "976x550")
+card["assets"]["image"]["rc_scene_2"] = "assets/Images/rc_scene_2.webp"
+with open(os.path.join(SCR, "rc_leg_338_source.json"), encoding="utf-8") as _f: _leg338 = json.load(_f)["legs"]["leg1"]
+RC1B_TOKENS = [[203, 306], [435, 200], [620, 316], [830, 249]]
+RC1B_CAR_BOX, RC1B_CAR_SIZE = (49.09, 208.09), 76.82
+RC1B_START = (RC1B_CAR_BOX[0] + RC1B_CAR_SIZE / 2, RC1B_CAR_BOX[1] + RC1B_CAR_SIZE / 2); RC1B_CP1 = (RC1B_TOKENS[0][0] + 52.0, RC1B_TOKENS[0][1] + 51.0)
+assert _leg338["start"] == [round(RC1B_START[0], 3), round(RC1B_START[1], 3)] and _leg338["end"] == list(RC1B_CP1), ("rc_leg_338_source.json was traced for other end points: rerun rc_path_trace_338.py", _leg338["start"], _leg338["end"])
+assert _leg338["pts"][0] == [round(RC1B_START[0], 2), round(RC1B_START[1], 2)] and _leg338["pts"][-1] == [round(RC1B_CP1[0], 2), round(RC1B_CP1[1], 2)] and len(_leg338["pts"]) > 40
+rc["data"]["image_id"] = "rc_scene_2"
+rc["data"]["rc"].update({"tokens": RC1B_TOKENS, "boy": [252.0, 64.0, 90.3, 167.5], "shadow": [274.0, 227.0, 58, 12],
+                         "car": {"box": list(RC1B_CAR_BOX), "size": RC1B_CAR_SIZE, "rot": -3.0, "views": RC_VIEWS}, "leg": {"pts": _leg338["pts"], "s": _leg338["seconds"]}})
+assert rc2["data"]["rc"]["tokens"] == RC_TOKENS and rc2["data"]["image_id"] == "rc_scene" and rc4["data"]["rc"]["boy"] == [852.5, 102, 76, 142] and rc3["data"]["rc"]["leg"]["pts"][0] != _leg338["pts"][0], "RC2-RC4 must keep the old scene"
+
 # ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
 # standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in
 # the dist as the engine's fallback asset, unused.

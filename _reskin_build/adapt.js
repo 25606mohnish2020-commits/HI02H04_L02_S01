@@ -273,13 +273,23 @@
     });
     if(R.shadow){ var sh = bedImg("l02-rc-shadow", R.shadow_src || "assets/Images/rc_shadow.svg");   // the 58x12 ellipse sits at the centre of its 118x72 blurred SVG
       sh.style.left = px(R.shadow[0] + R.shadow[2] / 2 - 59 - B); sh.style.top = px(R.shadow[1] + R.shadow[3] / 2 - 36 - B); layer.appendChild(sh); }
-    if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B); layer.appendChild(boy); }
+    if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B);
+      // [L02-RC1-FIG-2] (2026-10-10) the box's own width / height when the card gives them (RC1's frame 338-3 draws the boy at 90.3x167.5; the CSS 76x142 stays the default)
+      if(R.boy.length >= 4 && (R.boy[2] !== 76 || R.boy[3] !== 142)){ boy.style.width = px(R.boy[2]); boy.style.height = px(R.boy[3]); }
+      layer.appendChild(boy); }
     var C = R.car || {}, size = C.size || 54.404, c0 = C.box || [64, 230.6], rot0 = (typeof C.rot === "number") ? C.rot : -5.3;
     // [L02-RC-MOTION] one <img> per view, stacked in the car's slot, sorted by the heading each one shows
     var views = (C.views && C.views.length) ? C.views.slice().sort(function(a, b){ return a.deg - b.deg; }) : [{ src: C.src || "rc_car", deg: 0 }];
     var car = bedEl("div", "l02-rc-car");
     car.style.left = px(c0[0] - B); car.style.top = px(c0[1] - B);
     var imgs = views.map(function(v){ var im = bedImg("", imgSrc(v.src)); car.appendChild(im); return im; });
+    // [L02-RC1-FIG-2] (2026-10-10) a card-given size other than the Figma's 54.404 box scales the slot and its renders with it (the
+    // 2.202 inset and the 50 px picture keep their proportion); RC1's frame 338-3 shows the car at 70.6 px (box 76.82). The CSS keeps
+    // the default for the other pages.
+    if(Math.abs(size - 54.404) > 0.01){
+      car.style.width = px(size); car.style.height = px(size);
+      imgs.forEach(function(im){ im.style.left = px(size * 2.202 / 54.404); im.style.top = px(size * 2.202 / 54.404); im.style.width = px(size * 50 / 54.404); im.style.height = px(size * 50 / 54.404); });
+    }
     function pose(heading){
       // the two renders bracketing the heading cross-fade between the lower one's `to` and the upper one's `from` (default: the 30..70%
       // stretch of the gap between their degs); each is turned to the heading
