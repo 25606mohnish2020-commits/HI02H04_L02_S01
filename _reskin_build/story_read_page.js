@@ -208,11 +208,15 @@
       // [L02-SPK-CHIP] (2026-10-10, user request) the title-bar speaker (adapt.js routes its tap here on story pages): the page's INSTRUCTION
       // again - the narration where the page has one, else the cue line ("tap the mic and read the sentence") spoken at once with the mic
       // chip's pulse, exactly as runCue speaks it (and the inactivity count goes on from its end as before); never over the cue itself,
-      // the read-aloud beat or a running clip, and not once the child has read (the mic chip is spent then - nothing left to instruct)
+      // the read-aloud beat or a running clip.
+      // [L02-SPK-FUNC] (2026-10-10, user request) ...and as the reference's speaker re-reads its page: once the child has read and the
+      // sentence has been heard, a tap reads the sentence AGAIN with its word highlight, and the picture's pop and आगे बढ़ें follow as after
+      // any hearing (speakSentence); during the beat, the cue or a running clip the tap is ignored (the reference's isPlaying guard)
       state.replayInstruction = ()=>{
-        if(cueOn || recOn || recDone || !alive()) return;
+        if(cueOn || recOn || !alive() || isPlaying) return;
+        if(recDone){ if(heard) speakSentence(); return; }
         if(promptSrc){ narrate(); return; }
-        if(!cueSrc || isPlaying) return;
+        if(!cueSrc) return;
         clearTimeout(cueTimer); cueWaitMs = 0; cueSilentNext = false; setCue(true);
         play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });
       };

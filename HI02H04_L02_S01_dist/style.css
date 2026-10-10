@@ -2987,3 +2987,8 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
 body.is-start .start-gate .sg-vo{animation:l02SgVoIn .34s ease-out .78s both !important;}
 /* the reference's off state: from the first frame until the welcome line has ended, and again whenever a line plays (adapt.js) */
 .sg-vo.sg-vo-off,.start-gate .sg-vo.sg-vo-off{pointer-events:none !important;opacity:.5 !important;filter:grayscale(1) brightness(1.2) !important;}
+/* ===== L02-SPK-FUNC =====
+   [L02-SPK-FUNC] (2026-10-10, user request) while the landing speaker's replay runs, the Play button is in its waiting state (no .ready:
+   the grey waiting art of [L02-STD-PLAY-BTN]) and cannot be tapped - the reference's waiting button is pointer-events:none too; the
+   start gate carries .l02-sg-replay for exactly that time (adapt.js). */
+.start-gate.l02-sg-replay .sg-btn,.start-gate.l02-sg-replay .sg-btn:not(.ready){pointer-events:none !important;}

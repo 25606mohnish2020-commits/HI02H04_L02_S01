@@ -3053,11 +3053,15 @@ const SlideModules = {
       // [L02-SPK-CHIP] (2026-10-10, user request) the title-bar speaker (adapt.js routes its tap here on story pages): the page's INSTRUCTION
       // again - the narration where the page has one, else the cue line ("tap the mic and read the sentence") spoken at once with the mic
       // chip's pulse, exactly as runCue speaks it (and the inactivity count goes on from its end as before); never over the cue itself,
-      // the read-aloud beat or a running clip, and not once the child has read (the mic chip is spent then - nothing left to instruct)
+      // the read-aloud beat or a running clip.
+      // [L02-SPK-FUNC] (2026-10-10, user request) ...and as the reference's speaker re-reads its page: once the child has read and the
+      // sentence has been heard, a tap reads the sentence AGAIN with its word highlight, and the picture's pop and आगे बढ़ें follow as after
+      // any hearing (speakSentence); during the beat, the cue or a running clip the tap is ignored (the reference's isPlaying guard)
       state.replayInstruction = ()=>{
-        if(cueOn || recOn || recDone || !alive()) return;
+        if(cueOn || recOn || !alive() || isPlaying) return;
+        if(recDone){ if(heard) speakSentence(); return; }
         if(promptSrc){ narrate(); return; }
-        if(!cueSrc || isPlaying) return;
+        if(!cueSrc) return;
         clearTimeout(cueTimer); cueWaitMs = 0; cueSilentNext = false; setCue(true);
         play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });
       };
@@ -5471,9 +5475,54 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   var _ms = window.mountSlide;
   window.mountSlide = function(idx){ if(typeof state !== "undefined") state.replayInstruction = null; var r = _ms.apply(this, arguments); wireHeaderChip(idx); return r; };
   if(typeof state !== "undefined" && typeof state.idx === "number" && document.querySelector("#slideHost .story-frame")) wireHeaderChip(state.idx);   // a ?slide=N dev load mounted before this ran
+  /* [L02-SPK-FUNC] (2026-10-10, user request: "keep the functionality of the speaker button near the bird exactly the same as the
+     reference's") the landing speaker's tap does what the reference's playLanding does (read from its index.html, recorded live): the
+     Play button is TAKEN AWAY for the length of the replay (the reference's goes to its waiting state - hidden, untappable; ours goes to
+     its own waiting state, the grey waiting art, untappable), the bird's wave plays AGAIN (its once-only animation restarted from a
+     fresh copy - window.l02LandBird below), the welcome speaks (the speaker itself greyed by its .playing state), and when the line has
+     ended the Play button POPS BACK IN and breathes. The replay itself is still the engine's (the bird's replayWelcome, reached by the
+     forwarded click): at the line's end that path runs the engine's own reveal when the button is not ready - the pop-in and the
+     breathing exactly as after the first welcome - so the button comes back by the engine's hand; the release observer below only lifts
+     the tap lock (and, should nothing have been replayed, gives the button straight back). */
   var sg = document.getElementById("sgVo");
   if(sg){ var prev = sg.onclick; sg.onclick = function(e){ e.stopPropagation(); if(prev) prev.call(sg, e);
-    var b = document.querySelector(".start-gate .sg-mascot, .sg-mascot"); if(b) b.dispatchEvent(new MouseEvent("click", { bubbles: true })); }; }
+    var gate = document.getElementById("startGate"), btn = document.getElementById("sgBtn"), bird = document.querySelector(".start-gate .sg-mascot, .sg-mascot");
+    var take = !!(btn && btn.classList.contains("ready") && gate && !gate.classList.contains("hidden"));
+    if(take){ btn.classList.remove("ready", "sg-breathe"); btn.setAttribute("aria-disabled", "true"); gate.classList.add("l02-sg-replay"); }
+    if(bird && window.l02LandBird) window.l02LandBird.restart(bird);
+    if(bird) bird.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    if(take && !(typeof isPlaying !== "undefined" && isPlaying)){ btn.classList.add("ready"); btn.setAttribute("aria-disabled", "false"); gate.classList.remove("l02-sg-replay"); }   // the engine declined to replay: nothing to wait for
+  }; }
+})();
+
+/* ===== L02-SPK-FUNC =====
+   [L02-SPK-FUNC] (2026-10-10) two helpers for the landing speaker's replay (above). (1) window.l02LandBird: the landing bird's wave
+   (new_landing_swiftee_anim.webp, an animated WebP that plays ONCE - loop count 1 - so it is still by the time the child taps) is fetched
+   once into a Blob (from the browser's cache: the <img> has already loaded it) and restarted with a fresh object URL per replay - a new
+   URL is a new image with its own animation clock, the way the reference's replayLandingSwifty does it (a counter in the query from
+   file://, where fetch is blocked). (2) the release: when the speaker's .playing goes off and stays off (the engine's setPlaying, through
+   which every playback exit passes - end, error, a newer clip), the tap lock on the Play button is lifted; if the engine's reveal has not
+   put the button back by then (it does, at the replayed line's end), it is put back here, so the landing can never be left without it. */
+(function(){
+  var img = document.querySelector(".start-gate .sg-mascot"); if(!img) return;
+  var SRC = img.getAttribute("src") || "assets/UI/new_landing_swiftee_anim.webp", blob = null, url = null, n = 0;
+  if(typeof fetch === "function" && /^https?:$/.test(location.protocol)) fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){});
+  window.l02LandBird = { restart: function(el){ el = el || img; if(!el) return;
+    if(url){ try{ URL.revokeObjectURL(url); }catch(e){} url = null; }
+    el.removeAttribute("src"); void el.offsetWidth;
+    if(blob){ url = URL.createObjectURL(blob); el.src = url; } else el.src = SRC + (SRC.indexOf("?") < 0 ? "?" : "&") + "r=" + (++n); } };
+  var v = document.getElementById("sgVo"), gate = document.getElementById("startGate"); if(!v || !gate) return;
+  var relT = 0;
+  var release = function(){
+    relT = 0;
+    if(!gate.classList.contains("l02-sg-replay")) return;
+    if(typeof isPlaying !== "undefined" && isPlaying){ relT = setTimeout(release, 120); return; }   // a newer clip took over: wait for that one
+    gate.classList.remove("l02-sg-replay");
+    var btn = document.getElementById("sgBtn"); if(!btn || gate.classList.contains("hidden")) return;
+    if(!btn.classList.contains("ready")) btn.classList.add("ready");                              // the engine's reveal has normally done this already
+    btn.setAttribute("aria-disabled", "false");
+  };
+  new MutationObserver(function(){ if(!v.classList.contains("playing") && gate.classList.contains("l02-sg-replay") && !relT) relT = setTimeout(release, 80); }).observe(v, { attributes: true, attributeFilter: ["class"] });
 })();
 ;
 
