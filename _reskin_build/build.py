@@ -161,48 +161,70 @@ eng = eng.replace(needle, '''  const scheduleFollowUp = ()=>{                   
 #     the VO speaks; the gate closes CARD.gate.total_ms (4000) after it opened, or CARD.gate.tail_ms (300) after a longer line has ended
 #     (the guided line is 5.6 s; a hard cut at 4 s would stop it mid-sentence), never before its line has ended. Same signature, same
 #     callers (the start tap, completeSlide), same token guard, same classes on the stage and body.
+#     [L02-GATE-ANIM] (2026-10-10, user request: "https://hindi-game-gender-identify.vercel.app/ — apply the exact same animation of the
+#     text and the bird at the transition screens (the screens with the pink Hindi text), at all of them; rest keep everything exactly
+#     the same.") That reference's phaseBlurTransition (engine 2026.08.28a + its H11 patches, read from its index.html and recorded live
+#     with Playwright): the gate opens with .pg-up — the bird, ALREADY UP AND TALKING (its peeking_talk_up.webp = the standard transition
+#     animation cut at the first full-pose frame), lifts in over .3 s from 28 % of its height below its place (pgUpIn); the voice speaks at
+#     once; the pink line is EMPTY until the voice reaches its words (card.phase_gate_caption[phase].at_ms into the clip, measured off the
+#     recording) and then WRITES ITSELF left to right over .9 s (.pg-pop → pgWipe, a clip-path wipe); when the gate is done it gets
+#     .pg-sink — the bird drops out of sight over .34 s (pgPeekDown) — and is torn down after that drop. Applied here to all three gates
+#     (the reference wires the sink on its first gate only — its later gates cut without it; the user asked for one animation on all).
+#     The gate's length is as before: TOTAL (4000) from its opening, or TAIL (300) after a longer line — the drop is its last SINK (340) ms
+#     (so a longer line's tail is the drop's 340 ms: the bird is never cut off mid-drop).
+#     The talk point (talk_ms) is gone with the rising intro: the bird is up from the first frame. The reference also plays a whoosh when
+#     the gate opens — a sound, not the animation asked for; not added.
 _i0 = eng.index('function phaseBlurTransition(cb, toPhase){'); _i1 = eng.index('\n}\n', _i0) + 3
 _old = eng[_i0:_i1]
 assert eng.count('function phaseBlurTransition(cb, toPhase){') == 1 and 'peeking_pal.webp?r=' in _old and '2000 - (Date.now() - openedAt)' in _old \
     and _old.count('\n}\n') == 1 and 'SwiftPAL.emit("phase_transition", { to: toPhase });' in _old, "[L02-STD-GATE] phaseBlurTransition anchor"
-eng = eng[:_i0] + '''function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] the standard transition: the bird rises, its beak opens → the line appears and speaks → closed at 4 s
+eng = eng[:_i0] + '''function phaseBlurTransition(cb, toPhase){                          // [L02-STD-GATE] → [L02-GATE-ANIM] the reference's transition: the bird lifts in already talking, the line writes itself when the voice reaches it, the bird drops on the way out
   const tok = ++_gateToken;
   stopNudge(); stopAudio();
   const gate = $("phaseGate"), img = $("phaseGateImg");
-  const G = CARD.gate || {}, TALK = (G.talk_ms != null) ? G.talk_ms : 1250, TOTAL = (G.total_ms != null) ? G.total_ms : 4000, TAIL = (G.tail_ms != null) ? G.tail_ms : 300;
-  const title = $("phaseGateTitle"); if(title) title.textContent = PHASE_GATE_TITLE[toPhase] || "";
-  gate.classList.remove("pg-talk");                                  // the headline stays hidden until the bird starts talking (adapt.css)
+  const G = CARD.gate || {}, TOTAL = (G.total_ms != null) ? G.total_ms : 4000, TAIL = (G.tail_ms != null) ? G.tail_ms : 300, SINK = (G.sink_ms != null) ? G.sink_ms : 340;
+  const title = $("phaseGateTitle"); if(title){ title.textContent = ""; title.classList.remove("pg-pop"); }   // nothing written until the voice reaches the words (adapt.css: an empty title is not drawn)
+  gate.classList.remove("pg-sink"); gate.classList.add("pg-up");    // the bird lifts in the moment the gate shows (adapt.css l02PgUpIn)
   $("stage").classList.add("blurred", "gating");
   document.body.classList.add("gating");
   gate.classList.add("show");
   SwiftPAL.emit("phase_transition", { to: toPhase });
-  const closeGate = ()=>{ gate.classList.remove("show", "pg-talk"); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
+  const blank = ()=>{ if(title){ title.textContent = ""; title.classList.remove("pg-pop"); } };
+  const closeGate = ()=>{ clearTimeout(capT); gate.classList.remove("show", "pg-up", "pg-sink"); blank(); $("stage").classList.remove("blurred", "gating"); document.body.classList.remove("gating"); };
   // VO only if the card actually ships it; else a silent beat.
   const voId = PHASE_GATE_VO[toPhase];
   const voSrc = (voId && CARD.assets && CARD.assets.audio && CARD.assets.audio[voId]) || null;
+  const cap = (CARD.phase_gate_caption && CARD.phase_gate_caption[toPhase]) || null;   // the line and the moment the voice reaches it
+  const capText = (cap && cap.text != null) ? cap.text : (PHASE_GATE_TITLE[toPhase] || ""), capAt = (cap && cap.at_ms) || 0;
   const openedAt = Date.now();
-  // the animation restarts from its first frame: adapt.js preloads the file once and hands the <img> a fresh object URL each gate (its
-  // load is the animation's first frame); without it, the file with a cache-buster, as the reference restarted its loop
+  let capT = null;
+  // the animation restarts from its first frame — the bird already up — : adapt.js preloads the file once and hands the <img> a fresh
+  // object URL each gate; without it, the file with a cache-buster, as the reference restarted its loop
   const started = (window.l02GateBird && window.l02GateBird.start) ? window.l02GateBird.start(img) : new Promise(res=>{
-    if(!img){ res(); return; } img.onload = img.onerror = ()=> res(); img.src = (G.anim || "assets/UI/gate_swiftee.webp") + "?r=" + Date.now(); setTimeout(res, 1500); });
+    if(!img){ res(); return; } img.onload = img.onerror = ()=> res(); img.src = (G.anim || "assets/UI/gate_swiftee_up.webp") + "?r=" + Date.now(); setTimeout(res, 1500); });
   started.then(()=>{
     if(tok !== _gateToken) return;                                   // a newer gate superseded us
-    setTimeout(()=>{
-      if(tok !== _gateToken) return;
-      gate.classList.add("pg-talk");                                 // the beak opens: the line appears and speaks
-      play(voSrc, ()=>{
+    capT = setTimeout(()=>{                                          // the voice reaches the words: the line writes itself (adapt.css l02PgWipe)
+      if(tok !== _gateToken || !title) return;
+      title.textContent = capText; title.classList.remove("pg-pop"); void title.offsetWidth; title.classList.add("pg-pop");
+    }, capAt);
+    play(voSrc, ()=>{                                                // the voice speaks at once — the bird is up and talking from its first frame
+      if(tok !== _gateToken){ closeGate(); return; }
+      const hold = Math.max(TAIL, TOTAL - (Date.now() - openedAt));   // the screen lasts TOTAL from its opening; a longer line gets TAIL after its end (the drop's SINK ms at the least)
+      setTimeout(()=>{
         if(tok !== _gateToken){ closeGate(); return; }
-        const hold = Math.max(TAIL, TOTAL - (Date.now() - openedAt));   // the screen lasts TOTAL from its opening; a longer line gets TAIL after its end
+        gate.classList.add("pg-sink");                               // the screen's last SINK ms: the bird drops out of sight (adapt.css l02PgPeekDown)
         setTimeout(()=>{
           if(tok !== _gateToken){ closeGate(); return; }
-          gate.classList.remove("show", "pg-talk");
+          clearTimeout(capT);
+          gate.classList.remove("show", "pg-up", "pg-sink"); blank();
           $("stage").classList.remove("blurred");
           if(cb) cb();                              // mounts the next slide
           $("stage").classList.remove("gating");    // header returns once the slide is in
           document.body.classList.remove("gating");
-        }, hold);
-      });
-    }, TALK);
+        }, SINK);
+      }, Math.max(0, hold - SINK));
+    });
   });
 }
 ''' + eng[_i1:]
@@ -1019,8 +1041,22 @@ for _src, _dst in (("std_play_btn_source.svg", "btn-play-std.svg"), ("std_play_b
 # until talk_ms and then shows it with the VO (patch 3j); adapt.js [L02-STD-GATE-JS] preloads the file and restarts it per gate; CSS
 # adapt.css [L02-STD-GATE] (the bird drawn as tall as the old peeking bird's full pose). peeking_pal.webp stays in assets/UI unused, like
 # the pill play-button art; the gate's <img> ships without a src (below, where index.html is assembled) — adapt.js hands it the animation.
-GATE_CROP = (218, 561, 1214, 1485); GATE_H = 400; GATE_TALK_FRAME = 58
-GATE_PLAN = [(k, 40) for k in range(0, 19, 2)] + [(19, 120)] + [(k, 40) for k in range(36, 53, 2)] + [(53, 80), (54, 50), (55, 90), (56, 50), (57, 100)]
+# [L02-GATE-ANIM] (2026-10-10, user request — engine patch 3j above) the reference hindi-game-gender-identify.vercel.app shows, at each
+# transition, its assets/peeking_talk_up.webp: 900x900, 61 frames, 12.28 s a loop, loop 0 — verified frame for frame to be THIS SAME
+# standard transition animation cut at frame 54 (the first full-pose frame: a blink, the eyes open, then the talking from frame 58 on),
+# at the source's own frame durations. So the gate animation is now that cut, made from the same source with the same crop and scale as
+# before (the bird's size on screen is unchanged: adapt.css [L02-STD-GATE]) — frames 54-114 as drawn, nothing retimed; the rising intro
+# (frames 0-53, which [L02-STD-GATE] retimed to a 1250 ms talk point) is gone: the bird is up and talking from the first frame, and the
+# reference's CSS lifts it in. assets/UI/gate_swiftee_up.webp (the old gate_swiftee.webp removed); CARD.gate = {anim, total_ms 4000,
+# tail_ms 300, sink_ms 340}. CARD.phase_gate_caption[phase] = {text, at_ms} as the reference's card carries it: the headline's words (the
+# engine's PHASE_GATE_TITLE, asserted equal) and the moment the voice reaches them — the onset of the headline's first word in the gate
+# clip, measured off the recording (16 kHz, 25 ms RMS, a window sounds over 6 % of the peak, runs closer than 120 ms are one phrase):
+# vo_pt_tutorial "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!" → runs 100-900, 1050-1225, 1425-2600, 3175-3500, 3850-4300: the 4th
+# run, 3175 ms, is चलिए (the reference's own card times the same line at 3210); vo_pt_guided "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं।
+# चलिए, साथ में करें!" → 100-575, 750-3300, 3775-4050, 4450-5050: the 3rd run, 3775 ms; vo_pt_practice "वाह! अब आपकी बारी।" → 250-750,
+# 1200-1475, 1625-2000: the 2nd run, 1200 ms (अब). The build re-measures each clip and asserts the run count and the onset (±100 ms), so
+# a replaced take fails loudly here — listen, then set the new onset in GATE_CAPTION.
+GATE_CROP = (218, 561, 1214, 1485); GATE_H = 400; GATE_UP_FRAME = 54
 def webp_durations(path):
     """The ANMF frame durations (ms) of an animated WebP, in order."""
     b = open(path, "rb").read(); i = 12; out = []
@@ -1030,22 +1066,52 @@ def webp_durations(path):
         i += 8 + ln + (ln & 1)
     return out
 def gate_anim(name, src):
+    """The reference's cut of the standard transition animation: frames GATE_UP_FRAME.. of the source at their own durations, cropped to
+    the bird (GATE_CROP) and scaled to GATE_H high, loop 0. Returns the loop length (ms)."""
     from PIL import ImageSequence
     s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "UI", name)
     assert os.path.exists(s), "missing " + s
+    src_durs = webp_durations(s); assert len(src_durs) == 115 and sum(src_durs) == 16100, "unexpected source animation " + str((len(src_durs), sum(src_durs)))
     if not bed_fresh(dst, s):
-        src_durs = webp_durations(s); assert len(src_durs) == 115 and sum(src_durs) == 16100, "unexpected source animation " + str((len(src_durs), sum(src_durs)))
         frames = [f.convert("RGBA").copy() for f in ImageSequence.Iterator(Image.open(s))]
-        plan = GATE_PLAN + [(k, src_durs[k]) for k in range(GATE_TALK_FRAME, len(frames))]
+        keep = list(range(GATE_UP_FRAME, len(frames)))
         W = round((GATE_CROP[2] - GATE_CROP[0]) * GATE_H / (GATE_CROP[3] - GATE_CROP[1]))
-        out = [frames[k].crop(GATE_CROP).resize((W, GATE_H), Image.LANCZOS) for k, _ in plan]
-        out[0].save(dst, "WEBP", save_all=True, append_images=out[1:], duration=[d for _, d in plan], loop=0, quality=80, method=4, minimize_size=True, allow_mixed=True)
+        out = [frames[k].crop(GATE_CROP).resize((W, GATE_H), Image.LANCZOS) for k in keep]
+        out[0].save(dst, "WEBP", save_all=True, append_images=out[1:], duration=[src_durs[k] for k in keep], loop=0, quality=80, method=4, minimize_size=True, allow_mixed=True)
         print("wrote", dst, os.path.getsize(dst), "bytes,", len(out), "frames")
-    durs = webp_durations(dst); assert len(durs) == len(GATE_PLAN) + 115 - GATE_TALK_FRAME, "gate animation frame count " + str(len(durs))
-    return sum(durs[:len(GATE_PLAN)])
-GATE_TALK_MS = gate_anim("gate_swiftee.webp", "std_gate_swiftee_source.webp")
-assert GATE_TALK_MS == 1250, GATE_TALK_MS
-card["gate"] = {"anim": "assets/UI/gate_swiftee.webp", "talk_ms": GATE_TALK_MS, "total_ms": 4000, "tail_ms": 300}
+    durs = webp_durations(dst); assert durs == src_durs[GATE_UP_FRAME:], "gate animation frames " + str((len(durs), sum(durs)))
+    return sum(durs)
+GATE_LOOP_MS = gate_anim("gate_swiftee_up.webp", "std_gate_swiftee_source.webp")
+assert GATE_LOOP_MS == 12280, GATE_LOOP_MS
+for _old in ("gate_swiftee.webp",):                                   # [L02-STD-GATE]'s retimed rising cut: no longer used
+    _p = os.path.join(CUR, "assets", "UI", _old)
+    if os.path.exists(_p): os.remove(_p); print("removed", _p)
+card["gate"] = {"anim": "assets/UI/gate_swiftee_up.webp", "total_ms": 4000, "tail_ms": 300, "sink_ms": 340}
+def speech_runs(name, thr=0.06, win_ms=25, join_ms=120):
+    """The speech runs (start ms, end ms) of a lesson clip (assets/Audio/<name>.ogg): 16 kHz mono, RMS per win_ms window, a window sounds
+    when its RMS is over thr × the clip's peak, runs closer than join_ms are one."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"), "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout
+    x = struct.unpack("<%dh" % (len(raw) // 2), raw); W = 16 * win_ms; n = len(x) // W
+    r = [math.sqrt(sum(v * v for v in x[i * W:(i + 1) * W]) / W) for i in range(n)]; mx = max(r); on = [v > thr * mx for v in r]
+    runs = []; i = 0
+    while i < n:
+        if not on[i]: i += 1; continue
+        j = i
+        while j < n and on[j]: j += 1
+        if runs and i * win_ms - runs[-1][1] < join_ms: runs[-1] = (runs[-1][0], j * win_ms)
+        else: runs.append((i * win_ms, j * win_ms))
+        i = j
+    return runs
+GATE_CAPTION = {   # phase: (the clip, the run that begins the headline's words (0-based), the clip's run count, the onset ms — measured, see above)
+    "tutorial": ("vo_pt_tutorial", 3, 5, 3175), "guided": ("vo_pt_guided", 2, 4, 3775), "practice": ("vo_pt_practice", 1, 3, 1200)}
+GATE_WORDS = {"tutorial": "चलिए, शुरू करें!", "guided": "चलिए, साथ में करें!", "practice": "अब आपकी बारी!"}   # = the engine's PHASE_GATE_TITLE
+card["phase_gate_caption"] = {}
+for _ph, (_vo, _run, _nruns, _at) in GATE_CAPTION.items():
+    assert ('%s:"%s"' % (_ph, GATE_WORDS[_ph])) in eng, "[L02-GATE-ANIM] headline words differ from the engine's: " + _ph
+    _runs = speech_runs(_vo); assert len(_runs) == _nruns, "[L02-GATE-ANIM] %s: %d speech runs, expected %d: %s" % (_vo, len(_runs), _nruns, _runs)
+    assert abs(_runs[_run][0] - _at) <= 100, "[L02-GATE-ANIM] %s: the headline's words start at %d ms, GATE_CAPTION says %d" % (_vo, _runs[_run][0], _at)
+    card["phase_gate_caption"][_ph] = {"text": GATE_WORDS[_ph], "at_ms": _at}
+print("[L02-GATE-ANIM] captions", card["phase_gate_caption"])
 # ---- [L02-READ-ALOUD] (2026-10-03, user request: the reference's mic-button animation, duration animation, highlight and VO sync on
 # every page with the mic button — i.e. the story pages 2-10, the only pages of this lesson whose chip is shown). The story pages'
 # cue line becomes the reference lesson's re-recorded "tap the mic and read the sentence" (its vo_tap_speaker_sentence_story.ogg,

@@ -71,9 +71,10 @@
    it, so the browser decodes a new image and its animation starts from the first frame — no refetch (the reference restarted its loop
    with a cache-busting query, a download per gate), and the engine times the line against this image's load, which is the animation's
    first frame. If the fetch has not finished when the first gate opens, the gate waits for it; if it failed, the file itself with a
-   cache-buster, as before. */
+   cache-buster, as before. [L02-GATE-ANIM] (2026-10-10): the file is now the reference's cut — the bird up and talking from its first
+   frame (gate_swiftee_up.webp); the lift-in, the line's wipe and the drop are CSS (adapt.css) driven by patch 3j's classes. */
 (function(){
-  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/gate_swiftee.webp", blob = null, url = null, failed = false;
+  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/gate_swiftee_up.webp", blob = null, url = null, failed = false;
   var pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true);
   function hand(img, res){
     var done = false, fin = function(){ if(done) return; done = true; res(); };
