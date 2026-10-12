@@ -2392,6 +2392,18 @@ for _o in _p1b["data"]["options"]:
     _p1b["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_p1b["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
 assert _p1b["data"]["word_times_by_audio"]["vo_p1_utha"] == [0.1, 0.8, 1.06, 1.43], _p1b["data"]["word_times_by_audio"]["vo_p1_utha"]   # the answer's timings as before
+# ---- [L02-WRONG1-QUIET] (2026-10-12, user request) "At pages 15 I3, 17 P1, 19 M1 and 21 M2 remove the «फिर से कोशिश कीजिए, कहानी याद
+# करिए ।» and «चित्र को ध्यान से देखिए ।» VOs on the first wrong attempt by the user. There should be wiggle animation along with the
+# incorrect sound effect at the first wrong attempt only on these pages" — data.wrong1_quiet (sent_q_page.js: the line the engine speaks
+# after the FIRST wrong tap — audio.try_again: vo_q_hint on the sentence pages I3 / M1 / M2, vo_q_try on the card page P1 — is not
+# spoken; the tap's wiggle + sfxWrongSoft and the module's 1 s beat stay, the option reads normal again at the beat's end and the 7 s
+# quiet-and-free count starts there). The second wrong tap's read-out (keyed on I3 / M1 / M2 by that same vo_q_hint id, so the id stays
+# in the card) and the third's reveal are untouched; G3 / I1 / I2 keep their first-wrong line. Card only; no clip changes.
+for _sid, _try in (("I3", "vo_q_hint"), ("P1", "vo_q_try"), ("M1", "vo_q_hint"), ("M2", "vo_q_hint")):
+    _s = _by_id[_sid]
+    assert (_s.get("sent_ref") is True or _s.get("card_ref") is True) and _s["audio"].get("try_again") == _try and "wrong1_quiet" not in _s["data"], (_sid, _s["audio"])
+    _s["data"]["wrong1_quiet"] = True
+assert card["assets"]["audio_text"]["vo_q_hint"].replace(" ।", "।") == "चित्र को ध्यान से देखिए।", card["assets"]["audio_text"]["vo_q_hint"]
 # ---- [L02-DIST-OPTIM] prune (see the note at the top): unused registered pictures, unreferenced files, every audio file that is not shipped
 for _k in PRUNED_IMAGES:
     _pth = card["assets"]["image"].pop(_k, None)

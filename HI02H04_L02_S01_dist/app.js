@@ -5706,7 +5706,12 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
                            handler still runs on that click (the hand goes, the green stroke, the happy mascot, completeSlide — which waits
                            for the confetti to land before the next page). Rev 2: on G3 as well (user request) — on a sentence page this
                            also skips the correct tap's SFX hold (the scene sound + the picture's pop) and the pill's line with its lit
-                           words; the pill keeps its green outline (.correct). */
+                           words; the pill keeps its green outline (.correct).
+     data.wrong1_quiet     [L02-WRONG1-QUIET] (2026-10-12, user request) I3 / P1 / M1 / M2: the FIRST wrong tap = the wiggle + the wrong sound
+                           only. The line the engine speaks after it (audio.try_again — «चित्र को ध्यान से देखिए।» on the sentence pages,
+                           «फिर से कोशिश कीजिए, कहानी याद करिए।» on P1) is not spoken: the play() seam ends it at once, so the option reads
+                           normal again when the 1 s wrong beat is over and the 7 s quiet count starts there. The second wrong tap's
+                           read-out and the third's reveal are as before; G3 / I1 / I2 (no flag) keep their line. */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }
@@ -5861,6 +5866,15 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     var l2 = (typeof audioFor === "function") ? (audioFor(sl, "hint") || audioFor(sl, "try_again")) : null;
     return !!l2 && idOf(l2) === idOf(src);
   }
+  // [L02-WRONG1-QUIET] the line the engine speaks after the FIRST wrong tap (audio.try_again, once the tapped option's own line — the
+  // 1 s beat above — is over): not spoken on a wrong1_quiet page. The hint button never shows in this lesson, so attempts === 1 with
+  // this src is that one call; the engine's _uncross runs as the line's end.
+  function tryLineOff(sl, src){
+    if(!(sl.data && sl.data.wrong1_quiet === true)) return false;
+    if(reviewing || state.locked || state.hintActive || state.attempts !== 1) return false;
+    var l1 = (typeof audioFor === "function") ? audioFor(sl, "try_again") : null;
+    return !!l1 && idOf(l1) === idOf(src);
+  }
   var origPlay = window.play;
   if(typeof origPlay === "function"){
     window.play = function(src, onEnd){
@@ -5880,6 +5894,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
           return;
         }
         if(okSentOff(sl, src)){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }
+        if(tryLineOff(sl, src)){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }   // [L02-WRONG1-QUIET]
         if(isReviewLine(sl, src)){
           reviewing = true; state.hintActive = true;
           reviewPills(ix, function(){
