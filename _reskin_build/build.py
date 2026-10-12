@@ -2360,6 +2360,15 @@ for _o in _i2["data"]["options"]:
     assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
     _i2["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_i2["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
+# ---- [L02-I2-NO-DANDA] (2026-10-12, user request) "At page 13 I2 remove । from the options text" — the three place options read
+# "खिलौनों के बीच / पलंग पर / कुर्सी पर" without the trailing standalone danda (I1's and P1's sentences keep theirs). The recorded option
+# clips, their word timings (the danda was never a word: sent_q_page.js joined it to the word before), the picture cards, the beats and
+# the lines are untouched — card label_hi only.
+for _o in _by_id["I2"]["data"]["options"]:
+    assert _o["label_hi"].endswith(" ।"), _o["label_hi"]
+    _o["label_hi"] = _o["label_hi"][:-2]
+    assert len(_o["label_hi"].split()) == len(_by_id["I2"]["data"]["word_times_by_audio"][_o["audio"]]) - 1, _o["label_hi"]
+assert [o["label_hi"] for o in _by_id["I2"]["data"]["options"]] == ["खिलौनों के बीच", "पलंग पर", "कुर्सी पर"]
 # ---- [L02-Q-BEATS] rev 4 (2026-10-12, user request) "At pages 15 I3, 19 M1 and 21 M2 apply the exact same pattern of the feedbacks,
 # animations and responses of the instruction VOs, sound effects, correct option taps, incorrect option taps and the instruction VOs as of
 # page 11 G3" — the three are G3's kind of page already (sent_ref: the hint line + wiggle on a wrong tap, the read-out with the words lit
