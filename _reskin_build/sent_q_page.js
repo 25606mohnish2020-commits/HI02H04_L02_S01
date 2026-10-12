@@ -71,7 +71,7 @@
   function idOf(src){ return String(src).split("/").pop().replace(/\.[A-Za-z0-9]+$/, ""); }
   function srcOf(id){
     var a = (typeof CARD === "object" && CARD && CARD.assets && CARD.assets.audio) ? CARD.assets.audio[id] : null;
-    return a || ("assets/Audio/" + id + "." + (typeof AUDIO_EXT === "string" ? AUDIO_EXT : "ogg"));
+    return a || ("assets/Audio/" + id + "." + (typeof AUDIO_EXT === "string" ? AUDIO_EXT : "wav"));
   }
   function voPlaying(){ return document.body.classList.contains("vo-playing"); }
   var timers = [];

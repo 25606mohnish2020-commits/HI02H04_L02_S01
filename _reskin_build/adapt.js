@@ -83,7 +83,7 @@
    music bed): none of them is a feedback / button sound. stdSfx(id): its own Audio element at full volume (the clips are levelled to
    the lesson's SFX standard by the build), fire-and-forget, ducking the music like every sound. */
 (function(){
-  var ext = (typeof CARD !== "undefined" && CARD.assets && CARD.assets.audio_ext) || "ogg";
+  var ext = (typeof CARD !== "undefined" && CARD.assets && CARD.assets.audio_ext) || "wav";
   window.stdSfx = function(id){ if(!id) return; try{ var a = new Audio("assets/Audio/" + id + "." + ext); a.volume = 1; a.play().catch(function(){}); }catch(e){} };
   // the confetti's sound, on every burst
   var origConfetti = window.confettiCannon;
@@ -352,7 +352,7 @@
       return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
     function ease(k){ return 0.5 - 0.5 * Math.cos(Math.PI * k); }          // pulls away and brakes smoothly
     var cx0 = c0[0] + size / 2, cy0 = c0[1] + size / 2, dur = ((R.leg && R.leg.s) || 2.6) * 1000;
-    var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); motor.preload = "auto"; motor.loop = true;
+    var motor = null; if(R.sfx){ try{ motor = new Audio("assets/Audio/" + R.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "wav")); motor.preload = "auto"; motor.loop = true;
       if(R.motor === "speed"){ motor.preservesPitch = false; motor.mozPreservesPitch = false; motor.webkitPreservesPitch = false; }   // [L02-RC1-SMOOTH] its pitch may follow the speed
     }catch(e){ motor = null; } }
     function stopMotor(){ var a = motor; if(!a) return; motor = null; try{ a.pause(); }catch(e){} }
@@ -387,13 +387,13 @@
       requestAnimationFrame(tick);
     }
     if(placing.length) setTimeout(function(){ if(CARD.slides[state.idx] !== s) return;   // [L02-RC2] the won picture pops into its checkpoint under a glow, with the chime
-      if(R.place_sfx){ try{ var chime = new Audio("assets/Audio/" + R.place_sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg")); chime.play().catch(function(){}); }catch(e){} }
+      if(R.place_sfx){ try{ var chime = new Audio("assets/Audio/" + R.place_sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "wav")); chime.play().catch(function(){}); }catch(e){} }
       placing.forEach(function(tok){ tok.classList.add("placed", "placing"); }); }, (typeof R.place_ms === "number") ? R.place_ms : 500);
     // [L02-VO-BATCH] data.rc.intro (RC1 only): the screen's opening line "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?" speaks first,
     // through the engine's play() (so it is the page's current line: the music ducks under it, a page change stops it); the car sets off
     // data.rc.start_ms after the line has ended. A short beat after the page opens, as the music and the picture settle.
     if(R.intro && typeof play === "function"){
-      var introSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio[R.intro]) || ("assets/Audio/" + R.intro + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg"));
+      var introSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio[R.intro]) || ("assets/Audio/" + R.intro + "." + ((CARD.assets && CARD.assets.audio_ext) || "wav"));
       setTimeout(function(){ if(CARD.slides[state.idx] !== s) return; play(introSrc, function(){ setTimeout(drive, R.start_ms || 600); }); }, 300);
     } else if(!noCar) setTimeout(drive, R.start_ms || 600);
     // [L02-RC5-FINALE] (2026-10-10, user request) the finale page after M2 (Figma 339-3089, no car): the last checkpoint's picture is
@@ -454,7 +454,7 @@
     var flips = (B.flips || []).map(function(f){ return { token: f.token, at: f.at, done: false }; });
     var walking = false, arrived = false;
     // [L02-BED-STEPS] the leg's footsteps, if it has any: buffered now so they start with the first stride
-    var stepsSrc = B.sfx ? "assets/Audio/" + B.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "ogg") : null, steps = null;
+    var stepsSrc = B.sfx ? "assets/Audio/" + B.sfx + "." + ((CARD.assets && CARD.assets.audio_ext) || "wav") : null, steps = null;
     if(stepsSrc){ try{ steps = new Audio(stepsSrc); steps.preload = "auto"; steps.loop = true; }catch(err){ steps = null; } }
     function stopSteps(fade){ var a = steps; if(!a) return; steps = null;
       if(!fade){ try{ a.pause(); }catch(err){} return; }

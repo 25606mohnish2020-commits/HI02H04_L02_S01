@@ -18,6 +18,33 @@ ROOT = r"C:\Users\25606\OneDrive\FLN @ CG\Bindu's File\HI02H04_L02_S01_dist-2026
 CUR = os.path.join(ROOT, "HI02H04_L02_S01_dist")
 BACKUP_INDEX = os.path.join(ROOT, "_backup_before_reskin", "index.html")
 SCR = os.path.dirname(os.path.abspath(__file__))
+# ---- [L02-DIST-OPTIM] (2026-10-12, user request) "Remove all the unwanted, unused and unnecessary things from this folder and convert all the
+# audios including sound effects, musics and VOs in wav format, images in webp, such that the whole folder gets optimised and its size
+# reduced, keeping all the functioning as it is." (1) The source folders the user had dropped INTO the dist (the VO batch, the raw SFX
+# tracks, the car-animation sources, the standard-SFX folder — none of them read by the page) live in _reskin_build/sources/ now; the two
+# this script reads (VO_BATCH_DIR, SFX_DIR) point there; the review deck is beside _reskin_build. (2) Every clip the lesson plays is a
+# 16-bit PCM WAV, 48 kHz mono — AUD_EXT / AUD_ENC below replace the Opus / Vorbis ogg encodes and the 128 k mp3 bed in every encoder (the
+# same trim / loudness / fade chain, nothing lossy after it; bit-exact, so a rebuild rewrites identical bytes — the ogg churn is gone);
+# the card's audio_ext says so and the JS fallbacks follow. (3) PRUNED_AUDIO / PRUNED_IMAGES: clips and pictures still registered from
+# the pre-reskin card that no page plays or shows any more (the placeholder lines of pages that were rebuilt, the old scene pictures
+# and option icons) are unregistered and deleted; PRUNED_FILES: files no page, style or script references (the L01 chrome's leftovers);
+# then every file in assets/Audio that is not a registered clip, a by-convention clip (the pops, the standard SFX, the car sounds, the
+# celebration line) or the bed is deleted — so the old oggs and the mp3 go. Every raster picture of the lesson was already WebP; the
+# SVGs are vector UI art and stay. (4) VO_Manifest.xlsx keeps vo_celebrate's line (the deck's recorded line, kept for the voice team),
+# its clip is not shipped (the celebration speaks the borrowed MTG204 line).
+SRC_DIR = os.path.join(SCR, "sources")
+AUD_EXT = "wav"
+AUD_ENC = ["-c:a", "pcm_s16le", "-map_metadata", "-1", "-fflags", "+bitexact", "-flags", "+bitexact"]
+PRUNED_AUDIO = {"vo_celebrate", "vo_help", "vo_opt_bed", "vo_opt_book", "vo_opt_chair", "vo_opt_drawing", "vo_opt_khana", "vo_opt_play", "vo_opt_sleep", "vo_opt_toys",
+                "vo_q_chitra", "vo_q_khilaune", "vo_q_kya_karna", "vo_q_reveal", "vo_q_sulaya", "vo_read_instr", "vo_story_8", "vo_tap_chitra", "vo_tap_toys", "vo_tap_try",
+                "vo_tap_speaker_sentence"}   # the fleet's generic "tap here for the sentence" line: only a fallback for a page without the story cue (every story page has it)
+PRUNED_IMAGES = {"opt_bed", "opt_book", "opt_chair", "opt_drawing", "opt_khana", "opt_play", "opt_sleep", "opt_toys",
+                 "scene_1", "scene_2", "scene_3", "scene_4", "scene_5", "scene_6", "scene_7", "scene_8"}
+PRUNED_FILES = ["assets/UI/audio.webp", "assets/UI/btn-finish.svg", "assets/UI/btn-next-disabled.svg", "assets/UI/btn-next.svg", "assets/UI/nudge_tap.webp",
+                "assets/UI/peeking.webp", "assets/UI/peeking_pal.webp", "assets/UI/start_btn.webp", "assets/UI/sw_anim_celebrate.gif", "assets/UI/sw_anim_idle.gif",
+                "assets/UI/sw_anim_rest.webp", "assets/UI/sw_anim_talk.gif", "assets/UI/sw_anim_teach.gif", "assets/UI/sw_anim_tryagain.gif", "assets/UI/vo_button.webp",
+                "assets/Audio/sfx_celebrate.ogg"]
+BY_CONVENTION_AUDIO = ["sfx_pop_%d" % n for n in range(1, 10)] + ["sfx_rc", "sfx_place", "sfx_confetti", "sfx_correct_feedback", "sfx_incorrect_feedback", "sfx_next_button", "sfx_play_button", "vo_cel_prompt", "bgm_standard_2"]
 
 def rd(p): return open(p, encoding="utf-8").read()
 def wr(p, s):
@@ -337,7 +364,7 @@ for k, v in {
     # "vo_tap_swiftee_replay": "फिर से सुनने के लिए मुझ पर टैप करिए।" — the title page's bird-cue line: gone since [L02-NO-BIRD-CUE] (2026-10-05)
     "vo_tap_speaker_sentence": "वाक्य सुनने के लिए यहाँ टैप करिए।",
 }.items():
-    aud[k] = "assets/Audio/" + k + ".ogg"; txt[k] = v
+    aud[k] = "assets/Audio/" + k + "." + AUD_EXT; txt[k] = v
 # ---- [L02-STORY-FIG] pages 2-10 from Figma "FLN by MJ" section 19-13: every story page shows the band line "आइए कहानी पढ़ें।"
 # and the designer's landscape picture (assets/Images/story_N.webp = the Figma picture cut to its 468x244 frame). The designer
 # drew the last sentence over TWO pages (page 9: the boy yawning among his toys, page 10: asleep with his mother looking on),
@@ -380,8 +407,8 @@ t9["data"]["words"] = [{"text": w} for w in ["वह", "थककर", "सो",
 t9["data"]["whole_audio"] = "vo_story_8b"
 t9["data"]["alt_hi"] = "माधव खिलौनों के बीच सो गया, माँ हैरान खड़ी है।"
 card["slides"].insert(card["slides"].index(t8) + 1, t9)
-aud["vo_story_8a"] = "assets/Audio/vo_story_8a.ogg"; txt["vo_story_8a"] = "खेलते-खेलते उसे नींद आने लगी।"   # [L02-VO-BATCH] the recordings' words (the clips are made below)
-aud["vo_story_8b"] = "assets/Audio/vo_story_8b.ogg"; txt["vo_story_8b"] = "वह थककर सो गया।"
+aud["vo_story_8a"] = "assets/Audio/vo_story_8a." + AUD_EXT; txt["vo_story_8a"] = "खेलते-खेलते उसे नींद आने लगी।"   # [L02-VO-BATCH] the recordings' words (the clips are made below)
+aud["vo_story_8b"] = "assets/Audio/vo_story_8b." + AUD_EXT; txt["vo_story_8b"] = "वह थककर सो गया।"
 # ---- [L02-POP-SFX] the picture's pop has a sound. The user's assets/SFX/"Page N.mp3" are raw library tracks (1.8 s to 3 min,
 # several opening in silence), so each is cut to the pop's 2 s, levelled and encoded like every other clip (Opus, mono, 48 k)
 # into assets/Audio/sfx_pop_<n>.ogg (n = story page index, page N = n + 1); story_read_page.js starts that clip with the pop
@@ -390,7 +417,7 @@ aud["vo_story_8b"] = "assets/Audio/vo_story_8b.ogg"; txt["vo_story_8b"] = "व�
 # ("Page 10 a" + "Page 10 b") are mixed. Level: mean -26 dB RMS with peaks kept under -1 dBFS; a 20 ms fade-in at the cut and
 # a 200 ms fade-out so the sound ends exactly with the pop. Regenerated only when a source (or this script) is newer.
 import subprocess, math, tempfile
-SFX_DIR = os.path.join(CUR, "assets", "SFX")
+SFX_DIR = os.path.join(SRC_DIR, "SFX")   # [L02-DIST-OPTIM] moved out of the dist
 SFX_SOURCES = {1: ["Page 2"], 2: ["Page 3"], 3: ["Page 4"], 4: ["Page 5"], 5: ["Page 6"], 6: ["Page 7"], 7: ["Page 8"],
                8: ["Page 9"], 9: ["Page 10 a", "Page 10 b"]}
 POP_S, SFX_MEAN_DB, SFX_PEAK_DB, SFX_AUDIBLE_DB, SFX_WIN = 2.0, -26.0, -1.0, -35.0, 0.25
@@ -436,7 +463,7 @@ def ff(*args):
 # md5 in word_times.json goes stale → envelope measurement). The pages are wired further down ([L02-VO-BATCH] wiring): I1 / I2 option
 # ids, the seven page reveal lines, RC1's opener, I3's one-word praise. Not spoken any more, still registered (as every removed clip is):
 # vo_q_reveal, vo_opt_khana / book / toys / bed / chair, vo_tap_speaker_sentence.
-VO_BATCH_DIR = os.path.join(CUR, "assets", "voiceovers_batch (25)", "voiceovers")
+VO_BATCH_DIR = os.path.join(SRC_DIR, "voiceovers_batch (25)", "voiceovers")   # [L02-DIST-OPTIM] moved out of the dist
 VO_TARGET_I = -16.5
 VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the lesson's play order; one recording each in the batch
     # the title page (deck slide 3)
@@ -529,10 +556,11 @@ assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
 VO_OVERRIDE = {"vo_tap_speaker_sentence_story": os.path.join(SCR, "vo_tap_speaker_sentence_story_2026-10-07.wav"),
                "vo_pt_guided": os.path.join(SCR, "vo_pt_guided_2026-10-08.wav")}
 def vo_clip(name, text):
-    """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.ogg, trimmed / levelled / encoded like tts_clip."""
-    src = VO_OVERRIDE.get(name) or os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")   # [L02-CUE-VO-2] a later take may stand in for a batch WAV
+    """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
+    if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
+    src = VO_OVERRIDE.get(name) or os.path.join(VO_BATCH_DIR, name + ".wav"); dst = os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT)   # [L02-CUE-VO-2] a later take may stand in for a batch WAV
     assert os.path.exists(src), "[L02-VO-BATCH] missing recording " + src
-    aud[name] = "assets/Audio/" + name + ".ogg"; txt[name] = text
+    aud[name] = "assets/Audio/" + name + "." + AUD_EXT; txt[name] = text
     if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src): return   # remade only for a newer WAV (not, like bed_fresh — defined further down — for a newer build.py: 61 encodes take ~2 min; delete the .ogg to force one)
     out = ff("-i", src, "-af", "silencedetect=n=-45dB:d=0.15", "-f", "null", "-")
     h, mnt, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", out).groups(); dur = int(h) * 3600 + int(mnt) * 60 + float(sec)
@@ -545,7 +573,7 @@ def vo_clip(name, text):
     m = json.loads((lambda o: o[o.rindex("{"):o.rindex("}") + 1])(ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:print_format=json" % VO_TARGET_I, "-f", "null", "-")))
     ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:measured_I=%s:measured_TP=%s:measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true,"
        "aresample=48000,afade=t=in:st=0:d=0.02,afade=t=out:st=%.3f:d=0.1" % (VO_TARGET_I, m["input_i"], m["input_tp"], m["input_lra"], m["input_thresh"], m["target_offset"], t1 - t0 - 0.1),
-       "-ac", "1", "-ar", "48000", "-c:a", "libopus", "-b:a", "64k", dst)
+       "-ac", "1", "-ar", "48000", *AUD_ENC, dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "speech %.2f-%.2f of %.2f s" % (speech0, speech1, dur))
 for _k, _t in VO_LINES: vo_clip(_k, _t)
@@ -565,7 +593,7 @@ def sfx_levels(path):
     out = ff("-i", path, "-af", "volumedetect", "-f", "null", "-")
     return float(re.search(r"mean_volume: (-?[\d.]+)", out).group(1)), float(re.search(r"max_volume: (-?[\d.]+)", out).group(1))
 def build_pop_sfx(n, names):
-    dst = os.path.join(CUR, "assets", "Audio", "sfx_pop_%d.ogg" % n)
+    dst = os.path.join(CUR, "assets", "Audio", "sfx_pop_%d." % n + AUD_EXT)
     srcs = [os.path.join(SFX_DIR, nm + ".mp3") for nm in names]
     for s in srcs: assert os.path.exists(s), "missing SFX " + s
     if os.path.exists(dst) and all(os.path.getmtime(dst) >= os.path.getmtime(s) for s in srcs + [os.path.abspath(__file__)]):
@@ -584,7 +612,7 @@ def build_pop_sfx(n, names):
         mean, peak = sfx_levels(mix)
         gain = min(SFX_MEAN_DB - mean, SFX_PEAK_DB - peak)
         ff("-i", mix, "-af", "volume=%.2fdB,afade=t=in:st=0:d=0.02,afade=t=out:st=%.2f:d=0.2" % (gain, length - 0.2),
-           "-t", "%.2f" % length, "-c:a", "libopus", "-b:a", "64k", dst)
+           "-t", "%.2f" % length, *AUD_ENC, dst)
         assert os.path.exists(dst), "ffmpeg did not write " + dst
         return [(nm, st, length) for (c, st), nm in zip(cuts, names)] + [("gain dB", round(gain, 1))]
 for n, s in enumerate(story + [t9], 1):
@@ -596,7 +624,7 @@ for n, s in enumerate(story + [t9], 1):
     else: s["data"].pop("pop_ms", None)
     if n in SFX_CUT and SFX_CUT[n][1] != pop_s: s["data"]["pop_sfx_s"] = SFX_CUT[n][1]
     else: s["data"].pop("pop_sfx_s", None)
-    print("sfx_pop_%d.ogg" % n, "<-", " + ".join(SFX_SOURCES[n]), "| regenerated:" if made else "| up to date", made or "")
+    print("sfx_pop_%d." % n + AUD_EXT, "<-", " + ".join(SFX_SOURCES[n]), "| regenerated:" if made else "| up to date", made or "")
 # ---- [L02-READ-ALOUD] word times (2026-10-03): after the read-aloud beat the sentence speaks with the word being said lit in time
 # with the recording — the reference's rule (its WORD_TIMES tables: each word's start in the recording, then the end of the last word;
 # word k is lit while times[k] <= currentTime < times[k+1]; story_read_page.js). The reference measured its tables by hand on the
@@ -688,7 +716,7 @@ g2["prompt_hi"] = "इस चित्र में माधव कहाँ �
 # levelled to this page's own clips at -15.5 LUFS, Opus 48 k mono, 3.2 s) until the VO team records it. I2 and P2 keep
 # the shared vo_tap_try ("फिर से देखिए, तस्वीर में ढूँढिए।").
 g2["audio"]["try_again"] = "vo_tap_try_madhav"
-aud["vo_tap_try_madhav"] = "assets/Audio/vo_tap_try_madhav.ogg"; txt["vo_tap_try_madhav"] = "ध्यान से देखिए और माधव को पहचानिए।"
+aud["vo_tap_try_madhav"] = "assets/Audio/vo_tap_try_madhav." + AUD_EXT; txt["vo_tap_try_madhav"] = "ध्यान से देखिए और माधव को पहचानिए।"
 # [L02-FIND-HINTS] (user, 2026-10-03) the wrong taps on this page get three escalating lines instead of the same try-again line every
 # time: 1st miss "ध्यान से देखिए और माधव को पहचानिए।" (= vo_tap_try_madhav above), 2nd "माधव एक लड़का है, चित्र में लड़के को पहचानिए।", 3rd and
 # every later one "यह माधव है, इसपर टैप कीजिए।" with the kit's nudge hand (the tapping hand with its ripple) on Madhav until he is tapped.
@@ -975,11 +1003,11 @@ def tts_clip(name, text, target_i=-15.9):
     cut to 0.10 s before the speech and 0.33 s after it; two-pass loudnorm (linear) to target_i LUFS / -1.1 dBTP; a 20 ms fade-in and a
     100 ms fade-out; Opus 64 k mono 48 k like every other clip. Registered in the card's audio / audio_text."""
     if name in VO_BATCH_IDS: return                       # [L02-VO-BATCH] the recorded line (vo_clip above) replaces the placeholder: nothing to make, nothing to register
-    src = os.path.join(SCR, name + "_source_edge-tts_hi-IN-SwaraNeural.mp3"); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    src = os.path.join(SCR, name + "_source_edge-tts_hi-IN-SwaraNeural.mp3"); dst = os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT)
     if not os.path.exists(src):
         subprocess.run([sys.executable, "-m", "edge_tts", "-v", "hi-IN-SwaraNeural", "-t", text, "--write-media", src], check=True)
         print("edge-tts wrote", src)
-    aud[name] = "assets/Audio/" + name + ".ogg"; txt[name] = text
+    aud[name] = "assets/Audio/" + name + "." + AUD_EXT; txt[name] = text
     if bed_fresh(dst, src): return
     out = ff("-i", src, "-af", "silencedetect=n=-45dB:d=0.15", "-f", "null", "-")
     h, mnt, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", out).groups(); dur = int(h) * 3600 + int(mnt) * 60 + float(sec)
@@ -992,21 +1020,21 @@ def tts_clip(name, text, target_i=-15.9):
     m = json.loads((lambda o: o[o.rindex("{"):o.rindex("}") + 1])(ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:print_format=json" % target_i, "-f", "null", "-")))
     ff(*cut, "-af", "loudnorm=I=%s:TP=-1.1:LRA=11:measured_I=%s:measured_TP=%s:measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true,"
        "aresample=48000,afade=t=in:st=0:d=0.02,afade=t=out:st=%.3f:d=0.1" % (target_i, m["input_i"], m["input_tp"], m["input_lra"], m["input_thresh"], m["target_offset"], t1 - t0 - 0.1),
-       "-ac", "1", "-ar", "48000", "-c:a", "libopus", "-b:a", "64k", dst)
+       "-ac", "1", "-ar", "48000", *AUD_ENC, dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "speech %.2f-%.2f of %.2f s" % (speech0, speech1, dur))
 def sfx_clip(name, src, start, length):
     """A sound effect from a clip the user gave: _reskin_build/<src> cut from `start` for `length` s, levelled the way the picture pops are
     (mean to SFX_MEAN_DB, peak no higher than SFX_PEAK_DB — the smaller of the two gains), a 20 ms fade-in and a 60 ms fade-out, Opus 64 k
     mono 48 k -> assets/Audio/<name>.ogg. Not a spoken line: no audio_text; the JS builds the path from the id as the engine does for the pops."""
-    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT)
     assert os.path.exists(s), "missing " + s
     if bed_fresh(dst, s): return
     with tempfile.TemporaryDirectory() as td:
         cut = os.path.join(td, "cut.wav")
         ff("-ss", "%.2f" % start, "-t", "%.2f" % length, "-i", s, "-ac", "1", "-ar", "48000", cut)
         mean, peak = sfx_levels(cut); gain = min(SFX_MEAN_DB - mean, SFX_PEAK_DB - peak)
-        ff("-i", cut, "-af", "volume=%.2fdB,afade=t=in:st=0:d=0.02,afade=t=out:st=%.2f:d=0.06" % (gain, length - 0.06), "-c:a", "libopus", "-b:a", "64k", dst)
+        ff("-i", cut, "-af", "volume=%.2fdB,afade=t=in:st=0:d=0.02,afade=t=out:st=%.2f:d=0.06" % (gain, length - 0.06), *AUD_ENC, dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "gain %.1f dB (mean %.1f, peak %.1f)" % (gain, mean, peak))
 # the footsteps (freesound "woodwalking", 6.19 s: twelve steps ~0.45 s apart from 0.15 s, tailing off after 5.1 s) were cut 0.10-5.45 s
@@ -1015,7 +1043,7 @@ def sfx_clip(name, src, start, length):
 # [L02-NO-BOARD] (user, 2026-10-04): with the last board pages removed (see the block after the legs), neither clip is made, registered
 # or shipped any more — a copy still in the dist is deleted here; the sources stay in _reskin_build/ like every other source.
 for _gone in ("vo_tap_bed", "sfx_walk"):
-    _p = os.path.join(CUR, "assets", "Audio", _gone + ".ogg")
+    _p = os.path.join(CUR, "assets", "Audio", _gone + "." + AUD_EXT)
     if os.path.exists(_p): os.remove(_p); print("removed", _p)
     aud.pop(_gone, None); txt.pop(_gone, None)
 # ---- [L02-STD-SFX] (2026-10-05, user request) the user's "Standard SFX" folder (HI02H04_L02_S01_dist/assets/Standard SFX-20261005T114216Z-1-001/
@@ -1026,14 +1054,14 @@ for _gone in ("vo_tap_bed", "sfx_walk"):
 # supplied peaks would otherwise sit 17 dB above every other effect of the lesson) — as Opus 64 k assets/Audio/sfx_<name>.ogg, addressed
 # by id like the pops (no audio_text). Where they sound: adapt.js [L02-STD-SFX-JS] + engine patch 3h above.
 def std_sfx(name, src):
-    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT)
     assert os.path.exists(s), "missing " + s
     if bed_fresh(dst, s): return
     with tempfile.TemporaryDirectory() as td:
         wav = os.path.join(td, "whole.wav")
         ff("-i", s, "-ac", "1", "-ar", "48000", wav)
         mean, peak = sfx_levels(wav); gain = min(SFX_MEAN_DB - mean, SFX_PEAK_DB - peak)
-        ff("-i", wav, "-af", "volume=%.2fdB" % gain, "-c:a", "libopus", "-b:a", "64k", dst)
+        ff("-i", wav, "-af", "volume=%.2fdB" % gain, *AUD_ENC, dst)
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, "gain %.1f dB (mean %.1f, peak %.1f)" % (gain, mean, peak))
 std_sfx("sfx_confetti", "std_sfx_confetti_source.wav")
@@ -1127,7 +1155,7 @@ card["gate"] = {"anim": "assets/UI/peeking_talk_up.webp", "hold_ms": 4000, "beat
 def speech_runs(name, thr=0.06, win_ms=25, join_ms=120):
     """The speech runs (start ms, end ms) of a lesson clip (assets/Audio/<name>.ogg): 16 kHz mono, RMS per win_ms window, a window sounds
     when its RMS is over thr × the clip's peak, runs closer than join_ms are one."""
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"), "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT), "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout
     x = struct.unpack("<%dh" % (len(raw) // 2), raw); W = 16 * win_ms; n = len(x) // W
     r = [math.sqrt(sum(v * v for v in x[i * W:(i + 1) * W]) / W) for i in range(n)]; mx = max(r); on = [v > thr * mx for v in r]
     runs = []; i = 0
@@ -1165,11 +1193,11 @@ print("[L02-GATE-ANIM] captions", card["phase_gate_caption"])
 def vorbis_clip(name, src, q=5):
     """A fleet-style generic line from a recording the user gave: _reskin_build/<src> -> assets/Audio/<name>.ogg as the reference
     makes them (libvorbis -q:a q, no trim, no level change). Remade only when the source is newer."""
-    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + ".ogg")
+    s = os.path.join(SCR, src); dst = os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT)
     assert os.path.exists(s), "missing " + s
-    aud[name] = "assets/Audio/" + name + ".ogg"
+    aud[name] = "assets/Audio/" + name + "." + AUD_EXT
     if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(s): return
-    ff("-i", s, "-c:a", "libvorbis", "-q:a", str(q), dst)
+    ff("-i", s, "-ac", "1", "-ar", "48000", *AUD_ENC, dst)   # [L02-DIST-OPTIM] PCM, mono 48 k like every other clip
     assert os.path.exists(dst), "ffmpeg did not write " + dst
     print("wrote", dst, os.path.getsize(dst), "bytes")
 # vorbis_clip("vo_tap_speaker_sentence_story", "vo_tap_speaker_sentence_story_source_vo_1.wav")   # [L02-VO-BATCH] the batch's recording of the line is the clip now (vo_clip above)
@@ -1278,7 +1306,7 @@ def bed_leg(box_from, box_to, guide, done, face=None, sfx=None, reach=None, rest
     return leg
 def clip_s(name):
     """The length of a lesson clip (assets/Audio/<name>.ogg) in seconds, read with ffmpeg."""
-    h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + ".ogg"))).groups()
+    h, m, sec = re.search(r"Duration: (\d+):(\d+):([\d.]+)", ff("-i", os.path.join(CUR, "assets", "Audio", name + "." + AUD_EXT))).groups()
     return int(h) * 3600 + int(m) * 60 + float(sec)
 # ---- [L02-CUE-SILENT] (2026-10-07, user request) "From T2 to T9 the mic button should only pulsate without any VO, but the mic button's
 # VO comes along with the pulsating animation after 7 seconds of inactivity from the user's end, and repeats." (7 s → 4 s by the
@@ -1751,7 +1779,8 @@ def _copy_same(src, dst):
     if os.path.exists(dst) and open(dst, "rb").read() == open(src, "rb").read(): return
     shutil.copyfile(src, dst); print("copied", dst)
 for _f in ("cel_shabaash.webp", "cel_talk.webp", "cel_idle.webp"): _copy_same(os.path.join(CEL_SRC, _f), os.path.join(CUR, "assets", "UI", _f))
-_copy_same(os.path.join(CEL_SRC, "vo_cel_prompt.ogg"), os.path.join(CUR, "assets", "Audio", "vo_cel_prompt.ogg"))
+_cel_vo_src = os.path.join(CEL_SRC, "vo_cel_prompt.ogg"); _cel_vo_dst = os.path.join(CUR, "assets", "Audio", "vo_cel_prompt." + AUD_EXT)   # [L02-DIST-OPTIM] the borrowed line decoded to the lesson's WAV
+if not bed_fresh(_cel_vo_dst, _cel_vo_src): ff("-i", _cel_vo_src, "-ac", "1", "-ar", "48000", *AUD_ENC, _cel_vo_dst); assert os.path.exists(_cel_vo_dst); print("wrote", _cel_vo_dst)
 def cel_anim():
     """The reference build's cel_anim() (its scripts/build_skill_MTG2A04_L01_S01.py, rounds 2l/2m), verbatim but for the paths: the lip-sync
     track for the celebration VO + the sprite facts. talk = one char per 25 ms of vo_cel_prompt, '1' on a syllable beat (open mouth), '0'
@@ -1932,7 +1961,7 @@ if not os.path.exists(PADHA_DST) or os.path.getmtime(PADHA_DST) < os.path.getmti
     print("wrote", PADHA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
 card["assets"]["image"]["m1_padha"] = "assets/Images/m1_padha.webp"
 card.setdefault("_emoji_fallback", {})["m1_padha"] = "📖"
-assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_6.ogg")), "M1 scene sound missing: sfx_pop_6.ogg"
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_6." + AUD_EXT)), "M1 scene sound missing: sfx_pop_6.ogg"
 # ---- [L02-M2-SENTQ] (2026-10-05, user request) M2 ("page 17 M2 MASTERY" in the user's count, ?slide=16): "use the exact same layout and
 # design as page 14 I3; just change the image with this image, the title with कहानी के अंत में माधव क्यों सो गया? and the three options with
 # वह थक गया था। / वह भूखा था। / वह डर गया था।; rest exactly like page 14." The fourth [L02-G3-REF] page, dressed like I3 / M1: the same card flags
@@ -1991,7 +2020,7 @@ if not os.path.exists(SOYA_DST) or os.path.getmtime(SOYA_DST) < os.path.getmtime
     print("wrote", SOYA_DST, "columns %d-%d of %d" % (x0, x0 + w, W))
 card["assets"]["image"]["m2_soya"] = "assets/Images/m2_soya.webp"
 card.setdefault("_emoji_fallback", {})["m2_soya"] = "😴"
-assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8.ogg")), "M2 scene sound missing: sfx_pop_8.ogg"
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_8." + AUD_EXT)), "M2 scene sound missing: sfx_pop_8.ogg"
 # ---- [L02-SENTQ-SHADOW] (2026-10-05, user request) "Apply a little shadow on the images and the options shown on pages 14 I3, 16 M1 and
 # 17 M2, just like the shadow on the options of page 15 P1." P1's cards carry the Figma drop shadow 0 4px 2px rgba(0,0,0,.25) (adapt.css
 # [L02-P1-FIG] / .l02-q3-yellow); the same shadow goes on the bare picture and the three pills of these three sentence pages: card
@@ -2012,8 +2041,8 @@ assert "sentq_shadow" not in g3, "G3 must stay without the shadow"
 for _s in (i3, m1, m2): _s["q3_band"] = True
 assert "q3_band" not in g3, "G3 must keep the engine's band"
 for _k in ("vo_q_hint", "vo_q_reveal"):
-    assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I3 clip missing: " + _k
-assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2.ogg")), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7
+    assert _k in aud and (_k in PRUNED_AUDIO or os.path.exists(os.path.join(CUR, aud[_k]))), "I3 clip missing: " + _k   # [L02-DIST-OPTIM] a pruned id is replaced further down and ships no clip
+assert os.path.exists(os.path.join(CUR, "assets", "Audio", "sfx_pop_2." + AUD_EXT)), "I3 scene sound missing: sfx_pop_2.ogg"   # the pops are addressed by id, like G3's sfx_pop_7
 # ---- [L02-P1-FIG] P1 ("page 15" of the Figma section, the practice story question) from "15 P1 Practice Story Question": G3's card layout
 # ([L02-Q3-FIG]: header 36,26 / band 39.9,44 with the text 135.55 in, three 252x314.113 cards @ x 232/514/796, y 247, no pill) with the
 # blurred room behind the artboard and the cards in YELLOW — the outer box #FCB717 (G3: #D9D9D9) with a 0 4px 2px 25% shadow, the white
@@ -2103,7 +2132,7 @@ i2["data"] = {"stim_hi": "प्रश्न सुनिए", "options": [
 ], "signal_name": "story_question_first_try", "mastery": False, "hide_recall": True}
 i2["signals"] = {"on_complete": ["story_question_first_try"]}
 for _k in ("vo_q_kahan", "vo_opt_toys", "vo_opt_bed", "vo_opt_chair", "vo_q_try", "vo_q_hint", "vo_q_correct", "vo_q_reveal"):
-    assert _k in aud and os.path.exists(os.path.join(CUR, aud[_k])), "I2 clip missing: " + _k
+    assert _k in aud and (_k in PRUNED_AUDIO or os.path.exists(os.path.join(CUR, aud[_k]))), "I2 clip missing: " + _k   # [L02-DIST-OPTIM] a pruned id is replaced further down and ships no clip
 _ids = [s["id"] for s in card["slides"]]          # (G1 is still in the list here; [L02-NO-G1] below removes it)
 assert _ids[_ids.index("I1"):] == ["I1", "I2", "RC1", "I3", "RC2", "P1", "RC3", "M1", "RC4", "M2", "RC5", "CEL"], _ids   # [L02-NO-WALK2] + [L02-NO-BOARD]: no board page left; [L02-RC-FIG] the car screen before I3; [L02-RC2] / [L02-RC3] / [L02-RC4] the next legs after I3, P1 and M1; [L02-RC5-FINALE] the finale after M2
 # ---- [L02-NO-G1] the guided question G1 ("माधव और माँ ने सबसे पहले क्या किया?", the review deck's "page 10") is REMOVED from
@@ -2180,6 +2209,9 @@ STORY9_TOP = 108
 story_cut(9, "story_9_source.png", STORY9_TOP)
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
+for _k in PRUNED_AUDIO:   # [L02-DIST-OPTIM] the registered-but-unplayed clips: unregistered (vo_celebrate keeps its text for the manifest)
+    aud.pop(_k, None)
+    if _k != "vo_celebrate": txt.pop(_k, None)
 for k in aud:
     assert os.path.exists(os.path.join(CUR, aud[k])), "missing audio " + aud[k]
 # ---- [L02-BGM-DUCK] (2026-10-04, user request) "From Page 1 T1 to Page 17 M2 apply this music in the background in a low volume and such
@@ -2193,15 +2225,15 @@ for k in aud:
 # user's "Page 1" is the landing — the bed starts there, or on the first tap where the browser refuses autoplay), base 0.13, duck 0.03}.
 # The celebration (the slide after M2) has no bed. The block is appended LAST to app.js (its mountSlide wrapper must be outermost).
 # Nothing else changes: no caller, no VO, no sfx, no timing — the ducking wraps HTMLMediaElement.play and the WebAudio source nodes.
-BGM_SRC = os.path.join(SCR, "bgm_standard_2_source.mp3"); BGM_DST = os.path.join(CUR, "assets", "Audio", "bgm_standard_2.mp3")
+BGM_SRC = os.path.join(SCR, "bgm_standard_2_source.mp3"); BGM_DST = os.path.join(CUR, "assets", "Audio", "bgm_standard_2." + AUD_EXT)   # [L02-DIST-OPTIM] the bed as PCM too (mono 48 k)
 assert os.path.exists(BGM_SRC), "missing " + BGM_SRC
 if not os.path.exists(BGM_DST) or os.path.getmtime(BGM_DST) < os.path.getmtime(BGM_SRC):
-    ff("-y", "-i", BGM_SRC, "-vn", "-c:a", "libmp3lame", "-b:a", "128k", "-ar", "48000", "-ac", "2", BGM_DST)
+    ff("-y", "-i", BGM_SRC, "-vn", "-ac", "1", "-ar", "48000", *AUD_ENC, BGM_DST)
     assert os.path.exists(BGM_DST), "ffmpeg did not write " + BGM_DST
     print("wrote", BGM_DST, os.path.getsize(BGM_DST), "bytes")
 _ids = [s["id"] for s in card["slides"]]
 assert _ids[0] == "T1" and _ids[-3] == "M2" and _ids[-2] == "RC5" and _ids[-1] == "CEL", "the bed's range T1..RC5 does not fit the slide order: %r" % _ids   # [L02-RC5-FINALE] the finale page keeps the music; CEL has none, as before
-card["bgm"] = {"src": "assets/Audio/bgm_standard_2.mp3", "first": 0, "last": _ids.index("RC5"), "landing": True, "base": 0.13, "duck": 0.03}
+card["bgm"] = {"src": "assets/Audio/bgm_standard_2." + AUD_EXT, "first": 0, "last": _ids.index("RC5"), "landing": True, "base": 0.13, "duck": 0.03}
 # ---- [L02-VO-BATCH] wiring (2026-10-06): the recorded lines in their places (the clips + texts are registered where they are made, above).
 # I1's three sentence options speak their sentences (vo_p1_khana, vo_opt_kitab_padhi, vo_opt_khilono_se_khela — the words it shows; the
 # one-word clips vo_opt_khana / book / toys spoke "खाना / किताब / खिलौने"), I2's three place options theirs (vo_opt_khilono_ke_beech /
@@ -2308,6 +2340,19 @@ for _o in _p1b["data"]["options"]:
     _p1b["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_p1b["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
 assert _p1b["data"]["word_times_by_audio"]["vo_p1_utha"] == [0.1, 0.8, 1.06, 1.43], _p1b["data"]["word_times_by_audio"]["vo_p1_utha"]   # the answer's timings as before
+# ---- [L02-DIST-OPTIM] prune (see the note at the top): unused registered pictures, unreferenced files, every audio file that is not shipped
+for _k in PRUNED_IMAGES:
+    _pth = card["assets"]["image"].pop(_k, None)
+    if _pth and os.path.exists(os.path.join(CUR, _pth)): os.remove(os.path.join(CUR, _pth)); print("removed", _pth)
+for _rel in PRUNED_FILES:
+    _pth = os.path.join(CUR, _rel)
+    if os.path.exists(_pth): os.remove(_pth); print("removed", _rel)
+_keep = {os.path.basename(v) for v in aud.values()} | {k + "." + AUD_EXT for k in BY_CONVENTION_AUDIO}
+for _f in sorted(os.listdir(os.path.join(CUR, "assets", "Audio"))):
+    if _f not in _keep: os.remove(os.path.join(CUR, "assets", "Audio", _f)); print("removed assets/Audio/" + _f)
+for _f in sorted(_keep): assert os.path.exists(os.path.join(CUR, "assets", "Audio", _f)), "shipped clip missing: " + _f
+card["assets"]["audio_ext"] = AUD_EXT
+assert all(v.endswith("." + AUD_EXT) for v in aud.values()) and card["bgm"]["src"].endswith("." + AUD_EXT)
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----
@@ -2430,7 +2475,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 ENGINE_LINES = ["vo_landing", "vo_pt_tutorial", "vo_pt_guided", "vo_pt_practice", "vo_tap_speaker_sentence_story"]   # welcome, three gates, story cue
 _lits = set(re.findall(r'["\'](vo_[A-Za-z0-9_]+)["\']', app_js)) & set(aud)
-assert _lits == set(ENGINE_LINES) | {"vo_tap_speaker_sentence"}, "[L02-VO-MANIFEST] the engine's spoken lines changed: " + str(sorted(_lits))
+assert _lits == set(ENGINE_LINES), "[L02-VO-MANIFEST] the engine's spoken lines changed: " + str(sorted(_lits))   # [L02-DIST-OPTIM] the cue's dead fallback vo_tap_speaker_sentence is no longer registered
 def _vo_walk(o, out):
     if isinstance(o, str):
         if o in aud and o not in out: out.append(o)
@@ -2441,7 +2486,7 @@ def _vo_walk(o, out):
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
 _spoken = set(_all_slide) | set(ENGINE_LINES) | {"vo_celebrate"}   # what the lesson plays today (+ [L02-CEL-MTG204]: the celebration now speaks the borrowed vo_cel_prompt; the deck's celebration line and its recorded take stay in the manifest and the dist, as the fleet's record of this lesson's lines)
-assert len(_spoken) == 61 and len(aud) - len(_spoken) == 20, "[L02-VO-MANIFEST] expected 61 spoken lines of 81 registered: " + str((len(_spoken), len(aud)))
+assert len(_spoken) == 61 and set(aud) == _spoken - {"vo_celebrate"}, "[L02-VO-MANIFEST] expected the 61 spoken lines (less vo_celebrate) to be exactly the registered ones: " + str(sorted(set(aud) ^ (_spoken - {"vo_celebrate"})))   # [L02-DIST-OPTIM] nothing unplayed stays registered
 MANIFEST = VO_LINES                                                 # the lines are defined with the clips ([L02-VO-BATCH] above)
 # [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.
 _ids = [k for k, _ in MANIFEST]
@@ -2449,7 +2494,7 @@ assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines e
 assert set(_ids) == _spoken, "[L02-VO-MANIFEST] the lines the lesson speaks are not the manifest's: " + str(sorted(set(_ids) ^ _spoken))
 for _k, _t in MANIFEST:
     assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
-    assert txt[_k] == _t and os.path.exists(os.path.join(CUR, aud[_k])), "[L02-VO-MANIFEST] " + _k
+    assert txt[_k] == _t and (_k in PRUNED_AUDIO or os.path.exists(os.path.join(CUR, aud[_k]))), "[L02-VO-MANIFEST] " + _k   # [L02-DIST-OPTIM] vo_celebrate: line kept, clip not shipped
 _man = os.path.join(CUR, "VO_Manifest.xlsx"); _new = list(MANIFEST)
 _old = None
 if os.path.exists(_man):
