@@ -2234,13 +2234,30 @@ _by_id["RC1"]["data"]["rc"]["intro"] = "vo_rc_intro"
 # by the user are the page's own recorded lines ([L02-VO-BATCH]).
 _g3 = _by_id["G3"]; assert _g3.get("sent_ref") is True and _g3["data"].get("prompt_idle_ms") == 5000, _g3["data"].get("prompt_idle_ms")
 _g3["data"]["prompt_idle_ms"] = 7000; _g3["data"]["prompt_idle_strict"] = True
+# [L02-Q-BEATS] rev 2 (2026-10-12, user request) "At page 11 G3 at the third wrong attempt the correct option is displayed but when the user
+# taps on it the highlight animation and the VO of the correct option should not come, only the confetti and the correct sound effect" —
+# guided_quiet on G3 as on I1: the tap on the ringed pill = sfxCorrect + confetti; the page's own scene sound + picture pop (the SFX hold),
+# the pill's line with its lit words, the praise and the kit pop are all skipped; the engine's guided handler still ends the page.
+_g3["data"]["guided_quiet"] = True
 _i1 = _by_id["I1"]; assert _i1.get("fig_q3") is True and "sent_ref" not in _i1 and "prompt_idle_ms" not in _i1["data"] and "correct_sfx" not in _i1["data"]
 assert _i1["audio"].get("try_again") == "vo_q_try" and _i1["audio"].get("hint") == "vo_q_hint" and _i1["audio"].get("reveal") == "vo_reveal_khana", _i1["audio"]
 assert card["assets"]["audio_text"]["vo_q_try"].replace(" ।", "।") == "फिर से कोशिश कीजिए, कहानी याद करिए।", card["assets"]["audio_text"]["vo_q_try"]
 assert card["assets"]["audio_text"]["vo_reveal_khana"].replace(" ।", "।") == "माधव ने सबसे पहले खाना खाया। यह सही उत्तर है, इसपर टैप कीजिए।", card["assets"]["audio_text"]["vo_reveal_khana"]
 _i1["card_ref"] = True
 _i1["data"]["prompt_idle_ms"] = 7000; _i1["data"]["prompt_idle_strict"] = True
-_i1["data"]["review_pace_ms"] = 1000; _i1["data"]["guided_quiet"] = True
+_i1["data"]["guided_quiet"] = True
+# [L02-Q-BEATS] rev 2 (2026-10-12, user request) "At page 12 I1 on the second wrong attempt the highlight animation and the VOs should be
+# synced together" — the read-out lights each card's words IN TIME WITH ITS LINE (the sentence pages' word sync, data.word_times_by_audio
+# measured like every other line: word_times_for, the envelope method, cached by md5 in word_times.json) instead of the one-second pacing
+# of the first revision (review_pace_ms, no page uses it now). The card sentences end in a standalone danda ("खाया ।") — the JS joins it to
+# the word before, so the word boxes follow the recordings' words. sent_q_page.js runs this sync on a card_ref page during the read-out
+# ONLY: a first-try correct tap still speaks the answer's line with nothing lit, as before.
+_i1["data"]["word_times_by_audio"] = {}
+for _o in _i1["data"]["options"]:
+    _ws = txt[_o["audio"]].split()
+    assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
+    _i1["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
+    assert len(_i1["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----

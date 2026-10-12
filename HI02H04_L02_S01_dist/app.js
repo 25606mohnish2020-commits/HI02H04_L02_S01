@@ -5636,14 +5636,19 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
                            poll). So it never comes during an interaction with the options, and it comes 7 s after the last thing that
                            happened. (Without the flag: the count runs from a tap or a line's end regardless of the beats, as before —
                            I3 / M1 / M2 keep that.)
-     data.review_pace_ms   the read-out lights each card's words ONE PER review_pace_ms (1000 on I1), one after another — the story pages'
-                           read-aloud pacing (story_read_page.js wordPace) with the same .on look — while the card's line speaks; the next
-                           card follows once both the line and the pacing are over (+ REVIEW_GAP_MS). The word sync by timings is off on
-                           such a page (its options carry no word_times_by_audio).
+     data.review_pace_ms   the read-out lights each card's words ONE PER review_pace_ms, one after another — the story pages' read-aloud
+                           pacing (story_read_page.js wordPace) with the same .on look — while the card's line speaks; the next card
+                           follows once both the line and the pacing are over (+ REVIEW_GAP_MS). The word sync by timings is off on such
+                           a page. Rev 2 (2026-10-12, user request "the highlight animation and the VOs should be synced together"): NO
+                           page uses it any more — I1's options now carry word_times_by_audio and its read-out lights the words in time
+                           with each line like the sentence pages'; on a card_ref page that sync runs during the read-out only (the play()
+                           seam), so a first-try correct tap's line stays unlit as before.
      data.guided_quiet     the tap on the ringed answer after the reveal = the confetti + the correct sound ONLY: the reveal line stops, the
                            answer's own line and the praise are not spoken, the kit's correct-select pop is muted; the engine's own guided
                            handler still runs on that click (the hand goes, the green stroke, the happy mascot, completeSlide — which waits
-                           for the confetti to land before the next page). */
+                           for the confetti to land before the next page). Rev 2: on G3 as well (user request) — on a sentence page this
+                           also skips the correct tap's SFX hold (the scene sound + the picture's pop) and the pill's line with its lit
+                           words; the pill keeps its green outline (.correct). */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }
@@ -5830,7 +5835,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       var r = origPlay.call(this, src, onEnd);
       if(optWords && src){
         var w = optWords[idOf(src)];
-        if(w && w.times && w.els[0] && w.els[0].isConnected) wordSync((typeof currentAudio !== "undefined") ? currentAudio : null, w.els, w.times);   // [L02-Q-BEATS] no timings → no sync (the paced read-out lights them itself)
+        var cardOnly = !!(sl && sl.card_ref === true && sl.sent_ref !== true);     // [L02-Q-BEATS] rev 2: on a card page the sync runs in the read-out only (a correct tap's line stays unlit, as before)
+        if(w && w.times && w.els[0] && w.els[0].isConnected && (!cardOnly || reviewing)) wordSync((typeof currentAudio !== "undefined") ? currentAudio : null, w.els, w.times);   // [L02-Q-BEATS] no timings → no sync (a paced read-out lights them itself)
       }
       return r;
     };
