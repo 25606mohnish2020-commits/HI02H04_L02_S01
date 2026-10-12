@@ -2258,6 +2258,24 @@ for _o in _i1["data"]["options"]:
     assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
     _i1["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_i1["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
+# ---- [L02-Q-BEATS] rev 3 (2026-10-12, user request) "At page 13 I2 apply the exact same pattern of the feedbacks, animations and responses
+# of the instruction VOs, sound effects, correct option taps, incorrect option taps and the instruction VOs as of page 12 I1" — the same
+# card knobs as I1's: card_ref (the sentence pages' beats on the card page: wrong 1 = its try line vo_q_try + the wiggle, no option clip;
+# wrong 2 = the read-out of the three cards with the words lit in time with each line; wrong 3 = the reveal — its own line
+# vo_reveal_khilone_beech — with the decoys greyed and the hand; a first-try correct tap stays the engine's), prompt_idle_ms 7000 +
+# prompt_idle_strict (the question alone after 7 s of quiet-and-free time — no picture here either), guided_quiet (the guided tap = the
+# confetti + the correct sound only), word_times_by_audio for its three option lines (word_times_for, the envelope method, cached by md5
+# in word_times.json; the labels' standalone danda is joined to the word before by the JS). The clips themselves are unchanged.
+_i2 = _by_id["I2"]; assert _i2.get("fig_q3") is True and "sent_ref" not in _i2 and "card_ref" not in _i2 and "prompt_idle_ms" not in _i2["data"] and "correct_sfx" not in _i2["data"]
+assert _i2["audio"].get("try_again") == "vo_q_try" and _i2["audio"].get("hint") == "vo_q_hint" and _i2["audio"].get("reveal") == "vo_reveal_khilone_beech", _i2["audio"]
+_i2["card_ref"] = True
+_i2["data"]["prompt_idle_ms"] = 7000; _i2["data"]["prompt_idle_strict"] = True; _i2["data"]["guided_quiet"] = True
+_i2["data"]["word_times_by_audio"] = {}
+for _o in _i2["data"]["options"]:
+    _ws = txt[_o["audio"]].split()
+    assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
+    _i2["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
+    assert len(_i2["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----

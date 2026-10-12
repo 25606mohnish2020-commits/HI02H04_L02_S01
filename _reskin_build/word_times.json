@@ -511,5 +511,46 @@
    2.02
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_khilono_ke_beech": {
+  "words": [
+   "खिलौनों",
+   "के",
+   "बीच"
+  ],
+  "md5": "551616f74c39916c77fce55e6d0066cc",
+  "times": [
+   0.09,
+   0.73,
+   0.97,
+   1.42
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_palang_par": {
+  "words": [
+   "पलंग",
+   "पर"
+  ],
+  "md5": "51eb0563151224b294af0521b4b296cd",
+  "times": [
+   0.09,
+   0.51,
+   0.71
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_opt_kursi_par": {
+  "words": [
+   "कुर्सी",
+   "पर"
+  ],
+  "md5": "b302a7e8884b843bb052f141e83db10e",
+  "times": [
+   0.09,
+   0.57,
+   0.78
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
 }
