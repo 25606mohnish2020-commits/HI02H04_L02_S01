@@ -2222,6 +2222,25 @@ for _sid, _rid in (("G3", "vo_reveal_khel"), ("I1", "vo_reveal_khana"), ("I2", "
     _by_id[_sid]["audio"]["reveal"] = _rid
 assert "intro" not in _by_id["RC1"]["data"]["rc"] and all("intro" not in _by_id[k]["data"]["rc"] for k in ("RC2", "RC3", "RC4"))
 _by_id["RC1"]["data"]["rc"]["intro"] = "vo_rc_intro"
+# ---- [L02-Q-BEATS] (2026-10-12, user request) page 11 G3: "the instruction VO should only come along with the image animation if there is
+# 7 seconds of inactivity from the user end, and should not come during any interaction with the options" — data.prompt_idle_ms 5000 →
+# 7000 and data.prompt_idle_strict (sent_q_page.js: the count runs only over quiet-and-free time; I3 / M1 / M2 keep their 5 s count as it
+# was). Page 12 I1: "the instruction VO should repeat only if there is 7 seconds of inactivity; on the first wrong attempt only
+# «फिर से कोशिश कीजिए, कहानी याद करिए ।» (= its try line vo_q_try) with the wiggle; on the second the VOs of all the options one by one
+# with the one-second word-by-word highlight; on the third the wrong options disabled and the hand on the correct one with
+# «माधव ने सबसे पहले खाना खाया । यह सही उत्तर है, इसपर टैप कीजिए।» (= its reveal line vo_reveal_khana); the tap on it = the confetti with the
+# correct sound only, no VO, no animation" — slide.card_ref (the sentence pages' beats on this Figma card page), prompt_idle_ms 7000 +
+# prompt_idle_strict (the question only, there is no picture to pop), review_pace_ms 1000, guided_quiet. No clip changes: both lines named
+# by the user are the page's own recorded lines ([L02-VO-BATCH]).
+_g3 = _by_id["G3"]; assert _g3.get("sent_ref") is True and _g3["data"].get("prompt_idle_ms") == 5000, _g3["data"].get("prompt_idle_ms")
+_g3["data"]["prompt_idle_ms"] = 7000; _g3["data"]["prompt_idle_strict"] = True
+_i1 = _by_id["I1"]; assert _i1.get("fig_q3") is True and "sent_ref" not in _i1 and "prompt_idle_ms" not in _i1["data"] and "correct_sfx" not in _i1["data"]
+assert _i1["audio"].get("try_again") == "vo_q_try" and _i1["audio"].get("hint") == "vo_q_hint" and _i1["audio"].get("reveal") == "vo_reveal_khana", _i1["audio"]
+assert card["assets"]["audio_text"]["vo_q_try"].replace(" ।", "।") == "फिर से कोशिश कीजिए, कहानी याद करिए।", card["assets"]["audio_text"]["vo_q_try"]
+assert card["assets"]["audio_text"]["vo_reveal_khana"].replace(" ।", "।") == "माधव ने सबसे पहले खाना खाया। यह सही उत्तर है, इसपर टैप कीजिए।", card["assets"]["audio_text"]["vo_reveal_khana"]
+_i1["card_ref"] = True
+_i1["data"]["prompt_idle_ms"] = 7000; _i1["data"]["prompt_idle_strict"] = True
+_i1["data"]["review_pace_ms"] = 1000; _i1["data"]["guided_quiet"] = True
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----

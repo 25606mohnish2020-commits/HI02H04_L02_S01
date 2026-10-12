@@ -31,12 +31,34 @@
    The standard SFX set (correct / incorrect / confetti / next / play — the reference replaced the engine's tones with it lesson-wide on
    2026-10-02) came to this lesson on 2026-10-05 from the user's own "Standard SFX" folder ([L02-STD-SFX]: engine patch 3h in build.py
    + adapt.js [L02-STD-SFX-JS]): the "ding" of the correct branch is the standard correct clip, the "soft buzz" of a wrong tap the
-   standard incorrect clip, and the confetti burst carries the confetti clip. This page's own scene sound (data.correct_sfx) stays. */
+   standard incorrect clip, and the confetti burst carries the confetti clip. This page's own scene sound (data.correct_sfx) stays.
+   [L02-Q-BEATS] (2026-10-12, user request) four card knobs on top of the above:
+     slide.card_ref        the same beats on a Figma CARD page (page 12 I1, [L02-Q3-FIG]): the play() seam (the tapped wrong card's own line
+                           is not spoken — the try line alone, after the wiggle; the 2nd wrong tap's hint line becomes the read-out of the
+                           cards; the praise is skipped after a reveal), the word split of the card sentences, the idle repeat. NOT the
+                           sentence-page look (.l02-sentq), the praise rule of a first-try correct tap (okSentOff — I1's praise is generic,
+                           so its answer's own sentence stays), or the correct-tap SFX hold (no data.correct_sfx there).
+     data.prompt_idle_strict  the repeat of the question (data.prompt_idle_ms: 7000 on G3 and I1) counts only over time in which the page
+                           is QUIET and FREE: nothing speaking, no wrong beat / read-out (state.hintActive), not locked (after the reveal
+                           or a correct tap), no SFX hold; a tap restarts the count; the end of any line or beat restarts it (a 200 ms
+                           poll). So it never comes during an interaction with the options, and it comes 7 s after the last thing that
+                           happened. (Without the flag: the count runs from a tap or a line's end regardless of the beats, as before —
+                           I3 / M1 / M2 keep that.)
+     data.review_pace_ms   the read-out lights each card's words ONE PER review_pace_ms (1000 on I1), one after another — the story pages'
+                           read-aloud pacing (story_read_page.js wordPace) with the same .on look — while the card's line speaks; the next
+                           card follows once both the line and the pacing are over (+ REVIEW_GAP_MS). The word sync by timings is off on
+                           such a page (its options carry no word_times_by_audio).
+     data.guided_quiet     the tap on the ringed answer after the reveal = the confetti + the correct sound ONLY: the reveal line stops, the
+                           answer's own line and the praise are not spoken, the kit's correct-select pop is muted; the engine's own guided
+                           handler still runs on that click (the hand goes, the green stroke, the happy mascot, completeSlide — which waits
+                           for the confetti to land before the next page). */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }
   function curIdx(){ return (typeof state === "object" && state) ? state.idx : -1; }
-  function flagged(idx){ var s = slideAt(idx); return !!(s && s.sent_ref === true); }
+  function flagged(idx){ var s = slideAt(idx); return !!(s && (s.sent_ref === true || s.card_ref === true)); }   // [L02-Q-BEATS] card_ref: the beats on a Figma card page (I1)
+  function sentOnly(idx){ var s = slideAt(idx); return !!(s && s.sent_ref === true); }                            // the sentence pages' own look / praise rule
+  function dataOf(idx){ var s = slideAt(idx); return (s && s.data) || {}; }
   function stillMode(){ return !!(window.FLNMotion && FLNMotion.still && FLNMotion.still()); }
   function idOf(src){ return String(src).split("/").pop().replace(/\.[A-Za-z0-9]+$/, ""); }
   function srcOf(id){
@@ -50,12 +72,14 @@
   var wordRaf = 0, wordEls = null;                          // the running word-highlight loop and its spans
   var idleFrame = null, idleCue = null, idleTimer = null, idleMs = 0;   // the page whose question repeats on inactivity
   var holding = false, passthrough = false, holdTimer = null, sfx = null;   // the correct tap's SFX hold
+  var quietGuided = false;                                  // [L02-Q-BEATS] guided_quiet: the guided tap has been taken (no line, no pop)
+  var idleStrict = false, idlePoll = null, quietSince = 0;  // [L02-Q-BEATS] prompt_idle_strict: the quiet-and-free count
   function cancel(){
     timers.forEach(function(t){ clearTimeout(t); }); timers = [];
     optWords = null; reviewing = false; wordStop(); idleCancel();
     if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
     if(sfx){ try{ sfx.pause(); }catch(e){} sfx = null; }
-    holding = false;
+    holding = false; quietGuided = false;
   }
   function whenQuiet(frame, fn){
     (function poll(){
@@ -99,7 +123,12 @@
     Array.prototype.slice.call(document.querySelectorAll("#slideHost .sent-opt .so-pill, #slideHost .opt-cell .story-q-opt-label")).forEach(function(pill){   // [L02-P1-WORDS] a Figma card's sentence as well
       var label = (pill.textContent || "").trim(), opt = null;
       for(var i = 0; i < opts.length; i++){ if(opts[i] && (opts[i].label_hi || "").trim() === label){ opt = opts[i]; break; } }
-      if(!opt || !opt.audio || !Array.isArray(WT[opt.audio])) return;
+      if(!opt || !opt.audio) return;
+      if(!Array.isArray(WT[opt.audio])){                                      // [L02-Q-BEATS] no timings: a paced read-out still needs the words split
+        if(!(dataOf(idx).review_pace_ms > 0)) return;
+        var elsP = splitWords(pill); if(elsP && elsP.length){ map[opt.audio] = { els: elsP, times: null }; n++; }
+        return;
+      }
       var els = splitWords(pill);
       if(els && els.length === WT[opt.audio].length - 1){ map[opt.audio] = { els: els, times: WT[opt.audio] }; n++; }
     });
@@ -130,6 +159,21 @@
       wordRaf = requestAnimationFrame(tick);
     })();
   }
+  // [L02-Q-BEATS] pace the words with no clock: word k is .on for perWord ms, one after another (the story pages' read-aloud pacing,
+  // story_read_page.js wordPace, with the same .on look); then() once the last word's share is over
+  function wordPace(els, perWord, then){
+    wordStop();
+    if(!els || !els.length || !(perWord > 0)){ if(then) then(); return; }
+    wordEls = els; var cur = -1, t0 = performance.now(), total = perWord * els.length, fired = false;
+    (function tick(){
+      wordRaf = 0;
+      var t = performance.now() - t0;
+      if(t >= total || !els[0].isConnected){ wordStop(); if(!fired){ fired = true; if(then) then(); } return; }
+      var i = Math.min(els.length - 1, Math.floor(t / perWord));
+      if(i !== cur){ if(cur >= 0) els[cur].classList.remove("on"); els[i].classList.add("on"); cur = i; }
+      wordRaf = requestAnimationFrame(tick);
+    })();
+  }
   // ---- the play() seam: which engine call is which
   function optionOf(sl, src){
     var opts = (sl && sl.data && Array.isArray(sl.data.options)) ? sl.data.options : [], id = idOf(src);
@@ -150,6 +194,7 @@
   // the engine speaking the CORRECT pill's own line right after a correct tap (state.locked, no reveal) while the card has a praise
   // line: that line follows at once and carries the sentence, so this one is skipped and the sentence is heard once
   function okSentOff(sl, src){
+    if(sl.sent_ref !== true) return false;                                    // [L02-Q-BEATS] a card page's praise is generic: its answer's own sentence stays
     if(reviewing || !state.locked || state.scaffoldLevel === 3) return false;
     if(!sl.audio || !sl.audio.correct) return false;
     var o = optionOf(sl, src); return !!o && o.correct === true;
@@ -166,6 +211,7 @@
     window.play = function(src, onEnd){
       var ix = curIdx(), sl = slideAt(ix);
       if(src && sl && flagged(ix)){
+        if(quietGuided){ var oq = optionOf(sl, src); if(oq && oq.correct === true){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; } }   // [L02-Q-BEATS] guided_quiet: the answer's own line is not spoken on the guided tap
         if(okAfterRevealOff(sl, src)){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }
         if(wrongWordOff(sl, src)){
           var cbw = onEnd;
@@ -192,7 +238,7 @@
       var r = origPlay.call(this, src, onEnd);
       if(optWords && src){
         var w = optWords[idOf(src)];
-        if(w && w.els[0] && w.els[0].isConnected) wordSync((typeof currentAudio !== "undefined") ? currentAudio : null, w.els, w.times);
+        if(w && w.times && w.els[0] && w.els[0].isConnected) wordSync((typeof currentAudio !== "undefined") ? currentAudio : null, w.els, w.times);   // [L02-Q-BEATS] no timings → no sync (the paced read-out lights them itself)
       }
       return r;
     };
@@ -222,14 +268,18 @@
   // at its end, or, if another line cut it, once nothing speaks any more
   function sayPill(pill, src, then){
     var done = false, up = false;
+    var pace = dataOf(curIdx()).review_pace_ms, w = (pace > 0 && optWords) ? optWords[idOf(src)] : null;   // [L02-Q-BEATS] the paced read-out
+    var lineOver = false, paceOver = !w;
     var lift = function(){ if(up || done || stillMode()) return; up = true; pill.classList.add("p6-say"); };
-    var fin = function(){ if(done) return; done = true; pill.classList.remove("p6-say"); then(); };
+    var fin = function(){ if(done) return; done = true; pill.classList.remove("p6-say"); if(w) wordStop(); then(); };
+    var lineEnd = function(){ lineOver = true; if(paceOver) fin(); };          // both the line and the pacing have to be over
     if(typeof play !== "function"){ fin(); return; }
-    play(src, fin);
+    play(src, lineEnd);
+    if(w) wordPace(w.els, pace, function(){ paceOver = true; if(lineOver) fin(); });
     var a = (typeof currentAudio !== "undefined") ? currentAudio : null;
     if(a){
       if(!a.paused && a.currentTime > 0) lift(); else a.addEventListener("playing", lift, { once:true });
-      a.addEventListener("pause", function(){ setTimeout(function(){ if(a.ended) return; whenQuiet(pill, fin); }, 0); }, { once:true });
+      a.addEventListener("pause", function(){ setTimeout(function(){ if(a.ended) return; whenQuiet(pill, lineEnd); }, 0); }, { once:true });
     }
     timers.push(setTimeout(lift, 400));                                       // a slow load: lift anyway
   }
@@ -244,18 +294,30 @@
     var thumb = document.querySelector("#slideHost .story-q-stim .story-q-thumb");
     if(thumb) thumb.style.setProperty("--sentq-pop", popMs + "ms");         // the pop-and-hold lasts exactly the line (CSS .p6-pop)
     var cue = { src: src, pop: "#slideHost .story-q-stim .story-q-thumb", popMs: popMs };
+    var strict = !!(sl.data && sl.data.prompt_idle_strict === true);          // [L02-Q-BEATS]
     whenQuiet(frame, function(){                                               // the page's own line first: the count runs from its end
       if(!frame.isConnected || curIdx() !== idx) return;
-      idleFrame = frame; idleCue = cue; idleMs = ms; idleArm();
+      idleFrame = frame; idleCue = cue; idleMs = ms; idleStrict = strict; idleArm();
     });
   }
-  function idleCancel(){ if(idleTimer){ clearTimeout(idleTimer); idleTimer = null; } idleFrame = null; idleCue = null; idleMs = 0; }
+  function idleCancel(){ if(idleTimer){ clearTimeout(idleTimer); idleTimer = null; } if(idlePoll){ clearInterval(idlePoll); idlePoll = null; } idleFrame = null; idleCue = null; idleMs = 0; idleStrict = false; quietSince = 0; }
+  // [L02-Q-BEATS] strict: the page is busy while a line speaks, during a wrong beat / the read-out, once locked (the reveal, a correct
+  // tap) and during the SFX hold; the count runs only over continuous quiet-and-free time (a 200 ms poll), restarted by any tap
+  function idleBusy(){ return voPlaying() || holding || !!(typeof state === "object" && state && (state.hintActive || state.locked)); }
+  function idleTick(){
+    if(!idleFrame || !idleFrame.isConnected || navShowing()){ idleCancel(); return; }
+    var now = performance.now();
+    if(idleBusy()){ quietSince = 0; return; }
+    if(!quietSince){ quietSince = now; return; }
+    if(now - quietSince >= idleMs){ quietSince = 0; idleFire(); }
+  }
   function navShowing(){ var b = document.getElementById("navBtn"); return !!(b && b.classList.contains("active")); }
   function idleArm(){
     if(!idleFrame) return;
     if(idleTimer){ clearTimeout(idleTimer); idleTimer = null; }
     if(!idleFrame.isConnected){ idleCancel(); return; }
     if(navShowing()){ idleCancel(); return; }
+    if(idleStrict){ quietSince = idleBusy() ? 0 : performance.now(); if(!idlePoll) idlePoll = setInterval(idleTick, 200); return; }   // [L02-Q-BEATS]
     if(voPlaying()){ whenQuiet(idleFrame, idleArm); return; }                 // a line speaks: count from its end
     idleTimer = setTimeout(idleFire, idleMs);
   }
@@ -263,7 +325,7 @@
     idleTimer = null;
     if(!idleFrame || !idleFrame.isConnected){ idleCancel(); return; }
     if(navShowing()){ idleCancel(); return; }
-    if(voPlaying()){ idleArm(); return; }
+    if(idleStrict ? idleBusy() : voPlaying()){ idleArm(); return; }           // [L02-Q-BEATS] strict: not while busy either
     startCue(idleFrame, idleCue);
   }
   function startCue(frame, cue){
@@ -292,9 +354,20 @@
   document.addEventListener("click", function(e){
     if(passthrough) return;
     var idx = curIdx(); if(!flagged(idx)) return;
-    var sl = slideAt(idx), cfg = sl.data && sl.data.correct_sfx; if(!cfg) return;
+    var sl = slideAt(idx), cfg = sl.data && sl.data.correct_sfx;
     var cell = (e.target && e.target.closest) ? e.target.closest("#slideHost .opt-cell") : null;
     if(!cell) return;
+    // [L02-Q-BEATS] guided_quiet (I1): the tap on the ringed answer after the reveal = the confetti + the correct sound, nothing else — the
+    // reveal line stops, the answer's own line and the praise are not spoken (the play() seam), the kit's correct-select pop is muted
+    // (below); the engine's own onGuidedTap still runs on this same click (the hand goes, .correct, the happy mascot, then completeSlide,
+    // which waits for the confetti to land)
+    if(sl.data && sl.data.guided_quiet === true && cell.classList.contains("opt-guided") && state.locked && !state.hintActive && !quietGuided && isCorrectCell(cell, correctOption(sl))){
+      quietGuided = true;
+      try{ stopAudio(); }catch(x){}
+      try{ sfxCorrect(); }catch(x){} try{ confettiCannon(); }catch(x){}
+      return;
+    }
+    if(!cfg) return;
     if(holding){ e.stopPropagation(); e.preventDefault(); return; }          // nothing lands while the sound plays
     if(e.target.closest(".so-spk")) return;                                    // the option's speaker chip only speaks
     var guided = cell.classList.contains("opt-guided");                       // the reveal after 3 wrong taps: the hand points here, state.locked is true
@@ -320,12 +393,16 @@
       if(guided){ try{ sfxCorrect(); }catch(x){} try{ confettiCannon(); }catch(x){} }   // the ding + confetti of the normal correct branch
     }, cfg.hold_ms || POP_MS);
   }, true);
+  if(window.FLNMotion && FLNMotion.correctSelect && typeof FLNMotion.correctSelect.play === "function"){   // [L02-Q-BEATS] guided_quiet: no pop
+    var origCk = FLNMotion.correctSelect.play;
+    FLNMotion.correctSelect.play = function(){ if(quietGuided) return; return origCk.apply(this, arguments); };
+  }
   // ---- per page
   function wire(idx){
     var sl = slideAt(idx), st = document.getElementById("stage");
-    if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", flagged(idx));
-      st.classList.toggle("l02-sentq-shadow", flagged(idx) && !!(sl && sl.sentq_shadow === true));     // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
-      st.classList.toggle("l02-q3-band", flagged(idx) && !!(sl && sl.q3_band === true)); }             // [L02-Q3-BAND] P1's Figma title bar (header variables + mascot circle + band shadow + ink; card slide.q3_band)
+    if(st){ st.classList.toggle("no-nav", !!(sl && sl.hide_nav === true)); st.classList.toggle("l02-sentq", sentOnly(idx));   // [L02-Q-BEATS] the look: the sentence pages only
+      st.classList.toggle("l02-sentq-shadow", sentOnly(idx) && !!(sl && sl.sentq_shadow === true));     // [L02-SENTQ-SHADOW] the P1-style drop shadow on the picture + pills (card slide.sentq_shadow)
+      st.classList.toggle("l02-q3-band", sentOnly(idx) && !!(sl && sl.q3_band === true)); }             // [L02-Q3-BAND] P1's Figma title bar (header variables + mascot circle + band shadow + ink; card slide.q3_band)
     if(!flagged(idx)){ if(sl && sl.opt_words === true) wireOptWords(idx); return; }   // [L02-P1-WORDS] the word-lighting alone on a card page
     wireOptWords(idx); wireIdlePrompt(idx);
   }
