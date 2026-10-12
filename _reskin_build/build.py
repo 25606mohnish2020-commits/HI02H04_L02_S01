@@ -2276,6 +2276,18 @@ for _o in _i2["data"]["options"]:
     assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
     _i2["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_i2["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
+# ---- [L02-Q-BEATS] rev 4 (2026-10-12, user request) "At pages 15 I3, 19 M1 and 21 M2 apply the exact same pattern of the feedbacks,
+# animations and responses of the instruction VOs, sound effects, correct option taps, incorrect option taps and the instruction VOs as of
+# page 11 G3" — the three are G3's kind of page already (sent_ref: the hint line + wiggle on a wrong tap, the read-out with the words lit
+# on the second, the reveal on the third, the SFX hold + praise on a correct tap — M1's / M2's praise lights the pill's words as G3's does,
+# I3's praise is the deck's one word "शाबाश।" with no sentence to light); what G3 has that they lacked: the 7 s quiet-and-free count of
+# the repeated question (prompt_idle_ms 7000 + prompt_idle_strict; they had the plain 5 s count) and the quiet guided tap after the
+# reveal (guided_quiet: the confetti + the correct sound only — no scene sound / picture pop / pill line / lit words / kit pop). Card only.
+for _sid in ("I3", "M1", "M2"):
+    _s = _by_id[_sid]
+    assert _s.get("sent_ref") is True and _s["data"].get("prompt_idle_ms") == 5000 and "prompt_idle_strict" not in _s["data"] and "guided_quiet" not in _s["data"] and _s["data"].get("correct_sfx"), (_sid, _s["data"].get("prompt_idle_ms"))
+    assert _s["audio"].get("try_again") == "vo_q_hint" and _s["audio"].get("reveal", "").startswith("vo_reveal_"), (_sid, _s["audio"])
+    _s["data"]["prompt_idle_ms"] = 7000; _s["data"]["prompt_idle_strict"] = True; _s["data"]["guided_quiet"] = True
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----
