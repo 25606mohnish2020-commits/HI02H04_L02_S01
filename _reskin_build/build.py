@@ -1475,7 +1475,21 @@ bed_webp("rc_q.webp", "rc_q_image225_figma_source.png", size=(140, 210), quality
 bed_webp("rc_car.webp", "rc_car_source.png", size=(200, 200), quality=90, mode="RGBA")         # the car, side view (shown 50x50: 4x)
 bed_webp("rc_car_fr.webp", "rc_car_fr_source.png", size=(200, 200), quality=90, mode="RGBA")   # [L02-RC-MOTION] the car, front three-quarter view (the folder's "…07_48_15 PM")
 bed_webp("rc_car_bk.webp", "rc_car_bk_source.png", size=(200, 200), quality=90, mode="RGBA")   # [L02-RC2] the car, rear three-quarter view (the folder's "…07_48_23 PM")
-bed_webp("rc_title.webp", "rc_title_source.png", lossless=True, mode="RGBA")                  # "मनमोजी माधव" 493x95 as supplied
+# bed_webp("rc_title.webp", "rc_title_source.png", lossless=True, mode="RGBA")                # "मनमोजी माधव" 493x95 as supplied — replaced below
+# [L02-RC-TITLE-2] (2026-10-12, user request) "At pages RC1, RC2, RC3, RC4 and RC5 replace the मनमोजी png with this PNG at the exact same
+# position, size and placement": the title asset is now the user's 2172x724 PNG rc_title_source_2.png — the same lettering with the
+# sparkles, spelt मनमौजी, with a soft glow fading out over ~120 px of transparent margin above and below. It is cropped to its visible
+# content (alpha > 8: rows 141-574, 2172x433, aspect 5.02 vs the old 493x95's 5.19), fitted INSIDE the same 493x95 box (contain: 476x95,
+# centred) and written at 2x (986x190) for crisp lettering. The CSS box (.l02-rc-title: 393,42 493x95 Figma px, adapt.css) and the
+# asset id / path are unchanged, so the card and the five RC pages' layouts stay as they were. The old 493x95 source stays here.
+def rc_title_2():
+    s = os.path.join(SCR, "rc_title_source_2.png"); d = os.path.join(BED_IMG, "rc_title.webp")
+    if bed_fresh(d, s): return
+    im = Image.open(s).convert("RGBA"); bb = im.split()[3].point(lambda v: 255 if v > 8 else 0).getbbox(); im = im.crop(bb)
+    Z = 2; BW, BH = 493 * Z, 95 * Z; k = min(BW / im.width, BH / im.height); w, h = round(im.width * k), round(im.height * k)
+    im = im.resize((w, h), Image.LANCZOS); cv = Image.new("RGBA", (BW, BH), (0, 0, 0, 0)); cv.paste(im, ((BW - w) // 2, (BH - h) // 2), im)
+    cv.save(d, "WEBP", lossless=True, method=6); print("wrote", d, cv.size, "content", (w, h), "crop", bb)
+rc_title_2()
 def rc_boy():
     """The user's GIF (36 frames, 70 ms, transparent) as an animated WebP at 152x284 — twice the 76x142 slot."""
     s = os.path.join(SCR, "rc_boy_source.gif"); d = os.path.join(BED_IMG, "rc_boy.webp")
