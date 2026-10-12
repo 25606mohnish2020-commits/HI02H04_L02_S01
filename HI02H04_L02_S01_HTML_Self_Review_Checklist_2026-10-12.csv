@@ -1,0 +1,67 @@
+﻿Section,Standard,HI02H04_L02_S01,What the lesson does (checked on the 12 Oct 2026 build)
+,The user should see a loading screen before a title screen. ,✓,"Boot loader (assets/UI/loader.webp) held 2 s, then faded; the title card is up at about 2.6 s."
+Title Screen,The standard Play button is used with size 140 × 140 px,✓,"The play disc is the standard SVG pair (byte-identical to 'Standard play button.svg' and '…disabled.svg', md5 match) in a 140 × 140 px box; measured 139.7 px at 1280 × 720 (stage scale)."
+,"On the title screen, the Play button appears only when the VO is complete.",✓,"During the line only the standard DISABLED grey disc is on the card; the gold Play pops in (sgBtnReveal) at the line's end, 6.5 s after it starts, and only then is tappable."
+,The Play button is placed at the bottom centre of the screen.,✓,"Centred on the screen's width (centre x 640 of 1280); its bottom edge sits on the title card's bottom edge, 140 px above the screen's bottom."
+,The Play button is clearly visible against the background. ,✓,Gold disc with a white ring over the blue blanket of the title picture; checked on a render.
+,Standard Swiftee is placed on the left with the standard speaker button on the bottom with the button's size 70 px.,✓,"Standing Swiftee at the card's bottom-left (waving); the speaker chip (#sgVo) at its lower-right, 70 px CSS (67 px rendered at 1280 wide)."
+,Swiftee's VO plays as soon as the title screen loads. ,✓,"vo_landing starts 1.8 s after page open, as the loader fades (where the browser blocks autoplay, on the first tap)."
+,"The VO should at least have the following:
+-Swiftee saying ""नमस्ते दोस्त!""
+-Introduction to the Title
+-should be of no more than 10 seconds.",✓,"«नमस्ते दोस्त! मैं हूँ स्विफ़्टी, आज हम एक कहानी पढ़ेंगे - सोना नहीं, खेलना है।» — 6.5 s."
+,"The speaker button remains disabled when the VO is spoken. Once the VO is complete, it will be enabled again. The button when disabled will be shown in a slightly greyish tone. ",✓,"While the line plays the chip is .sg-vo-off: opacity 0.5, grayscale, pointer-events none, waves blinking; full colour and tappable the moment the line ends."
+,The Play button pulsates on the title screen immediately after the VO is complete.,✓,"sgBtnPulse (.sg-breathe) starts about 0.6 s after the line ends, right after the pop-in."
+,"When the Play button is pulsating, nothing else should move on the screen except the subtle background elements. ",✓,"After the line the only animations running are the Play pulse and the background stars/glow (sgFly, sgBreathe); the bird's wave is a 36-frame once-only animation (loop = 1) that ends with the line."
+,The standard Play button SFX is used when the user clicks on the button.,✓,sfx_play_button (from the Standard SFX folder) 9 ms after the tap.
+,,,
+General,The entire experience has one of the standard background music tracks. ,✓,"bgm_standard_2 (Standard Background Music 2), ducked under every line (0.13 base / 0.03 while a line plays), from the title screen to M2; none on the end screen."
+,The background music plays after the play button is tapped. ,✗,"The bed starts on the title screen itself — play() at 1.8 s together with the welcome line (card bgm.landing = true), i.e. before the Play tap wherever the browser allows autoplay. One flag (bgm.landing = false) would start it at the Play tap instead."
+,There should be some nudges for inactivity in the entire experience. ,✓,"Story pages T1–T9: the mic cue (pulse + «इस बटन पर टैप करिए और वाक्य पढ़िए।») repeats while nothing is tapped; all seven question pages: the question repeats (G3, I3, M1, M2 with the picture pop). None on the find page G2 (its lines escalate only on wrong taps), the car screens, the title or the end screen (no task waits there)."
+,Inactivity nudges are activated after 7 seconds. ,✗,"7 s on the seven question pages (quiet-and-free time, restarted by any tap or line). Story pages repeat after 4 s (T2–T9, as requested on 7 Oct) and 5 s on T1; G2 has no inactivity nudge."
+,The standard hand nudge is used wherever a hand nudge is added in the entire file.,✓,nudge_hand_new.svg with the kit's press/ripple (nhTapNew) — the reference lesson's hand — on the third-wrong reveal of every question page and on G2's third line.
+,,,
+Teaching Screens,"चलिए, शुरू करते हैं| and the Following Screens",✗,"The first gate shows and says «चलिए, शुरू करें!» (the deck's wording; line vo_pt_tutorial «ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!»), not «चलिए, शुरू करते हैं»."
+,Standard Swiftee transition animation plays immediately after the play button is tapped.,✓,"The gate is up 35 ms after the Play tap. Its bird is the standard transition GIF from frame 54 on (frame-matched, mean difference 0.1/255), the rise done as a 0.3 s lift — the same file as the reference lesson."
+,"On-screen text appears only when Swiftee says ""चलिए, शुरू करते हैं|""",✓,"Headline hidden until the line reaches «चलिए» (card at_ms 3175); measured visible at 3.24 s, with the wipe."
+,The standard Next button enabled is used across screens to transition unless the transition is automatic. ,✓,btn-next-pill + btn-next-arrow (enabled) and btn-next-disabled-pill/arrow (disabled) — the same two-layer button as the reference lesson — on the nine story pages; every other page advances by itself.
+,The Next button disabled is used till the VO and CTA for a screen is complete. ,✓,"Disabled until the mic beat and the sentence are over: on T1 it enables 2.1 s after the sentence ends (11.7 s after the mic tap, 6 words × 1 s + the sentence)."
+,The Next button pulsates immediately after the VO and the CTA for a screen is complete. ,✓,navBreathe (1.4 s scale pulse) on #navBtn.active from the instant it enables.
+,,,
+Guided Practice,"चलिए, साथ मे करें| and the  Following Screens",✓,"Gate after T9: headline «चलिए, साथ में करें!», line «बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!»."
+,Standard Swiftee transition animation plays immediately to begin the guided practice section. ,✓,"Same standard gate (bird lift, line at once, 4 s hold)."
+,"On-screen text appears only when Swiftee says ""चलिए, साथ मे करें|""",✓,"Headline hidden until 3.775 s of the line (card at_ms), then the wipe."
+,The standard Next button enabled is used across screens to transition unless the transition is automatic. ,✓,"No Next button in this section: G2, G3, I1 and I2 move on by themselves after the correct tap (once the confetti has landed)."
+,The next two pointers apply only if you're using a next button in the guided pratice section:,N/A,Not applicable — no Next button in the guided section.
+,The Next button disabled is used unless the VO and CTA for a screen is complete. ,N/A,Not applicable — no Next button in the guided section.
+,The Next button pulsates after the VO and the CTA for a screen is complete. ,N/A,Not applicable — no Next button in the guided section.
+,The standard correct feedback SFX is used.,✓,"sfx_correct_feedback (Standard SFX folder) on every correct tap — G2 find, pills, sentence cards."
+,The standard incorrect feedback SFX is used.,✓,"sfx_incorrect_feedback on every wrong tap (find page decoys, pills, cards)."
+,The standard confetti animation is used for correct feedback.,✓,"The reference lesson's confetti block (100 pieces, full window, 1.6–2.6 s fall) on every correct answer and on the car finale."
+,The standard confetti SFX is used for correct feedback.,✓,sfx_confetti with every burst (on G3 0.26 s after the correct SFX).
+,Incorrect responses should trigger a wiggle. ,✓,Wrong pill / card: wgNo wiggle (0.65 s); find-page decoy: l02Wiggle on its outline.
+,The visual feedback for an incorrect response should never be in red colour. ,✓,"A wrong pill keeps its blue stroke rgb(11, 61, 140) at the tap (computed style); the find-page decoy outline stays white; the reference's NO-RED rules are in the stylesheet."
+,Guided practice section should have some support from the first incorrect attempt itself.,✓,"First wrong tap: incorrect SFX + wiggle + a line 1 s later — G3/I3/M1/M2 «चित्र को ध्यान से देखिए।», I1/I2/P1 «फिर से कोशिश कीजिए, कहानी याद करिए।», G2 «ध्यान से देखिए और माधव को पहचानिए।»."
+,There are 3 layers of feedback for incorrect responses.,✓,"Wrong 1: line + wiggle · wrong 2: all options read out · wrong 3: reveal with the hand. G2: three escalating lines, the hand on the third."
+,"The first incorrect response triggers clarification, repeats the prompt, or brings focus to the specific thing the child needs to do.",✓,The first line re-focuses the child on the picture / the story (lines above).
+,"The second incorrect response gives a strong hint that provides explicit support to arrive at the answer. 
+For example, In Hindi, this could be support with reading the options via VO. In Math, this could be a direct hint explaining the procedure of arriving at the answer.",✓,"Second wrong tap: every option is read out one by one with its words lit in time with the voice (G3: खिलौनों से / बर्तनों से / किताबों से). G2: «माधव एक लड़का है, चित्र में लड़के को पहचानिए।»."
+,"The third incorrect response nudges the child towards the correct answer through a hand nudge, glow, or another relevant visual cue.",✓,"Third wrong tap: «… यह सही उत्तर है, इसपर टैप कीजिए।» with the hand on the answer and its green guide ring. G2: «यह माधव है, इसपर टैप कीजिए।» + the hand on Madhav's outline."
+,Incorrect responses can be locked/disabled/made unclickable in the third feedback layer.,✓,"At the reveal the wrong options are greyed (grayscale, 50 %) and untappable (pointer-events none); only the answer accepts the tap, which gives the correct SFX + confetti."
+,Questions progress from lower to higher rigour. ,✓,Guided: find Madhav in the picture → one detail with the picture (किससे खेल रहा है) → story order (सबसे पहले क्या किया) → story ending (आखिर में कहाँ सोया). Independent: picture detail (माँ क्या कर रही हैं) → what followed an event (माँ के सोते ही) → detail recall (क्या पढ़ा) → reason (क्यों सो गया).
+,Questions of the same type are grouped together.,✓,"Guided: the find page, then the sentence-pill page, then the two sentence-card pages together. Independent: all four are pick-the-sentence pages, separated only by the car's drive screens."
+,,,
+Independent Practice,अब आपकी बारी | and the  Following Screens,✓,"Gate before RC1: headline «अब आपकी बारी!», line «वाह! अब आपकी बारी।»."
+,Independent practice has system-level or game-level nudges as feedback. ,✓,"The same three-layer feedback on I3, P1, M1, M2, plus the game reward: each answer's picture is placed on the next checkpoint with a chime and the car drives on."
+,Independent practice is conducted through a game or a gamified activity. ,✓,"Toy-car journey (मनमोजी माधव): four checkpoints on a track in Madhav's room; opener line, a drive after every answer, finale with the four pictures and confetti."
+,The background music matches the game environment.,✓,The same standard bed carries on under the room scene (the standard set has no separate game track); it ducks under the motor and the lines.
+,The game has positive/encouraging SFX added for every interaction/nudge/click. ,✓,"Correct SFX + confetti on answers, the level-up chime on every checkpoint, the motor while the car drives, the pop on each placed picture; the incorrect SFX on wrong taps."
+,"The game background feels like an environment, not a plain screen.",✓,"Madhav's room from the Figma (floor, stairs, window, plant) with the track on the carpet."
+,"The game background is minimal. It should not have too many elements, or a colour on which the elements on top are not visible. ",✓,"Four ring tokens, the boy and the car on a plain floor; the answer pictures sit inside the rings; nothing competes with them."
+,,,
+End Screen,The standard Swiftee end animation is used.,✓,"The reference repo's Swiftee celebration sprite (jump, land, lip-synced line, idle) on the sunburst, as requested on 10 Oct; the kit's older sw_anim_celebrate GIF is not used."
+,"One of the three standard Swiftee end-screen dialogues is used in the VO:
+
+बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया! 
+अरे वाह, दोस्त! तुम तो छा गए! 
+शाबाश! आज तो कमाल कर दिया!",✓,"«बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!» (vo_cel_prompt) — the first of the three."
