@@ -3103,3 +3103,12 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
 .stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-rel:not(.correct):not(.ck-correct):not(.opt-guided)::before,
 .stage.l02-q3.l02-q3-yellow .opt-cell.crossed:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s:not(.correct):not(.ck-correct):not(.opt-guided)::before{border-color:#FCB717;}
 .stage.l02-find .l02-shape.wrong{stroke:#FFFFFF;}
+
+/* ===== [L02-VO-SHIELD] (2026-10-12, user request) ===== */
+/* "Don't allow the user to tap anywhere on the screen until any VO finishes playing." The reference lesson's [VO-SHIELD] block
+   (HI02H04_L01_S01, 2026-10-07), ported as it is: #voShield (made by the [L02-VO-SHIELD] script in adapt.js) is a transparent
+   full-screen layer above everything else on the page (the phase gate, the hint box, the confetti layer at z 5000 — all below) that
+   is shown while a voice line speaks (body.vo-playing) and takes every pointer event, so nothing beneath can be tapped until the
+   line is over. It is only a hit-test layer: nothing visible changes. */
+#voShield{position:fixed;inset:0;z-index:2147483000;background:transparent;cursor:default;touch-action:none;-webkit-tap-highlight-color:transparent;}
+#voShield[hidden]{display:none;}

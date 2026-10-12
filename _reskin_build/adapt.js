@@ -763,3 +763,39 @@
   };
   new MutationObserver(function(){ if(!v.classList.contains("playing") && gate.classList.contains("l02-sg-replay") && !relT) relT = setTimeout(release, 80); }).observe(v, { attributes: true, attributeFilter: ["class"] });
 })();
+
+/* ===== [L02-VO-SHIELD] (2026-10-12, user request) ===== */
+/* "In this file don't allow the user to tap anywhere on the screen until any VO finishes playing." The reference lesson's [VO-SHIELD]
+   (HI02H04_L01_S01, 2026-10-07), ported as it is. body.vo-playing is the engine's own "a line is speaking" flag — setPlaying(true) at
+   the start of every play() line (the welcome, the gate lines, the story cue and sentences, the questions and their repeats, the
+   option read-outs, hints, reveals, praise, the find page's lines) and setPlaying(false) when the line ends, errors (the engine's
+   silent beat), is cut by stopAudio(), or is refused by the browser. While the flag is on, a transparent full-screen layer
+   (#voShield, CSS in adapt.css, above everything) takes every pointer event: options, the sentence pill and its mic, the bird, the
+   speaker chips, आगे बढ़ें, the Play disc, the find page's picture — none can be tapped until the line is over; the moment it is, the
+   layer goes and every tap works as before. Sound effects (pops, correct / wrong, confetti, the chime, the car's motor, the music
+   bed) play on their own elements and never raise the flag, so they block nothing; the silent read-aloud beat raises nothing either.
+   A MutationObserver on body's class drives the layer (not CSS alone) so a safety ceiling can release it if the flag were ever left
+   on (SHIELD_MAX_MS = 15 s; the longest line here is the 6.5 s welcome, and the engine's own paths always clear the flag — belt and
+   braces). A pointer already captured when a line starts keeps receiving its events, as the layer only decides where NEW pointer
+   events land. Listeners on document (the music bed's first-gesture arm, the find page's tap-restarts-the-count) still see the
+   pointerdown — its target is the layer — so nothing they do changes. Nothing else changes. */
+(function(){ "use strict";
+  var SHIELD_MAX_MS = 15000;
+  function install(){
+    if(!document.body || document.getElementById("voShield")) return;
+    var shield = document.createElement("div");
+    shield.id = "voShield"; shield.hidden = true; shield.setAttribute("aria-hidden", "true");
+    document.body.appendChild(shield);
+    var ceiling = null;
+    function sync(){
+      var on = document.body.classList.contains("vo-playing");
+      if(on === !shield.hidden) return;                                        // no change (another body class moved)
+      if(ceiling){ clearTimeout(ceiling); ceiling = null; }
+      shield.hidden = !on;
+      if(on) ceiling = setTimeout(function(){ ceiling = null; shield.hidden = true; }, SHIELD_MAX_MS);
+    }
+    new MutationObserver(sync).observe(document.body, { attributes:true, attributeFilter:["class"] });
+    sync();                                                                    // a line may be speaking already (a ?slide=N dev load)
+  }
+  if(document.body) install(); else document.addEventListener("DOMContentLoaded", install);
+})();
