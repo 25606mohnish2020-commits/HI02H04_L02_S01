@@ -6041,9 +6041,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
    ANY voice-over or sound effect plays and brought back when that sound has ended; the celebration page has no bed.
    Ported from the deployed reference lesson's [BGM-DUCK] block (HI02H04_L01_S01, 2026-10-02 — the same music, the user's "Standard
    Background Music 2") with two changes: the RANGE comes from the card (CARD.bgm.first / .last, set by build.py from the slide ids, so a
-   removed page can never leave the bed on the wrong pages), and the bed also plays on the LANDING (the user's "Page 1"): from the moment
-   the boot loader hands over (body.loaded, 2 s after load) — where the browser refuses to play before a gesture, the first pointerdown /
-   keydown starts it (the very tap that starts the landing's welcome line, which then ducks it at once).
+   removed page can never leave the bed on the wrong pages), and the bed can also play on the LANDING (CARD.bgm.landing true — the user's
+   "Page 1"): from the moment the boot loader hands over (body.loaded, 2 s after load) — where the browser refuses to play before a gesture,
+   the first pointerdown / keydown starts it. Since 2026-10-12 ([L02-BGM-AFTER-PLAY] below) the card says landing: false — the title page is
+   silent and the bed starts on the Play tap.
    - The bed: CARD.bgm.src = assets/Audio/bgm_standard_2.mp3 (4:00, looped; re-encoded 256 -> 128 kbps like the reference's), one
      <audio> element made at load so it buffers behind the loader. Element volume BASE 0.13 (about -18 dB: some 16 LU under the -16 LUFS
      voice lines, so it never competes) and DUCK 0.03 (about -30 dB, ~28 LU under: a whisper); ramps of 180 ms down and 600 ms up (a
@@ -6123,6 +6124,15 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   // ---- the landing (Page 1): open once the boot loader has handed over (body.loaded) while the start gate is still up ----
   function gateEl(){ return document.getElementById("startGate"); }
   function landingOpen(){ var g = gateEl(); return !!(g && !g.classList.contains("hidden") && document.body && document.body.classList.contains("loaded")); }
+  // [L02-BGM-AFTER-PLAY] (2026-10-12, user request) "The background music should only play after the user taps on the play button at the
+  // title page": with CARD.bgm.landing false the title page stays silent (no bed under the welcome or its speaker-chip replay) and the
+  // bed starts ON the Play tap itself — the tap is the gesture, so the browser never refuses it — and runs on under the first transition
+  // screen exactly as it does under the later ones (its line ducks it), then on through the range as before. Only the gold, ready Play
+  // counts (the grey waiting disc is not a start). A dev load with ?slide=N still starts the bed at the mount, below.
+  if(!LANDING){
+    var sg = document.getElementById("sgBtn");
+    if(sg) sg.addEventListener("click", function(){ if(!sg.classList.contains("ready")) return; wanted = true; start(); }, true);
+  }
   if(LANDING){
     var seen = false;
     var look = function(){ if(seen || !landingOpen()) return; seen = true; wanted = true; start(); };

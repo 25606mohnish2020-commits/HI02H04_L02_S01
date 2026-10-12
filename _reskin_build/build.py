@@ -2258,7 +2258,8 @@ for k in aud:
 # reference's file: 128 kbps, -16.6 LUFS) to assets/Audio/bgm_standard_2.mp3 (remade only when the source is newer: the mp3 is NOT a
 # registered clip — it is the bed's own element, so the ogg churn rule does not apply). The behaviour is _reskin_build/bgm_duck.js, the
 # reference's block ported with the range taken from the card: `card.bgm` = {src, first = 0 (T1), last = the index of M2, landing: True (the
-# user's "Page 1" is the landing — the bed starts there, or on the first tap where the browser refuses autoplay), base 0.13, duck 0.03}.
+# user's "Page 1" is the landing — the bed starts there, or on the first tap where the browser refuses autoplay; False since 2026-10-12,
+# [L02-BGM-AFTER-PLAY] below: the bed starts on the Play tap), base 0.13, duck 0.03}.
 # The celebration (the slide after M2) has no bed. The block is appended LAST to app.js (its mountSlide wrapper must be outermost).
 # Nothing else changes: no caller, no VO, no sfx, no timing — the ducking wraps HTMLMediaElement.play and the WebAudio source nodes.
 BGM_SRC = os.path.join(SCR, "bgm_standard_2_source.mp3"); BGM_DST = os.path.join(CUR, "assets", "Audio", "bgm_standard_2." + AUD_EXT)   # [L02-DIST-OPTIM] the bed as PCM too (mono 48 k)
@@ -2269,7 +2270,10 @@ if not os.path.exists(BGM_DST) or os.path.getmtime(BGM_DST) < os.path.getmtime(B
     print("wrote", BGM_DST, os.path.getsize(BGM_DST), "bytes")
 _ids = [s["id"] for s in card["slides"]]
 assert _ids[0] == "T1" and _ids[-3] == "M2" and _ids[-2] == "RC5" and _ids[-1] == "CEL", "the bed's range T1..RC5 does not fit the slide order: %r" % _ids   # [L02-RC5-FINALE] the finale page keeps the music; CEL has none, as before
-card["bgm"] = {"src": "assets/Audio/bgm_standard_2." + AUD_EXT, "first": 0, "last": _ids.index("RC5"), "landing": True, "base": 0.13, "duck": 0.03}
+card["bgm"] = {"src": "assets/Audio/bgm_standard_2." + AUD_EXT, "first": 0, "last": _ids.index("RC5"), "landing": False, "base": 0.13, "duck": 0.03}
+# [L02-BGM-AFTER-PLAY] (2026-10-12, user request) "The background music should only play after the user taps on the play button at the title
+# page": landing False — no bed on the title page (not under the welcome, not under a speaker-chip replay); bgm_duck.js starts it on the
+# Play tap itself (the gesture), so it runs under the first transition screen like under every later one, then on through T1..RC5 as before.
 # ---- [L02-VO-BATCH] wiring (2026-10-06): the recorded lines in their places (the clips + texts are registered where they are made, above).
 # I1's three sentence options speak their sentences (vo_p1_khana, vo_opt_kitab_padhi, vo_opt_khilono_se_khela — the words it shows; the
 # one-word clips vo_opt_khana / book / toys spoke "खाना / किताब / खिलौने"), I2's three place options theirs (vo_opt_khilono_ke_beech /
