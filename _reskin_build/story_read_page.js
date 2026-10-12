@@ -71,9 +71,9 @@
       const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); };
       // [L02-CUE-SILENT] (2026-10-07, user request) pages 2-9 (card data.cue_silent_first): the FIRST cue is the chip's pulse ALONE — no
       // line — for as long as the line would take (data.cue_pulse_ms: the clip's length, so the pulse looks the same with or without the
-      // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (4 s; 7 s at first), and
-      // again after every further 4 s of nothing — each count runs from the end of the previous cue and restarts on any tap on the page. Page 1
-      // (no such fields) keeps its cue as it was: the line with the pulse, again 5 s after it ends.
+      // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (7 s; 4 s for a while), and
+      // again after every further 7 s of nothing — each count runs from the end of the previous cue and restarts on any tap on the page. Page 1
+      // keeps its spoken first cue; its repeat is data.cue_repeat_ms too (7 s, [L02-IDLE-7S]; the 5 s default is unused now).
       const CUE_REPEAT_MS = (typeof d.cue_repeat_ms === "number" && d.cue_repeat_ms > 0) ? d.cue_repeat_ms : 5000;
       const CUE_PULSE_MS = (typeof d.cue_pulse_ms === "number" && d.cue_pulse_ms > 0) ? d.cue_pulse_ms : 2500;
       let cueSilentNext = d.cue_silent_first === true;
@@ -89,7 +89,7 @@
           clearTimeout(cueTimer); cueTimer = setTimeout(()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); }, CUE_PULSE_MS);
           return;
         }
-        play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });   // again after 5 s (page 1) / 4 s (pages 2-9) with no tap
+        play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });   // again after data.cue_repeat_ms (7 s, every page) with no tap
       };
       if(typeof d.cue_repeat_ms === "number")                           // [L02-CUE-SILENT] "inactivity": a tap anywhere on the page restarts a running count
         wrap.addEventListener("pointerdown", ()=>{ if(cueWaitMs && alive() && !cueOn) scheduleCue(cueWaitMs); }, true);

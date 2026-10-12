@@ -2916,9 +2916,9 @@ const SlideModules = {
       const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); };
       // [L02-CUE-SILENT] (2026-10-07, user request) pages 2-9 (card data.cue_silent_first): the FIRST cue is the chip's pulse ALONE — no
       // line — for as long as the line would take (data.cue_pulse_ms: the clip's length, so the pulse looks the same with or without the
-      // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (4 s; 7 s at first), and
-      // again after every further 4 s of nothing — each count runs from the end of the previous cue and restarts on any tap on the page. Page 1
-      // (no such fields) keeps its cue as it was: the line with the pulse, again 5 s after it ends.
+      // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (7 s; 4 s for a while), and
+      // again after every further 7 s of nothing — each count runs from the end of the previous cue and restarts on any tap on the page. Page 1
+      // keeps its spoken first cue; its repeat is data.cue_repeat_ms too (7 s, [L02-IDLE-7S]; the 5 s default is unused now).
       const CUE_REPEAT_MS = (typeof d.cue_repeat_ms === "number" && d.cue_repeat_ms > 0) ? d.cue_repeat_ms : 5000;
       const CUE_PULSE_MS = (typeof d.cue_pulse_ms === "number" && d.cue_pulse_ms > 0) ? d.cue_pulse_ms : 2500;
       let cueSilentNext = d.cue_silent_first === true;
@@ -2934,7 +2934,7 @@ const SlideModules = {
           clearTimeout(cueTimer); cueTimer = setTimeout(()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); }, CUE_PULSE_MS);
           return;
         }
-        play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });   // again after 5 s (page 1) / 4 s (pages 2-9) with no tap
+        play(cueSrc, ()=>{ setCue(false); if(alive() && !heard) scheduleCue(CUE_REPEAT_MS); });   // again after data.cue_repeat_ms (7 s, every page) with no tap
       };
       if(typeof d.cue_repeat_ms === "number")                           // [L02-CUE-SILENT] "inactivity": a tap anywhere on the page restarts a running count
         wrap.addEventListener("pointerdown", ()=>{ if(cueWaitMs && alive() && !cueOn) scheduleCue(cueWaitMs); }, true);
@@ -3231,7 +3231,26 @@ const SlideModules = {
       $("navBtn").style.display = "none";   // advance on the correct tap — no आगे on a pick
       state.replayAudio = ()=> play(audioFor(slide,"prompt")||null, ()=>{});
       setSwMood("point");
+      // [L02-IDLE-7S] the page plays its own question (just below): tell mountSlide so its auto-play chain does not start the same clip
+      // a second time 7 ms later — that aborted duplicate's error path cleared isPlaying / currentAudio about a second in, which let a
+      // later line overlap the question, let the speaker chip go idle early, and would have started the 7 s count 4.5 s early.
+      state.ownsAudio = true;
       play(audioFor(slide,"prompt")||null, ()=>{});
+      // [L02-IDLE-7S] data.prompt_idle_ms: the question again after that much quiet-and-free time — no line playing, no tap (any tap
+      // restarts the count), not while the last hint's hand is up, never once the answer is tapped — the question pages' 7 s rule.
+      if(typeof d.prompt_idle_ms === "number" && d.prompt_idle_ms > 0){
+        let quietSince = 0;
+        const busy = ()=> done || pointed || isPlaying || document.body.classList.contains("vo-playing");
+        const onTap = ()=>{ quietSince = 0; };
+        document.addEventListener("pointerdown", onTap, true);
+        const poll = setInterval(()=>{
+          if(done || CARD.slides[state.idx] !== slide || !wrap.isConnected){ clearInterval(poll); document.removeEventListener("pointerdown", onTap, true); return; }
+          if(busy()){ quietSince = 0; return; }
+          const now = performance.now();
+          if(!quietSince){ quietSince = now; return; }
+          if(now - quietSince >= d.prompt_idle_ms){ quietSince = 0; play(audioFor(slide,"prompt")||null, ()=>{}); }
+        }, 200);
+      }
       setTimeout(()=>{ if(!done) frame.querySelectorAll(".tis-hot.correct-hot").forEach(el=>el.classList.add("pulse")); }, 6000);
     }
   },

@@ -124,6 +124,36 @@ eng = eng.replace(needle, '''      // [L02-FIND-HINTS] data.hint_seq (clip ids):
 needle = '''if(h.correct){ done=true; hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");'''
 assert eng.count(needle) == 1, "TAP_IN_SCENE correct anchor not unique"
 eng = eng.replace(needle, '''if(h.correct){ done=true; if(pointed) stopNudge(); hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");''', 1)   # [L02-FIND-HINTS] the hand goes with the find
+# 3k. [L02-IDLE-7S] (2026-10-12, user request) "At page G2 the instruction VO should repeat after 7 seconds in the case of inactivity":
+#     TAP_IN_SCENE reads data.prompt_idle_ms — the question line again after that much QUIET-AND-FREE time, the question pages' rule
+#     ([L02-Q-BEATS] prompt_idle_strict): the count runs only while no line plays (the prompt, a miss line, the chip's replay), restarts
+#     on any tap, stops while the last hint's hand points at the answer and for good once the answer is tapped (or the page is left).
+#     A page without the field runs exactly as before, except that the module now owns its audio (state.ownsAudio): the engine's
+#     auto-play chain no longer starts the question a second time at mount (the aborted duplicate cleared the playing flags early).
+needle = '''      play(audioFor(slide,"prompt")||null, ()=>{});
+      setTimeout(()=>{ if(!done) frame.querySelectorAll(".tis-hot.correct-hot").forEach(el=>el.classList.add("pulse")); }, 6000);'''
+assert eng.count(needle) == 1, "TAP_IN_SCENE prompt anchor not unique"
+eng = eng.replace(needle, '''      // [L02-IDLE-7S] the page plays its own question (just below): tell mountSlide so its auto-play chain does not start the same clip
+      // a second time 7 ms later — that aborted duplicate's error path cleared isPlaying / currentAudio about a second in, which let a
+      // later line overlap the question, let the speaker chip go idle early, and would have started the 7 s count 4.5 s early.
+      state.ownsAudio = true;
+      play(audioFor(slide,"prompt")||null, ()=>{});
+      // [L02-IDLE-7S] data.prompt_idle_ms: the question again after that much quiet-and-free time — no line playing, no tap (any tap
+      // restarts the count), not while the last hint's hand is up, never once the answer is tapped — the question pages' 7 s rule.
+      if(typeof d.prompt_idle_ms === "number" && d.prompt_idle_ms > 0){
+        let quietSince = 0;
+        const busy = ()=> done || pointed || isPlaying || document.body.classList.contains("vo-playing");
+        const onTap = ()=>{ quietSince = 0; };
+        document.addEventListener("pointerdown", onTap, true);
+        const poll = setInterval(()=>{
+          if(done || CARD.slides[state.idx] !== slide || !wrap.isConnected){ clearInterval(poll); document.removeEventListener("pointerdown", onTap, true); return; }
+          if(busy()){ quietSince = 0; return; }
+          const now = performance.now();
+          if(!quietSince){ quietSince = now; return; }
+          if(now - quietSince >= d.prompt_idle_ms){ quietSince = 0; play(audioFor(slide,"prompt")||null, ()=>{}); }
+        }, 200);
+      }
+      setTimeout(()=>{ if(!done) frame.querySelectorAll(".tis-hot.correct-hot").forEach(el=>el.classList.add("pulse")); }, 6000);''', 1)
 # 3e. [L02-Q10-FIG] the same fence on the tap-to-answer questions' two delayed completions (700 ms after the "correct" line: the
 #     correct tap, and the tap on the revealed answer) — on "page 10" the lit आगे बढ़ें pill may already have moved the lesson on.
 for needle, fixed in [
@@ -723,6 +753,7 @@ aud["vo_tap_try_madhav"] = "assets/Audio/vo_tap_try_madhav." + AUD_EXT; txt["vo_
 # Engine patch 3f (TAP_IN_SCENE reads data.hint_seq); the two new lines are edge-tts hi-IN-SwaraNeural placeholders made by tts_clip
 # below (levelled like vo_tap_try_madhav, -15.5 LUFS). Only G2 carries hint_seq: I2/P2 and the board pages keep their one try line.
 g2["data"]["hint_seq"] = ["vo_tap_try_madhav", "vo_hint2_madhav", "vo_hint3_madhav"]
+g2["data"]["prompt_idle_ms"] = 7000   # [L02-IDLE-7S] the question again after 7 s of quiet-and-free time (engine patch 3k)
 # [L02-FIND-HOTS] three tappable regions drawn on the picture: the boy (the answer), the mother and the football (decoys).
 # The engine's hotspots are rectangles (% of the box) and carry its tap logic (confetti / shake + try-again line, the "any
 # clip playing = no taps" lock); on this page they are invisible and inert, and a SHAPED outline is drawn for each instead
@@ -1210,8 +1241,13 @@ assert txt["vo_tap_speaker_sentence_story"] == "इस बटन पर टै�
 # (.p2-cue for exactly as long as the line plays, settling at the end of a breath), so it is in sync by construction. Card
 # data.cue_delay_ms, read by story_read_page.js (default 4000). "Opens" = the module's mount: the phase gate before page 2 closes
 # BEFORE it mounts the slide (phaseBlurTransition), so the second runs from the moment the child sees the page. The idle repeat
-# (5 s of silence) is unchanged.
+# was 5 s of silence until [L02-IDLE-7S] below (7 s).
 story[0]["data"]["cue_delay_ms"] = 1000
+# [L02-IDLE-7S] (2026-10-12, user request) "At page T1 the instruction button guiding VO should repeat after 7 seconds in the case of
+# inactivity": data.cue_repeat_ms 7000 — the cue line (+ pulse) again once the child has done nothing for 7 s after a cue (the module's
+# default was 5 s, counted from the cue's end without a restart on taps; with the field set a tap anywhere on the page restarts the
+# count, as on T2-T9). The first cue (spoken, 1 s in) is unchanged.
+story[0]["data"]["cue_repeat_ms"] = 7000
 # [L02-FIND-HINTS] the find page's 2nd and 3rd wrong-tap lines (see the G2 block above); made like the other placeholders here
 tts_clip("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।", target_i=-15.5)
 tts_clip("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।", target_i=-15.5)
@@ -1310,16 +1346,16 @@ def clip_s(name):
     return int(h) * 3600 + int(m) * 60 + float(sec)
 # ---- [L02-CUE-SILENT] (2026-10-07, user request) "From T2 to T9 the mic button should only pulsate without any VO, but the mic button's
 # VO comes along with the pulsating animation after 7 seconds of inactivity from the user's end, and repeats." (7 s → 4 s by the
-# third request of the day.) Pages 2-9 get
+# third request of the day; back to 7 s on 2026-10-12, [L02-IDLE-7S]: "should repeat after 7 seconds not 4 seconds".) Pages 2-9 get
 # data.cue_silent_first (the first cue is the chip's pulse ALONE — 1 s after the page opens: data.cue_delay_ms 1000, the user's
 # second request of the day, 4 s at first), data.cue_pulse_ms (that pulse lasts as long as the line
-# would — the clip's length, so it looks the same with or without the voice) and data.cue_repeat_ms 4000 (the line + pulse once the
-# child has done nothing for 4 s after a cue, and again after every further 4 s; a tap anywhere on the page restarts the count). Page 1
-# is untouched: its cue speaks at once, 1 s in, and repeats 5 s after its end as before. story_read_page.js reads the three fields.
+# would — the clip's length, so it looks the same with or without the voice) and data.cue_repeat_ms 7000 (the line + pulse once the
+# child has done nothing for 7 s after a cue, and again after every further 7 s; a tap anywhere on the page restarts the count). Page 1
+# keeps its spoken first cue 1 s in; its repeat is 7 s too since [L02-IDLE-7S]. story_read_page.js reads the three fields.
 _cue_pulse_ms = int(round(clip_s("vo_tap_speaker_sentence_story") * 1000))
 for _s in card["slides"]:
     if _s["type"] == "STORY_READ_PAGE" and _s["id"] != "T1":
-        _s["data"]["cue_silent_first"] = True; _s["data"]["cue_repeat_ms"] = 4000; _s["data"]["cue_pulse_ms"] = _cue_pulse_ms; _s["data"]["cue_delay_ms"] = 1000
+        _s["data"]["cue_silent_first"] = True; _s["data"]["cue_repeat_ms"] = 7000; _s["data"]["cue_pulse_ms"] = _cue_pulse_ms; _s["data"]["cue_delay_ms"] = 1000   # [L02-IDLE-7S] cue_repeat_ms 7 s (was 4 s)
 assert [s["id"] for s in card["slides"] if s["data"].get("cue_silent_first")] == ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
 # ---- [L02-G3-REF] G3's lines and the word timings its pills light up with (see the G3 block above; tts_clip and clip_s exist by now)
 tts_clip("vo_q_khel", "माधव किससे खेल रहा है?")
