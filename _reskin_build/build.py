@@ -728,11 +728,18 @@ for s in story + [t9]:
 # export kept in _reskin_build/find_madhav_source.png (1671x941), encoded here to assets/Images/find_madhav.webp; the
 # hotspot is re-drawn on it (Madhav and his pillow, in % of the box). CSS [L02-FIND-FIG] (stage class .l02-find), JS in
 # adapt.js (card slide.find_fig). Only G2 carries the flag: the other find pages (I2, P2) are as they were.
-FIND_SRC = os.path.join(SCR, "find_madhav_source.png"); FIND_DST = os.path.join(CUR, "assets", "Images", "find_madhav.webp")
-assert os.path.exists(FIND_SRC), "missing " + FIND_SRC
-if not os.path.exists(FIND_DST) or os.path.getmtime(FIND_DST) < os.path.getmtime(FIND_SRC):
-    from PIL import Image
-    Image.open(FIND_SRC).convert("RGB").save(FIND_DST, "WEBP", quality=88, method=6)
+# [L02-FIND-PIC-2] (2026-10-12, user request) the picture is now the user's new scene (the same bedroom, both asleep, the toys on the
+# floor with a TEDDY BEAR where the football was): _reskin_build/find_madhav_source_2.png (1774x887), laid on the page's 1671x941 canvas
+# by trace_find_shapes_2.canvas_2() (scaled to the canvas width, centred on the box's visible window, the never-shown rows above /
+# below replicated) so the CSS box, the picture placement and data.shape_view are untouched; encoded to the same assets/Images/
+# find_madhav.webp (the card's image id is unchanged). The first picture's source + shapes stay in _reskin_build for the record.
+FIND_SRC = os.path.join(SCR, "find_madhav_source_2.png"); FIND_DST = os.path.join(CUR, "assets", "Images", "find_madhav.webp")
+FIND_TRACER = os.path.join(SCR, "trace_find_shapes_2.py")
+assert os.path.exists(FIND_SRC) and os.path.exists(FIND_TRACER), "missing " + FIND_SRC + " / " + FIND_TRACER
+if not os.path.exists(FIND_DST) or os.path.getmtime(FIND_DST) < max(os.path.getmtime(FIND_SRC), os.path.getmtime(FIND_TRACER)):
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location("trace_find_shapes_2", FIND_TRACER); _tfs = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_tfs)
+    _tfs.canvas_2(FIND_SRC).save(FIND_DST, "WEBP", quality=88, method=6)
     print("wrote", FIND_DST)
 g2 = next(s for s in card["slides"] if s["id"] == "G2")
 assert g2["type"] == "TAP_IN_SCENE", "G2 is not the find-in-the-picture page any more"
@@ -754,18 +761,22 @@ aud["vo_tap_try_madhav"] = "assets/Audio/vo_tap_try_madhav." + AUD_EXT; txt["vo_
 # below (levelled like vo_tap_try_madhav, -15.5 LUFS). Only G2 carries hint_seq: I2/P2 and the board pages keep their one try line.
 g2["data"]["hint_seq"] = ["vo_tap_try_madhav", "vo_hint2_madhav", "vo_hint3_madhav"]
 g2["data"]["prompt_idle_ms"] = 7000   # [L02-IDLE-7S] the question again after 7 s of quiet-and-free time (engine patch 3k)
-# [L02-FIND-HOTS] three tappable regions drawn on the picture: the boy (the answer), the mother and the football (decoys).
+# [L02-FIND-HOTS] three tappable regions drawn on the picture: the boy (the answer), the mother and — since [L02-FIND-PIC-2] — the
+# TEDDY BEAR (decoys; the first picture's football is gone with it).
 # The engine's hotspots are rectangles (% of the box) and carry its tap logic (confetti / shake + try-again line, the "any
 # clip playing = no taps" lock); on this page they are invisible and inert, and a SHAPED outline is drawn for each instead
 # (data.shapes: SVG paths in the picture's own 1671x941 pixel space — the mother's and the boy's silhouettes and the
 # football's circle traced from the picture's colours by trace_find_shapes.py -> find_madhav_shapes.json, so they follow
 # the figures to the pixel) which is the thing the child taps: adapt.js forwards the tap to the matching rectangle and
 # mirrors its state onto the outline (white at rest, green on the boy, red + a wiggle on a decoy).
-g2["data"]["hotspots"] = [
-    {"x": 51.5, "y": 35, "w": 14.5, "h": 24, "correct": True},   # Madhav: head, hand and the blue shirt
-    {"x": 35, "y": 19, "w": 16.5, "h": 29},                       # the mother: hair, face, shoulders and her hand
-    {"x": 82, "y": 75, "w": 8, "h": 15},                          # the football on the floor
-]
+# [L02-FIND-PIC-2] the rectangles are set from the traced outlines' bounding boxes (+2 px), mapped from canvas px to % of the
+# 935x442 box the way the CSS places the picture (951x536 at (-20,-16)); they stay invisible and inert, the outlines take the taps.
+def _hot_rect(pts, correct=False):
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    x0 = (min(xs) - 2) * 951 / 1671 - 20; x1 = (max(xs) + 2) * 951 / 1671 - 20; y0 = (min(ys) - 2) * 536 / 941 - 16; y1 = (max(ys) + 2) * 536 / 941 - 16
+    r = {"x": round(x0 / 9.35, 1), "y": round(y0 / 4.42, 1), "w": round((x1 - x0) / 9.35, 1), "h": round((y1 - y0) / 4.42, 1)}
+    if correct: r["correct"] = True
+    return r
 def smooth_closed_path(pts):
     """A closed Catmull-Rom curve through the points, as cubic Béziers (SVG path data, 1 decimal)."""
     n = len(pts); out = ["M %.1f %.1f" % pts[0]]
@@ -775,16 +786,17 @@ def smooth_closed_path(pts):
         c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
         out.append("C %.1f %.1f %.1f %.1f %.1f %.1f" % (c1 + c2 + p2))
     return " ".join(out) + " Z"
-SHAPES_SRC = os.path.join(SCR, "find_madhav_shapes.json")
-assert os.path.exists(SHAPES_SRC), "missing find_madhav_shapes.json (run trace_find_shapes.py)"
+SHAPES_SRC = os.path.join(SCR, "find_madhav_shapes_2.json")   # [L02-FIND-PIC-2] the new picture's outlines (trace_find_shapes_2.py)
+assert os.path.exists(SHAPES_SRC), "missing find_madhav_shapes_2.json (run trace_find_shapes_2.py)"
 with open(SHAPES_SRC, encoding="utf-8") as f: SHAPES = json.load(f)
-BOY = [tuple(p) for p in SHAPES["boy"]]; MOTHER = [tuple(p) for p in SHAPES["mother"]]; BALL = tuple(SHAPES["ball"])   # centre x, y, radius
-assert len(BOY) >= 30 and len(MOTHER) >= 40 and 40 < BALL[2] < 60 and SHAPES["view"] == [1671, 941], "find_madhav_shapes.json looks wrong"
+BOY = [tuple(p) for p in SHAPES["boy"]]; MOTHER = [tuple(p) for p in SHAPES["mother"]]; BEAR = [tuple(p) for p in SHAPES["bear"]]
+assert len(BOY) >= 30 and len(MOTHER) >= 40 and len(BEAR) >= 30 and SHAPES["view"] == [1671, 941], "find_madhav_shapes_2.json looks wrong"
+g2["data"]["hotspots"] = [_hot_rect(BOY, True), _hot_rect(MOTHER), _hot_rect(BEAR)]   # Madhav (the answer), the mother, the teddy bear
 g2["data"]["shape_view"] = SHAPES["view"]
 g2["data"]["shapes"] = [
     {"hot": 0, "d": smooth_closed_path(BOY)},
     {"hot": 1, "d": smooth_closed_path(MOTHER)},
-    {"hot": 2, "d": "M %.1f %.1f a %.1f %.1f 0 1 0 %.1f 0 a %.1f %.1f 0 1 0 -%.1f 0 Z" % (BALL[0] - BALL[2], BALL[1], BALL[2], BALL[2], 2 * BALL[2], BALL[2], BALL[2], 2 * BALL[2])},
+    {"hot": 2, "d": smooth_closed_path(BEAR)},                        # [L02-FIND-PIC-2] a traced silhouette like the other two (the ball was a circle)
 ]
 # ---- [L02-Q3-FIG] G3 (the guided story question) laid out from Figma "FLN by MJ" node 113-198 ("G3 guided story question",
 # 1280x720; user, 2026-09-28: "exact same layout, image, placement and size"). The Figma page asks "कहानी में माधव ने सबसे पहले
