@@ -552,5 +552,20 @@
    0.78
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+ },
+ "vo_p1_rona": {
+  "words": [
+   "माधव",
+   "रोने",
+   "लगा।"
+  ],
+  "md5": "8ca2d9a07021cbe355cc6851ef66f750",
+  "times": [
+   0.08,
+   0.69,
+   1.29,
+   1.53
+  ],
+  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  }
 }

@@ -5642,7 +5642,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
                            a page. Rev 2 (2026-10-12, user request "the highlight animation and the VOs should be synced together"): NO
                            page uses it any more — I1's options now carry word_times_by_audio and its read-out lights the words in time
                            with each line like the sentence pages'; on a card_ref page that sync runs during the read-out only (the play()
-                           seam), so a first-try correct tap's line stays unlit as before.
+                           seam), so a first-try correct tap's line stays unlit as before. Rev 5 (2026-10-12, P1 = I1's pattern): a
+                           card_ref page that is ALSO opt_words ([L02-P1-WORDS], P1) keeps lighting its answer's words whenever its
+                           line speaks (a first- or second-try correct tap), as the user asked for on 2026-10-06; its read-out lights
+                           all three cards' lines like I1's.
      data.guided_quiet     the tap on the ringed answer after the reveal = the confetti + the correct sound ONLY: the reveal line stops, the
                            answer's own line and the praise are not spoken, the kit's correct-select pop is muted; the engine's own guided
                            handler still runs on that click (the hand goes, the green stroke, the happy mascot, completeSlide — which waits
@@ -5835,7 +5838,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       var r = origPlay.call(this, src, onEnd);
       if(optWords && src){
         var w = optWords[idOf(src)];
-        var cardOnly = !!(sl && sl.card_ref === true && sl.sent_ref !== true);     // [L02-Q-BEATS] rev 2: on a card page the sync runs in the read-out only (a correct tap's line stays unlit, as before)
+        var cardOnly = !!(sl && sl.card_ref === true && sl.sent_ref !== true && sl.opt_words !== true);     // [L02-Q-BEATS] rev 2: on a card page the sync runs in the read-out only (a correct tap's line stays unlit, as before); rev 5: not on an opt_words page (P1 — its answer's words light on a correct tap, [L02-P1-WORDS])
         if(w && w.times && w.els[0] && w.els[0].isConnected && (!cardOnly || reviewing)) wordSync((typeof currentAudio !== "undefined") ? currentAudio : null, w.els, w.times);   // [L02-Q-BEATS] no timings → no sync (a paced read-out lights them itself)
       }
       return r;

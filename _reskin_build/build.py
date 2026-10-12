@@ -2288,6 +2288,26 @@ for _sid in ("I3", "M1", "M2"):
     assert _s.get("sent_ref") is True and _s["data"].get("prompt_idle_ms") == 5000 and "prompt_idle_strict" not in _s["data"] and "guided_quiet" not in _s["data"] and _s["data"].get("correct_sfx"), (_sid, _s["data"].get("prompt_idle_ms"))
     assert _s["audio"].get("try_again") == "vo_q_hint" and _s["audio"].get("reveal", "").startswith("vo_reveal_"), (_sid, _s["audio"])
     _s["data"]["prompt_idle_ms"] = 7000; _s["data"]["prompt_idle_strict"] = True; _s["data"]["guided_quiet"] = True
+# ---- [L02-Q-BEATS] rev 5 (2026-10-12, user request) "At page 17 P1 apply the exact same pattern of the feedbacks, animations and responses
+# of the instruction VOs, sound effects, correct option taps, incorrect option taps and the instruction VOs as of page 12 I1" — the same
+# card knobs as I1's: card_ref (wrong 1 = its try line vo_q_try + the wiggle, no option clip; wrong 2 = the read-out of the three cards
+# with the words lit in time with each line; wrong 3 = the reveal — its own line vo_reveal_utha — with the decoys greyed and the hand; a
+# first-try correct tap stays the engine's, INCLUDING P1's own answer-words lighting of [L02-P1-WORDS] — sent_q_page.js rev 5 keeps the
+# sync on an opt_words page), prompt_idle_ms 7000 + prompt_idle_strict (the question alone after 7 s of quiet-and-free time — no picture),
+# guided_quiet (the guided tap = the confetti + the correct sound only), word_times_by_audio for all three option lines now (the answer's
+# vo_p1_utha was already measured; vo_p1_khana is I1's clip; vo_p1_rona is new — word_times_for, envelope, cached by md5). Clips unchanged.
+_p1b = _by_id["P1"]; assert _p1b.get("fig_q3") is True and _p1b.get("opt_words") is True and "sent_ref" not in _p1b and "card_ref" not in _p1b and "prompt_idle_ms" not in _p1b["data"] and "correct_sfx" not in _p1b["data"]
+assert _p1b["audio"].get("try_again") == "vo_q_try" and _p1b["audio"].get("hint") == "vo_q_hint" and _p1b["audio"].get("reveal") == "vo_reveal_utha", _p1b["audio"]
+assert list(_p1b["data"]["word_times_by_audio"].keys()) == ["vo_p1_utha"]
+_p1b["card_ref"] = True
+_p1b["data"]["prompt_idle_ms"] = 7000; _p1b["data"]["prompt_idle_strict"] = True; _p1b["data"]["guided_quiet"] = True
+_p1b["data"]["word_times_by_audio"] = {}
+for _o in _p1b["data"]["options"]:
+    _ws = txt[_o["audio"]].split()
+    assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
+    _p1b["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
+    assert len(_p1b["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
+assert _p1b["data"]["word_times_by_audio"]["vo_p1_utha"] == [0.1, 0.8, 1.06, 1.43], _p1b["data"]["word_times_by_audio"]["vo_p1_utha"]   # the answer's timings as before
 card_json = json.dumps(card, ensure_ascii=False)
 
 # ---- 5. index.html ----
