@@ -3123,3 +3123,13 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
    .ready away while the welcome re-speaks): the button is gone, not greyed, and pops back at the line's end. The waiting SVG stays in
    assets/UI (unused now); the box, the tap, the hold and every other state of the button are untouched. */
 .start-gate .sg-btn:not(.ready){display:none !important;}
+
+/* ===== L02-POP-WITH-SENTENCE =====
+   [L02-POP-WITH-SENTENCE] rev 2 (2026-10-13, user request) pages T2 / T3 / T4 / T9 (card data.pop_with_sentence): the picture pops out
+   WITH the sentence and holds for as long as it speaks, plus data.pop_after_vo_ms (1 s): p2-pop-in = the 2 s pop's own pop-out (0.2 s to
+   1.045, 0.12 s back to 1.03), kept by its fill; p2-pop-out = the pop's own 0.28 s settle, added by story_read_page.js when the hold is
+   over. The engine's html.no-anim rule stills both, as it stills p2BirdPop. The other story pages keep p2BirdPop above. */
+@keyframes p2BirdPopIn{0%{transform:scale(1);animation-timing-function:cubic-bezier(.2,.8,.3,1);}62.5%{transform:scale(1.045);animation-timing-function:ease-in-out;}100%{transform:scale(1.03);}}
+@keyframes p2BirdPopOut{0%{transform:scale(1.03);}100%{transform:scale(1);}}
+.stage.tut .story-frame.p2-pop-in{animation:p2BirdPopIn .32s 1 both;transform-origin:50% 50%;will-change:transform;}
+.stage.tut .story-frame.p2-pop-out{animation:p2BirdPopOut .28s ease-in-out 1 both;transform-origin:50% 50%;will-change:transform;}

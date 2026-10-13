@@ -469,6 +469,11 @@ POP_S, SFX_MEAN_DB, SFX_PEAK_DB, SFX_AUDIBLE_DB, SFX_WIN = 2.0, -26.0, -1.0, -35
 # as on T2. T8's sound stays its whole 1.66 s track (shorter than 2 s), as before.
 POP_LEN = {}                                                   # was {1: 5.0, 3: 5.0, 4: 5.0, 9: 5.0} ([L02-POP-5S])
 SFX_CUT = {3: ("onset", POP_S), 4: ("onset", POP_S)}           # was 1 / 9 at (None, 5.0) and 3 / 4 at ("onset", 5.0)
+# [L02-POP-WITH-SENTENCE] rev 2 (2026-10-13, user request) pages T2 / T3 / T4 / T9: the pop + its sound run from the sentence's start to
+# 1 s after its end (3.1-4.2 s of voice at rate 0.72), so their sounds are cut 7 s long FROM THE SAME START as the 2 s cuts (the "onset"
+# of pages 3 / 4; the automatic rule's 2 s window for 2 / 9 — the sound the user heard, only longer); the module stops them with a fade
+# 1 s after the voice. Card: pop_with_sentence, pop_sfx_gain (0.2 under the voice), pop_after_vo_ms (1000), pop_sfx_s (7.0, the safety stop).
+POP_WITH_SENTENCE = {n: {"gain": 0.2, "sfx_s": 7.0, "after_ms": 1000} for n in (2, 3, 4, 9)}
 def sfx_onset(src):
     out = ff("-i", src, "-af", "aresample=24000,asetnsamples=n=1200,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-", "-f", "null", "-")
     vals = [(-120.0 if x == "-inf" else float(x)) for x in re.findall(r"RMS_level=(-?[\d.]+|-inf)", out)]
@@ -628,11 +633,12 @@ def build_pop_sfx(n, names):
     for s in srcs: assert os.path.exists(s), "missing SFX " + s
     if os.path.exists(dst) and all(os.path.getmtime(dst) >= os.path.getmtime(s) for s in srcs + [os.path.abspath(__file__)]):
         return None
-    fixed_start, length = SFX_CUT.get(n, (None, POP_S))
+    fixed_start, length = SFX_CUT.get(n, (None, POP_S)); win = length
+    length = POP_WITH_SENTENCE.get(n, {}).get("sfx_s", length)   # [L02-POP-WITH-SENTENCE] rev 2: a longer cut from the SAME start (the auto rule keeps its 2 s window)
     with tempfile.TemporaryDirectory() as td:
         cuts = []
         for i, s in enumerate(srcs):
-            st = sfx_onset(s) if fixed_start == "onset" else (fixed_start if fixed_start is not None else sfx_cut_start(s, length))
+            st = sfx_onset(s) if fixed_start == "onset" else (fixed_start if fixed_start is not None else sfx_cut_start(s, win))
             c = os.path.join(td, "cut%d.wav" % i)
             ff("-ss", "%.2f" % st, "-t", "%.2f" % length, "-i", s, "-ac", "1", "-ar", "48000", c); cuts.append((c, st))
         mix = cuts[0][0]
@@ -655,6 +661,18 @@ for n, s in enumerate(story + [t9], 1):
     if n in SFX_CUT and SFX_CUT[n][1] != pop_s: s["data"]["pop_sfx_s"] = SFX_CUT[n][1]
     else: s["data"].pop("pop_sfx_s", None)
     print("sfx_pop_%d." % n + AUD_EXT, "<-", " + ".join(SFX_SOURCES[n]), "| regenerated:" if made else "| up to date", made or "")
+# ---- [L02-POP-WITH-SENTENCE] (2026-10-13, user request) "At the pages T2, T3, T4 and T9 the sound effect behind the image animation should
+# come along with the highlight animation and the VO of the Hindi sentence, but the sound effect should be that much minimal that it does
+# not affect the clarity of the VO": story_read_page.js — on a page with data.pop_with_sentence the picture's pop (p2BirdPop, 2 s) and its
+# sound start WITH the sentence (play + the word highlight) instead of after it, and the sound's element plays at data.pop_sfx_gain
+# (0.2 = -14 dB on top of the clips' -26 dB mean: well under the -16.5 LUFS voice). आगे बढ़ें still lights 2 s after the sentence ends;
+# the clips themselves, the read beat, the cue and the other five pages are untouched (their pop follows the sentence at full level).
+# rev 2: see POP_WITH_SENTENCE above (defined before the clips are cut) — the sound lasts, with the held picture, until 1 s after the voice.
+for n, s in enumerate(story + [t9], 1):
+    _pw = POP_WITH_SENTENCE.get(n)
+    if _pw: s["data"]["pop_with_sentence"] = True; s["data"]["pop_sfx_gain"] = _pw["gain"]; s["data"]["pop_after_vo_ms"] = _pw["after_ms"]; s["data"]["pop_sfx_s"] = _pw["sfx_s"]
+    else:
+        for _k in ("pop_with_sentence", "pop_sfx_gain", "pop_after_vo_ms"): s["data"].pop(_k, None)
 # ---- [L02-READ-ALOUD] word times (2026-10-03): after the read-aloud beat the sentence speaks with the word being said lit in time
 # with the recording — the reference's rule (its WORD_TIMES tables: each word's start in the recording, then the end of the last word;
 # word k is lit while times[k] <= currentTime < times[k+1]; story_read_page.js). The reference measured its tables by hand on the

@@ -3001,21 +3001,46 @@ const SlideModules = {
       const sfxSrc = d.pop_sfx ? ("assets/Audio/" + d.pop_sfx + "." + AUDIO_EXT) : null;
       const sfxMs = Math.round(((typeof d.pop_sfx_s === "number") ? d.pop_sfx_s : POP_MS / 1000) * 1000);
       let popSfx = null, sfxTimer = 0;
+      // [L02-POP-WITH-SENTENCE] (2026-10-13, user request) pages T2 / T3 / T4 / T9 (card data.pop_with_sentence): the picture's pop and its
+      // sound come WITH the sentence - the voice and the word highlight - not after it; the sound at data.pop_sfx_gain of its level (0.2 on
+      // those pages: well under the voice, so the words stay clear). आगे बढ़ें still lights POP_MS (2 s) after the sentence ends, as on
+      // every page. A page without the flag is as before (the pop after the sentence, the sound at full level).
+      const POP_WITH = d.pop_with_sentence === true;
+      const SFX_GAIN = (typeof d.pop_sfx_gain === "number" && d.pop_sfx_gain >= 0 && d.pop_sfx_gain <= 1) ? d.pop_sfx_gain : 1;
+      // rev 2 (2026-10-13, user request "the sound effect and image animation should last till one second after the VO and the highlight
+      // animation of the sentence is over"): the picture pops out with the voice and HOLDS for as long as it speaks (p2-pop-in: the 2 s
+      // pop's own pop-out, kept by its fill; adapt.css), its sound (a 7 s cut of the page's track, data.pop_sfx_s) running under it at
+      // SFX_GAIN; both END data.pop_after_vo_ms (1000) after the clip's end — the sound fading over the last 200 ms, the picture settling
+      // over the last 280 ms (p2-pop-out: the pop's own settle). आगे बढ़ें still lights POP_MS (2 s) after the clip's end.
+      const POP_AFTER_MS = (typeof d.pop_after_vo_ms === "number" && d.pop_after_vo_ms >= 0) ? d.pop_after_vo_ms : 1000;
+      let holdTimers = [];
+      const clearHold = ()=>{ holdTimers.forEach(clearTimeout); holdTimers = []; };
       const stopPopSfx = ()=>{ clearTimeout(sfxTimer); if(popSfx){ try{ popSfx.pause(); }catch(e){} popSfx = null; } };
+      const startPopSfx = ()=>{ stopPopSfx(); if(sfxSrc){ try{ popSfx = new Audio(sfxSrc); popSfx.volume = SFX_GAIN; popSfx.play().catch(()=>{}); sfxTimer = setTimeout(stopPopSfx, sfxMs); }catch(e){ popSfx = null; } } };   // [L02-POP-WITH-SENTENCE] volume = the card's gain (1 elsewhere)
+      const fadePopSfx = (ms)=>{ const a = popSfx; if(!a) return; clearTimeout(sfxTimer); const v0 = a.volume, t0 = performance.now();
+        (function tick(){ if(popSfx !== a) return; const k = Math.min(1, (performance.now() - t0) / ms); try{ a.volume = v0 * (1 - k); }catch(e){}
+          if(k < 1) requestAnimationFrame(tick); else stopPopSfx(); })(); };
+      const popHold = ()=>{ if(!alive()) return; clearHold();                              // [L02-POP-WITH-SENTENCE] rev 2: pop out with the voice and hold
+        frame.classList.remove("p2-pop", "p2-pop-out", "p2-pop-in"); void frame.offsetWidth; frame.classList.add("p2-pop-in");
+        startPopSfx(); };
+      const popHoldEnd = ()=>{ clearHold();                                                // at the clip's end: both over POP_AFTER_MS later
+        holdTimers.push(setTimeout(()=>{ fadePopSfx(200); }, Math.max(0, POP_AFTER_MS - 200)));
+        holdTimers.push(setTimeout(()=>{ if(!alive()) return; frame.classList.remove("p2-pop-in"); void frame.offsetWidth; frame.classList.add("p2-pop-out"); }, Math.max(0, POP_AFTER_MS - 280))); };
       const popPicture = (then)=>{ if(!alive()) return;
         frame.classList.remove("p2-pop"); void frame.offsetWidth; frame.classList.add("p2-pop");
-        stopPopSfx();
-        if(sfxSrc){ try{ popSfx = new Audio(sfxSrc); popSfx.play().catch(()=>{}); sfxTimer = setTimeout(stopPopSfx, sfxMs); }catch(e){ popSfx = null; } }
+        startPopSfx();
         clearTimeout(popTimer); popTimer = setTimeout(()=>{ if(alive() && then) then(); }, POP_MS); };
       const speakSentence = ()=>{
         if(!alive()) return;
         clearTimeout(cueTimer); setCue(false); wordsOff(); setSwMood("talk");
-        stopPopSfx();   // [L02-POP-SFX] never under the sentence; the pop that follows starts it afresh
+        stopPopSfx(); clearHold();   // [L02-POP-SFX] never under the sentence; the pop that follows starts it afresh (rev 2 pages: popHold below restarts it with the voice)
         cap.classList.add("p2-speaking");   // [L02-SPK-CUE] the chip's own voice: its wave arcs blink only while this clip plays
         play(wholeSrc, ()=>{ wordsOff(); setSwMood("point"); if(!alive()) return;
           if(!heard){ heard = true; SwiftPAL.emit("sentence_heard", { slide_id: slide.id, phase: slide.phase }); }
-          popPicture(()=> setNavActive(true));   // [L02-POP-AFTER-SENTENCE] आगे बढ़ें only once the picture's pop is over
+          if(POP_WITH){ popHoldEnd(); clearTimeout(popTimer); popTimer = setTimeout(()=>{ if(alive()) setNavActive(true); }, POP_MS); }   // [L02-POP-WITH-SENTENCE] rev 2: the held pop + its sound end 1 s after the voice; आगे बढ़ें 2 s after it, as before
+          else popPicture(()=> setNavActive(true));   // [L02-POP-AFTER-SENTENCE] आगे बढ़ें only once the picture's pop is over
         });
+        if(POP_WITH) popHold();   // [L02-POP-WITH-SENTENCE] rev 2: the pop + its quiet sound start with the voice (play() above has just started it) and hold
         // [L02-SENT-RATE] (2026-10-07, user request) the sentence is heard slower (card data.sentence_rate: 0.72 = 10% slower, then 20% more; 0.8 / 0.9 before) with its pitch kept —
         // the browser's time-stretch on this clip's own element (play() makes a fresh one per clip, so nothing else is slowed); the
         // highlight below follows the clip's clock (currentTime vs data.word_times), so it slows with the voice by itself
