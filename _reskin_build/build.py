@@ -2572,16 +2572,27 @@ def _vo_walk(o, out):
         for v in o: _vo_walk(v, out)
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
-_spoken = set(_all_slide) | set(ENGINE_LINES) | {"vo_celebrate"}   # what the lesson plays today (+ [L02-CEL-MTG204]: the celebration now speaks the borrowed vo_cel_prompt; the deck's celebration line and its recorded take stay in the manifest and the dist, as the fleet's record of this lesson's lines)
-assert len(_spoken) == 61 and set(aud) == _spoken - {"vo_celebrate"}, "[L02-VO-MANIFEST] expected the 61 spoken lines (less vo_celebrate) to be exactly the registered ones: " + str(sorted(set(aud) ^ (_spoken - {"vo_celebrate"})))   # [L02-DIST-OPTIM] nothing unplayed stays registered
-MANIFEST = VO_LINES                                                 # the lines are defined with the clips ([L02-VO-BATCH] above)
+_spoken = set(_all_slide) | set(ENGINE_LINES) | {"vo_cel_prompt"}   # what the lesson plays today — incl. the celebration's borrowed, UNregistered vo_cel_prompt ([L02-CEL-MTG204]; fourth pass below)
+assert len(_spoken) == 61 and set(aud) == _spoken - {"vo_cel_prompt"}, "[L02-VO-MANIFEST] expected the 61 spoken lines (less the unregistered vo_cel_prompt) to be exactly the registered ones: " + str(sorted(set(aud) ^ (_spoken - {"vo_cel_prompt"})))   # [L02-DIST-OPTIM] nothing unplayed stays registered
+# Fourth pass (2026-10-13, user request "Generate a new and latest manifest excel file for this file in which all the latest dialogues
+# should be covered as per this whole file"): the manifest lists what the lesson SPEAKS TODAY, in play order. One row differs from the
+# deck's 61: the celebration speaks the MTG204 line «बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!» (vo_cel_prompt, [L02-CEL-MTG204], shipped by
+# convention, unregistered) — that row replaces vo_celebrate (the deck's celebration line: recorded, pruned, spoken by no page; its text
+# stays in txt for the record only). The two re-recorded takes keep the deck's words (the mic cue [L02-CUE-VO-2], the guided gate
+# [L02-GATE-VO-2] — supplied as audio only). Lines some pages no longer speak stay listed because other pages do: vo_q_hint (G3's first
+# wrong tap; silent on I3 / M1 / M2 since [L02-WRONG1-QUIET], and their second tap is the read-out), vo_q_try (I1 / I2; silent on P1).
+_cel_slide = next(_s for _s in card["slides"] if _s["id"] == "CEL")
+CEL_LINE = ("vo_cel_prompt", _cel_slide["prompt_hi"])
+assert _cel_slide["audio"].get("prompt") == CEL_LINE[0] and CEL_LINE[1] == "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!", (_cel_slide.get("audio"), CEL_LINE)
+MANIFEST = [CEL_LINE if _k == "vo_celebrate" else (_k, _t) for _k, _t in VO_LINES]   # the deck's lines as recorded ([L02-VO-BATCH]), the celebration row swapped
 # [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.
 _ids = [k for k, _ in MANIFEST]
 assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines expected: " + str(len(_ids))
 assert set(_ids) == _spoken, "[L02-VO-MANIFEST] the lines the lesson speaks are not the manifest's: " + str(sorted(set(_ids) ^ _spoken))
 for _k, _t in MANIFEST:
     assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
-    assert txt[_k] == _t and (_k in PRUNED_AUDIO or os.path.exists(os.path.join(CUR, aud[_k]))), "[L02-VO-MANIFEST] " + _k   # [L02-DIST-OPTIM] vo_celebrate: line kept, clip not shipped
+    _src = aud.get(_k) or ("assets/Audio/" + _k + "." + AUD_EXT)                                   # vo_cel_prompt: unregistered, by convention
+    assert (CEL_LINE[1] if _k == CEL_LINE[0] else txt[_k]) == _t and os.path.exists(os.path.join(CUR, _src)), "[L02-VO-MANIFEST] " + _k
 _man = os.path.join(CUR, "VO_Manifest.xlsx"); _new = list(MANIFEST)
 _old = None
 if os.path.exists(_man):
