@@ -186,6 +186,11 @@
       const startRec = ()=>{
         if(!alive() || recOn || recDone) return;
         recOn = true;
+        // [L02-MIC-TAP-SFX] (2026-10-13, user request) "at the enabled microphone button apply the same sound effect on tapping as of the
+        // next button": the tap that starts the beat sounds the standard next-button clip (adapt.js stdSfx, [L02-STD-SFX-JS] — the same
+        // call आगे बढ़ें makes), fire-and-forget on its own element so the beat's stopAudio() below never touches it. Only here: a tap on the
+        // disabled chip (during the cue the shield takes it; after the beat recDone ignores it) stays silent, as it does nothing.
+        if(typeof stdSfx === "function") stdSfx("sfx_next_button");
         clearTimeout(cueTimer); setCue(false);
         cancelAnimationFrame(pulseRaf); setChipPulse(false);
         try{ stopNudge(); }catch(e){}
