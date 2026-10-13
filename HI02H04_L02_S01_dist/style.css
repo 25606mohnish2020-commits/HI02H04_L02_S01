@@ -3112,3 +3112,14 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
    line is over. It is only a hit-test layer: nothing visible changes. */
 #voShield{position:fixed;inset:0;z-index:2147483000;background:transparent;cursor:default;touch-action:none;-webkit-tap-highlight-color:transparent;}
 #voShield[hidden]{display:none;}
+
+/* ===== L02-NO-WAITING-BTN =====
+   [L02-NO-WAITING-BTN] (2026-10-13, user request) "At the title page remove the disabled play button; the enabled play button should only
+   appear when the VO of the title page is over — before that no button should appear at that place." The engine itself hides the button
+   until .ready (.start-gate .sg-btn:not(.ready){display:none}); the reference's [LANDING-PLAY-BTN] block overrode that with the grey
+   waiting disc (display:inline-flex + btn-play-waiting.svg, re-skinned by [L02-STD-PLAY-BTN] to btn-play-std-waiting.svg). This later
+   rule of the same specificity wins: nothing is drawn in the button's place until the engine's reveal adds .ready at the welcome's end,
+   when the gold disc pops in (sgBtnReveal) and breathes exactly as before. The same goes for a speaker-chip replay ([L02-SPK-FUNC] takes
+   .ready away while the welcome re-speaks): the button is gone, not greyed, and pops back at the line's end. The waiting SVG stays in
+   assets/UI (unused now); the box, the tap, the hold and every other state of the button are untouched. */
+.start-gate .sg-btn:not(.ready){display:none !important;}
