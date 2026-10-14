@@ -44,7 +44,7 @@ PRUNED_FILES = ["assets/UI/audio.webp", "assets/UI/btn-finish.svg", "assets/UI/b
                 "assets/UI/peeking.webp", "assets/UI/peeking_pal.webp", "assets/UI/start_btn.webp", "assets/UI/sw_anim_celebrate.gif", "assets/UI/sw_anim_idle.gif",
                 "assets/UI/sw_anim_rest.webp", "assets/UI/sw_anim_talk.gif", "assets/UI/sw_anim_teach.gif", "assets/UI/sw_anim_tryagain.gif", "assets/UI/vo_button.webp",
                 "assets/Audio/sfx_celebrate.ogg"]
-BY_CONVENTION_AUDIO = ["sfx_pop_%d" % n for n in range(1, 10)] + ["sfx_rc", "sfx_place", "sfx_confetti", "sfx_correct_feedback", "sfx_incorrect_feedback", "sfx_next_button", "sfx_play_button", "vo_cel_prompt", "bgm_standard_2"]
+BY_CONVENTION_AUDIO = ["sfx_pop_%d" % n for n in range(1, 10)] + ["sfx_rc", "sfx_place", "sfx_confetti", "sfx_correct_feedback", "sfx_incorrect_feedback", "sfx_next_button", "sfx_play_button", "bgm_standard_2"]
 
 def rd(p): return open(p, encoding="utf-8").read()
 def wr(p, s):
@@ -498,7 +498,13 @@ def ff(*args):
 # md5 in word_times.json goes stale → envelope measurement). The pages are wired further down ([L02-VO-BATCH] wiring): I1 / I2 option
 # ids, the seven page reveal lines, RC1's opener, I3's one-word praise. Not spoken any more, still registered (as every removed clip is):
 # vo_q_reveal, vo_opt_khana / book / toys / bed / chair, vo_tap_speaker_sentence.
-VO_BATCH_DIR = os.path.join(SRC_DIR, "voiceovers_batch (25)", "voiceovers")   # [L02-DIST-OPTIM] moved out of the dist
+# [L02-VO-BATCH-2] (2026-10-14, user request) "I have added a voiceovers folder — replace all the existing VOs with the VOs of that folder at
+# the exact places, keep the working flow exactly the same": the user's voiceovers_batch (27) (61 WAVs, 24 kHz mono, one per Audio ID of the
+# 2026-10-13 manifest, all new takes; dropped into the dist as HI02H04_L02_S01_dist/voiceovers and moved here beside batch (25)) is the
+# batch now. Every line goes through vo_clip below as before (trim, -16.5 LUFS, 48 k WAV); the word timings re-measure by md5; the gate
+# headline onsets are re-pinned (GATE_CAPTION); the celebration line is the batch's own vo_cel_prompt (its lip-sync re-measured off it).
+# One wording changed with the batch's manifest (VO_Manifest (1).xlsx): vo_tap_ok "शाबाश! सही जगह।" -> "शाबाश! सही जवाब।".
+VO_BATCH_DIR = os.path.join(SRC_DIR, "voiceovers_batch (27)", "voiceovers")   # [L02-VO-BATCH-2]; batch (25) = the 2026-10-06 takes, kept
 VO_TARGET_I = -16.5
 VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the lesson's play order; one recording each in the batch
     # the title page (deck slide 3)
@@ -523,7 +529,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_tap_try_madhav", "ध्यान से देखिए और माधव को पहचानिए।"),
     ("vo_hint2_madhav", "माधव एक लड़का है, चित्र में लड़के को पहचानिए।"),
     ("vo_hint3_madhav", "यह माधव है, इसपर टैप कीजिए।"),
-    ("vo_tap_ok", "शाबाश! सही जगह।"),
+    ("vo_tap_ok", "शाबाश! सही जवाब।"),   # [L02-VO-BATCH-2] reworded with the new take (the batch's manifest; was "शाबाश! सही जगह।")
     # G3 — माधव किससे खेल रहा है? (deck slide 15): prompt, hint 1, the options, the reveal (hint 3), the correct line (the lesson's)
     ("vo_q_khel", "चित्र में माधव किससे खेल रहा है?"),
     ("vo_q_hint", "चित्र को ध्यान से देखिए।"),
@@ -575,7 +581,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_reveal_thak", "माधव थक गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
     ("vo_ok_thak_gaya", "शाबाश! वह थक गया था।"),
     # the celebration (deck slide 23)
-    ("vo_celebrate", "शाबाश! आपने पूरी कहानी ध्यान से पढ़ी और सभी प्रश्नों के उत्तर दे दिए।"),
+    ("vo_cel_prompt", "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!"),   # [L02-VO-BATCH-2] the celebration line is this lesson's own recording now ([L02-CEL-MTG204] borrowed it; the deck's vo_celebrate is gone)
 ]
 VO_BATCH_IDS = {k for k, _ in VO_LINES}
 assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
@@ -588,8 +594,7 @@ assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
 # guided gate's line vo_pt_guided takes it as its source the same way. The headline ("चलिए, साथ में करें!"), the bird, the 1250 ms talk
 # point and the close 300 ms after the line are as they were ([L02-STD-GATE]); the screen is as long as the new line needs. The manifest
 # words stay "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!" (the new take was not checked by ear).
-VO_OVERRIDE = {"vo_tap_speaker_sentence_story": os.path.join(SCR, "vo_tap_speaker_sentence_story_2026-10-07.wav"),
-               "vo_pt_guided": os.path.join(SCR, "vo_pt_guided_2026-10-08.wav")}
+VO_OVERRIDE = {}   # [L02-VO-BATCH-2] (2026-10-14) the new batch's own takes of the cue and the guided gate stand; the 2026-10-07/08 files stay in _reskin_build unused
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -1229,7 +1234,7 @@ def speech_runs(name, thr=0.06, win_ms=25, join_ms=120):
         i = j
     return runs
 GATE_CAPTION = {   # phase: (the clip, the run that begins the headline's words (0-based), the clip's run count, the onset ms — measured, see above)
-    "tutorial": ("vo_pt_tutorial", 3, 5, 3175), "guided": ("vo_pt_guided", 2, 4, 3775), "practice": ("vo_pt_practice", 1, 3, 1200)}
+    "tutorial": ("vo_pt_tutorial", 2, 4, 3475), "guided": ("vo_pt_guided", 2, 4, 3550), "practice": ("vo_pt_practice", 1, 3, 1175)}   # [L02-VO-BATCH-2] re-pinned on the new takes (scratchpad gate_onsets.py: speech runs + faster-whisper words; were 3/5 3175, 2/4 3775, 1/3 1200)
 GATE_WORDS = {"tutorial": "चलिए, शुरू करें!", "guided": "चलिए, साथ में करें!", "practice": "अब आपकी बारी!"}   # = the engine's PHASE_GATE_TITLE
 card["phase_gate_caption"] = {}
 for _ph, (_vo, _run, _nruns, _at) in GATE_CAPTION.items():
@@ -1859,15 +1864,17 @@ def _copy_same(src, dst):
     if os.path.exists(dst) and open(dst, "rb").read() == open(src, "rb").read(): return
     shutil.copyfile(src, dst); print("copied", dst)
 for _f in ("cel_shabaash.webp", "cel_talk.webp", "cel_idle.webp"): _copy_same(os.path.join(CEL_SRC, _f), os.path.join(CUR, "assets", "UI", _f))
-_cel_vo_src = os.path.join(CEL_SRC, "vo_cel_prompt.ogg"); _cel_vo_dst = os.path.join(CUR, "assets", "Audio", "vo_cel_prompt." + AUD_EXT)   # [L02-DIST-OPTIM] the borrowed line decoded to the lesson's WAV
-if not bed_fresh(_cel_vo_dst, _cel_vo_src): ff("-i", _cel_vo_src, "-ac", "1", "-ar", "48000", *AUD_ENC, _cel_vo_dst); assert os.path.exists(_cel_vo_dst); print("wrote", _cel_vo_dst)
+# [L02-VO-BATCH-2] (2026-10-14) the celebration line is the lesson's OWN recording now (vo_cel_prompt in the batch, made by vo_clip above like
+# every line); the borrowed MTG204 clip (cel_mtg204/vo_cel_prompt.ogg) is no longer shipped, and the lip-sync track below is measured off
+# the shipped clip, so the mouth follows the new take.
+_cel_vo_dst = os.path.join(CUR, "assets", "Audio", "vo_cel_prompt." + AUD_EXT); assert os.path.exists(_cel_vo_dst) and "vo_cel_prompt" in aud, "[L02-VO-BATCH-2] the celebration recording was not made"
 def cel_anim():
     """The reference build's cel_anim() (its scripts/build_skill_MTG2A04_L01_S01.py, rounds 2l/2m), verbatim but for the paths: the lip-sync
     track for the celebration VO + the sprite facts. talk = one char per 25 ms of vo_cel_prompt, '1' on a syllable beat (open mouth), '0'
     between them. Measured off the clip, so a re-record re-syncs on the next build."""
     meta = json.load(open(os.path.join(CEL_SRC, "_cel_sprite.json")))
     import array, math
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(CEL_SRC, "vo_cel_prompt.ogg"), "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", _cel_vo_dst, "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], capture_output=True).stdout   # [L02-VO-BATCH-2] the shipped clip
     a = array.array("h"); a.frombytes(raw[: len(raw) // 2 * 2])
     step = 400                                                     # 25 ms at 16 kHz
     rms = [math.sqrt(sum(x * x for x in a[i:i + step]) / step) for i in range(0, len(a) - step, step)]
@@ -1887,11 +1894,11 @@ def cel_anim():
             "talk": {"src": sh["talk"]["src"], "open": sh["talk"]["open"]},            # per-syllable pick
             "idle": {"src": sh["idle"]["src"], "loop": [0, 1, 2, 3, 4] + list(range(24, 36))}}   # after the VO: mouth-shut frames only
 card["end_anim"] = cel_anim()
-assert len(card["end_anim"]["bits"]) == 117 and card["end_anim"]["bits"].count("1") == 50, card["end_anim"]["bits"]   # = the reference card's track (its clip, its analysis)
+_cel_bits = card["end_anim"]["bits"]; _cel_dur = (lambda o: (lambda h, m, sec: int(h) * 3600 + int(m) * 60 + float(sec))(*re.search(r"Duration: (\d+):(\d+):([\d.]+)", o).groups()))(ff("-i", _cel_vo_dst, "-f", "null", "-"))
+assert abs(len(_cel_bits) * 25 - _cel_dur * 1000) <= 60 and 0.15 <= _cel_bits.count("1") / len(_cel_bits) <= 0.85, (len(_cel_bits), _cel_dur, _cel_bits)   # [L02-VO-BATCH-2] the track covers the shipped clip (was the reference's 117 / 50)
 _cel["prompt_hi"] = "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!"
 _cel["audio"]["prompt"] = "vo_cel_prompt"
-# (vo_cel_prompt is NOT registered in card.assets.audio: the engine resolves assets/Audio/<id>.ogg by convention, and the VO manifest —
-#  the fleet's recording script, 61 deck lines of 81 registered ids — must not list a clip borrowed from another lesson)
+# (vo_cel_prompt is registered like every batch line since [L02-VO-BATCH-2]; the VO manifest lists it as the celebration's line)
 for _k in ("cel_shabaash", "cel_talk", "cel_idle"): card["assets"]["image"][_k] = "assets/UI/" + _k + ".webp"
 # the questions between the legs — I3, M1 and M2 keep their content and clips, shown in the Figma card style like P1 ([L02-P1-FIG] below);
 # no recall picture (the Figma page has none). Their option pictures are the lesson's cut-out icons on a transparent ground (a book, the
@@ -2432,7 +2439,7 @@ for _o in _p1b["data"]["options"]:
     assert len(_ws) == len([w for w in _o["label_hi"].split() if w != "।"]), (_ws, _o["label_hi"])
     _p1b["data"]["word_times_by_audio"][_o["audio"]] = word_times_for(_o["audio"], _ws)
     assert len(_p1b["data"]["word_times_by_audio"][_o["audio"]]) == len(_ws) + 1
-assert _p1b["data"]["word_times_by_audio"]["vo_p1_utha"] == [0.1, 0.8, 1.06, 1.43], _p1b["data"]["word_times_by_audio"]["vo_p1_utha"]   # the answer's timings as before
+_wt_utha = _p1b["data"]["word_times_by_audio"]["vo_p1_utha"]; assert len(_wt_utha) == 4 and all(a < b for a, b in zip(_wt_utha, _wt_utha[1:])), _wt_utha   # [L02-VO-BATCH-2] re-measured on the new take (was pinned to [0.1, 0.8, 1.06, 1.43])
 # ---- [L02-WRONG1-QUIET] (2026-10-12, user request) "At pages 15 I3, 17 P1, 19 M1 and 21 M2 remove the «फिर से कोशिश कीजिए, कहानी याद
 # करिए ।» and «चित्र को ध्यान से देखिए ।» VOs on the first wrong attempt by the user. There should be wiggle animation along with the
 # incorrect sound effect at the first wrong attempt only on these pages" — data.wrong1_quiet (sent_q_page.js: the line the engine speaks
@@ -2590,8 +2597,8 @@ def _vo_walk(o, out):
         for v in o: _vo_walk(v, out)
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
-_spoken = set(_all_slide) | set(ENGINE_LINES) | {"vo_cel_prompt"}   # what the lesson plays today — incl. the celebration's borrowed, UNregistered vo_cel_prompt ([L02-CEL-MTG204]; fourth pass below)
-assert len(_spoken) == 61 and set(aud) == _spoken - {"vo_cel_prompt"}, "[L02-VO-MANIFEST] expected the 61 spoken lines (less the unregistered vo_cel_prompt) to be exactly the registered ones: " + str(sorted(set(aud) ^ (_spoken - {"vo_cel_prompt"})))   # [L02-DIST-OPTIM] nothing unplayed stays registered
+_spoken = set(_all_slide) | set(ENGINE_LINES)   # what the lesson plays today ([L02-VO-BATCH-2]: the celebration's vo_cel_prompt is a registered batch line now)
+assert len(_spoken) == 61 and set(aud) == _spoken, "[L02-VO-MANIFEST] expected the 61 spoken lines to be exactly the registered ones: " + str(sorted(set(aud) ^ _spoken))
 # Fourth pass (2026-10-13, user request "Generate a new and latest manifest excel file for this file in which all the latest dialogues
 # should be covered as per this whole file"): the manifest lists what the lesson SPEAKS TODAY, in play order. One row differs from the
 # deck's 61: the celebration speaks the MTG204 line «बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!» (vo_cel_prompt, [L02-CEL-MTG204], shipped by
@@ -2599,18 +2606,16 @@ assert len(_spoken) == 61 and set(aud) == _spoken - {"vo_cel_prompt"}, "[L02-VO-
 # stays in txt for the record only). The two re-recorded takes keep the deck's words (the mic cue [L02-CUE-VO-2], the guided gate
 # [L02-GATE-VO-2] — supplied as audio only). Lines some pages no longer speak stay listed because other pages do: vo_q_hint (G3's first
 # wrong tap; silent on I3 / M1 / M2 since [L02-WRONG1-QUIET], and their second tap is the read-out), vo_q_try (I1 / I2; silent on P1).
-_cel_slide = next(_s for _s in card["slides"] if _s["id"] == "CEL")
-CEL_LINE = ("vo_cel_prompt", _cel_slide["prompt_hi"])
-assert _cel_slide["audio"].get("prompt") == CEL_LINE[0] and CEL_LINE[1] == "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!", (_cel_slide.get("audio"), CEL_LINE)
-MANIFEST = [CEL_LINE if _k == "vo_celebrate" else (_k, _t) for _k, _t in VO_LINES]   # the deck's lines as recorded ([L02-VO-BATCH]), the celebration row swapped
+# Fifth pass (2026-10-14, [L02-VO-BATCH-2]): VO_LINES carries the celebration row itself (the batch recorded it), so the manifest IS VO_LINES.
+_cel_slide = next(_s for _s in card["slides"] if _s["id"] == "CEL"); assert _cel_slide["audio"].get("prompt") == "vo_cel_prompt" and txt["vo_cel_prompt"] == _cel_slide["prompt_hi"], (_cel_slide.get("audio"), txt.get("vo_cel_prompt"))
+MANIFEST = list(VO_LINES)
 # [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.
 _ids = [k for k, _ in MANIFEST]
 assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines expected: " + str(len(_ids))
 assert set(_ids) == _spoken, "[L02-VO-MANIFEST] the lines the lesson speaks are not the manifest's: " + str(sorted(set(_ids) ^ _spoken))
 for _k, _t in MANIFEST:
     assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
-    _src = aud.get(_k) or ("assets/Audio/" + _k + "." + AUD_EXT)                                   # vo_cel_prompt: unregistered, by convention
-    assert (CEL_LINE[1] if _k == CEL_LINE[0] else txt[_k]) == _t and os.path.exists(os.path.join(CUR, _src)), "[L02-VO-MANIFEST] " + _k
+    assert txt[_k] == _t and os.path.exists(os.path.join(CUR, aud[_k])), "[L02-VO-MANIFEST] " + _k
 _man = os.path.join(CUR, "VO_Manifest.xlsx"); _new = list(MANIFEST)
 _old = None
 if os.path.exists(_man):
