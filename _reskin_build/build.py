@@ -2511,6 +2511,31 @@ for _k in ("q3_kitab", "q3_khilone"):
     _pth = card["assets"]["image"].pop(_k, None)
     if _pth and os.path.exists(os.path.join(CUR, _pth)): os.remove(os.path.join(CUR, _pth)); print("removed", _pth)
 card["_emoji_fallback"].update({"i1_khana": "🍛", "i1_kitab": "📖", "i1_khilone": "🧸"})
+# ---- [L02-P1-FIG2] (2026-10-15, user request) P1 laid out from Figma "FLN by MJ" node 406-618 ("make the exact same layout and the exact
+# same images with the exact same placement of the elements and size as of this figma reference frame, in sync with the VO, and keep the
+# exact same animations and feedbacks of this page as of now; rest keep everything exactly the same"): the I1 / I2 design ([L02-I1I2-FIG2]
+# above - the wide grey cards, fig_q3_wide) over the blurred room the page already draws (the frame's backdrop is byte-identical to
+# bed_bg_source.png). The cards are the frame's grey ones, so fig_q3_yellow is dropped. The three pictures are byte-identical to sources here
+# (p1_utha_source.png = "5a6edbfb-10dd-4e23-b509-13d73d6b536a 2", p1_rona_source.png = "image 240", q3_khana_source.png = "8904ee33-3f44-4458-
+# 88d0-d542760a4085 2"), cut with cut_fig2 at the frame's image boxes (the khana picture keeps its Figma crop transform; the middle card's box
+# placed 3px lower as on I1 / I2). p1_khana is P1's own cut (q3_khana, P1's alone since [L02-I1I2-FIG2], is unregistered and deleted; the
+# [L02-Q3-FIG] loop above still writes it first); p1_rona / p1_utha keep their ids, the files replaced (the [L02-P1-FIG] cuts write first).
+P1_FIG2_CUTS = {
+    "p1_utha":  ("p1_utha_source.png",  (351.0, 262.0), (-18.39, -60.39),   ("cover",)),
+    "p1_rona":  ("p1_rona_source.png",  (336.0, 252.0), (-5.39, -50.39),    ("cover",)),
+    "p1_khana": ("q3_khana_source.png", (719.0, 347.0), (-397.39, -145.39), ("crop", 1.0949, 1.2754, 0.0, -0.0007)),
+}
+for _k, (_src, _box, _at, _fill) in P1_FIG2_CUTS.items(): cut_fig2(_k, _src, _box, _at, _fill)
+_p1 = _by_id["P1"]
+assert _p1.get("fig_q3") is True and _p1.pop("fig_q3_yellow", None) is True and _p1.get("room_bg") is True and _p1.get("opt_words") is True
+_p1["fig_q3_wide"] = True; _p1["q3_label_top"] = 231.61
+for _o in _p1["data"]["options"]:
+    if _o["img"] == "q3_khana": _o["img"] = "p1_khana"
+assert [_o["img"] for _o in _p1["data"]["options"]] == ["p1_khana", "p1_rona", "p1_utha"]
+card["assets"]["image"]["p1_khana"] = "assets/Images/p1_khana.webp"
+_pth = card["assets"]["image"].pop("q3_khana", None)
+if _pth and os.path.exists(os.path.join(CUR, _pth)): os.remove(os.path.join(CUR, _pth)); print("removed", _pth)
+card["_emoji_fallback"]["p1_khana"] = "🍛"
 # ---- [L02-DIST-OPTIM] prune (see the note at the top): unused registered pictures, unreferenced files, every audio file that is not shipped
 for _k in PRUNED_IMAGES:
     _pth = card["assets"]["image"].pop(_k, None)

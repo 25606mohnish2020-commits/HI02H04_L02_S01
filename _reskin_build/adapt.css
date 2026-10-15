@@ -889,3 +889,17 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
   width:calc(321.228px * var(--fs)) !important;height:calc(201.61px * var(--fs)) !important;}
 html body .stage.l02-q3.l02-q3-wide .opt-cell .story-q-opt-label.story-q-opt-label.story-q-opt-label{top:calc((5.386px + var(--q3-label-top,232.61px)) * var(--fs));
   max-width:calc(321.228px * var(--fs));font-size:calc(28px * var(--fs)) !important;line-height:calc(45px * var(--fs)) !important;}
+
+/* ===== P1 [L02-P1-FIG2] =====
+   [L02-P1-FIG2] (2026-10-15, user request: Figma "FLN by MJ" node 406-618 - "make the exact same layout and the exact same images with the
+   exact same placement of the elements and size as of this figma reference frame, in sync with the VO, and keep the exact same animations
+   and feedbacks of this page as of now; rest keep everything exactly the same.") The frame is the I1 / I2 design over the blurred room:
+   the same header, the same blurred backdrop the page already draws (the frame's 1326.582x742 image @ (-23,-11), 4px blur, .95 - the
+   lesson's bed_bg, byte-identical to the frame's), and the three 331x314 cards @ x 100 / 475 / 850, y 247 with the 321.228x201.61 picture
+   window and the 28px sentence (box top 231.61) - the [L02-I1I2-FIG2] rules above, through card slide.fig_q3_wide. The cards are the
+   frame's GREY ones (#D9D9D9 box, 2.386px #D5D8DF stroke, no shadow - exactly I1's and I2's), so the card's fig_q3_yellow is gone and the
+   [L02-P1-FIG] / [L02-GREY-STROKES] yellow-card rules no longer apply to it. The three pictures are the frame's own: "5a6edbfb-10dd-4e23-
+   b509-13d73d6b536a 2" = p1_utha_source.png, "image 240" = p1_rona_source.png, "8904ee33-3f44-4458-88d0-d542760a4085 2" = q3_khana_source.png
+   (byte-identical), cut at the frame's image boxes over the window (build.py [L02-P1-FIG2]; p1_khana is P1's own cut now, q3_khana retired).
+   The VO, the word highlight on the answer's line, the kit's feedback and the advance are as they were. Design note: as on I1 / I2 the
+   middle card's outer box sits 3px lower in the frame while its contents stay level - one row at y 247 here too. */
