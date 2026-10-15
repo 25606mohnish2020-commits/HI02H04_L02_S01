@@ -3156,3 +3156,35 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
 .stage.tut.l02-story .story-caption.has-chip .tut-audio.p2-rec-done{filter:grayscale(1) drop-shadow(0 3px 6px rgba(0,0,0,.22));}
 /* the pill and ring drawn inside .mic-wave must stay still - only the voice bars (inside its <g>) move */
 .stage.tut .tut-audio svg .mic-wave > rect{animation:none !important;}
+
+/* ===== L02-GREY-STROKES =====
+   [L02-GREY-STROKES] (2026-10-15, user request: "make the strokes of the hindi text bars, the strokes of the images and the options in all
+   the questions from blue and yellow colored to the exact same color as of the stroke of this reference image given to you; rest keep
+   everything exactly the same in this file.") The reference image (a white rounded card with a light-grey rim and a soft shadow) was
+   sampled pixel by pixel: its stroke is #DADADA (218,218,218), solid. Every blue or yellow stroke on a Hindi text bar, a picture or an
+   option takes that colour - the colour only: every width, radius, size, position, fill and shadow stays, and so do the feedback colours
+   (the green of the answer, the switched-off red, the greyed decoys - [L02-NO-RED-WRONG], [L02-REVEAL-DISABLED]) and the strokes that
+   were neither blue nor yellow (the header band's white rim, the card pages' Figma greys on I1 / I2 - #D9D9D9 rim, #D5D8DF card stroke -
+   the find page's white outlines, the car pages' token rings). Also untouched: the story pages' outer blue frame (a frame, not a bar, a
+   picture or an option), the mic ([L02-MIC-REF]) and the next-button art. Where each stroke was, rule for rule:
+   - story pages 2-10 ([L02-STORY-FIG]): the picture's 4px #FCB717 (yellow) frame and the sentence bar's 4px #1987FC (blue) stroke;
+   - the sentence-option pages G3 / I3 / M1 / M2: the recall picture's 4px #FCD86B (yellow) outline (the .sq-bare rule above) and the
+     sentence pills' 3px #386AF6 (blue) stroke (the engine's .story-caption rule, [BLUE-STROKE] 2026-09-23; the story bar overrides it);
+   - the card page P1 ([L02-P1-FIG], .l02-q3-yellow): the #FCB717 (yellow) rim + lip behind the white card (the cell's background) and
+     the card's own #FCB717 stroke, idle and on a wrong tap (where [L02-NO-RED-WRONG] keeps the stroke's own colour);
+   - the find page G2 (.l02-find) and the car pages RC1-RC5 (.l02-rc) - and the bed page's rule (.l02-bed), kept for a card that sets
+     bed_fig: the picture frame's 4px #386AF6 (blue) stroke, and the engine's 4px #FCD86B (yellow) picture outline (.tis-img) under it.
+   Each override repeats the selector of the rule it recolours (or a higher one) and comes later in the cascade, so nothing else of
+   those rules changes. */
+.story-caption{border-color:#DADADA;}
+.stage.tut.l02-story .story-caption{border-color:#DADADA;}
+.stage.tut.l02-story .story-frame{border-color:#DADADA;}
+.story-q-stim.sq-bare .story-q-thumb{outline-color:#DADADA;}
+.tis-img{outline-color:#DADADA;}
+.stage.l02-find .tis-frame,.stage.l02-bed .tis-frame,.stage.l02-rc .tis-frame{border-color:#DADADA;}
+.stage.l02-q3.l02-q3-yellow .opt-cell,.stage.l02-q3.l02-q3-yellow .opt-cell:hover,
+.stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-out,.stage.l02-q3.l02-q3-yellow .opt-cell.ck-correct,
+.stage.l02-q3.l02-q3-yellow .opt-cell.correct,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-guided{background:#DADADA !important;}
+.stage.l02-q3.l02-q3-yellow .opt-cell::before{border-color:#DADADA;}
+.stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-rel:not(.correct):not(.ck-correct):not(.opt-guided)::before,
+.stage.l02-q3.l02-q3-yellow .opt-cell.crossed:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s:not(.correct):not(.ck-correct):not(.opt-guided)::before{border-color:#DADADA;}
