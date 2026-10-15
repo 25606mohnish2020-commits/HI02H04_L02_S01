@@ -384,8 +384,13 @@ for s in card["slides"]:
 # sentence clip (data.whole_audio) at that playbackRate with the pitch kept (the browser's time-stretch — the voice as a slowed take),
 # and the word highlight follows the clip's own clock (currentTime against data.word_times), so it slows with it by itself; the pop and
 # आगे बढ़ें follow the clip's (later) end as before. The clips, their measured timings and the cue line are untouched (the cue plays at 1.0).
+# [L02-SENT-RATE-UP] (2026-10-15, user request) "From page T1 to T9 increase the speed of the VOs and the highlight word by word animation
+# synced with it after the mic button gets disabled by a little bit; rest keep everything exactly the same." One step back up the same
+# ladder: data.sentence_rate 0.72 -> 0.8 on every story page (about 11% faster; the pitch still kept). Nothing else moves: the highlight
+# follows the clip's clock as before, so it speeds up with the voice by itself; the read-aloud beat (a second per word), the cue line
+# (at 1.0), the clips and their measured word timings are as they were.
 for _s in card["slides"]:
-    if _s["type"] == "STORY_READ_PAGE": _s["data"]["sentence_rate"] = 0.72
+    if _s["type"] == "STORY_READ_PAGE": _s["data"]["sentence_rate"] = 0.8   # [L02-SENT-RATE-UP] 2026-10-15: 0.72 -> 0.8 (see the note above)
 aud, txt = card["assets"]["audio"], card["assets"]["audio_text"]
 for k, v in {
     "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",   # [L02-GATE-LINE] → [L02-VO-BATCH] the recorded line; the headline is its last words, चलिए, शुरू करें!
