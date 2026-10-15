@@ -809,3 +809,26 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
 @keyframes p2BirdPopOut{0%{transform:scale(1.03);}100%{transform:scale(1);}}
 .stage.tut .story-frame.p2-pop-in{animation:p2BirdPopIn .32s 1 both;transform-origin:50% 50%;will-change:transform;}
 .stage.tut .story-frame.p2-pop-out{animation:p2BirdPopOut .28s ease-in-out 1 both;transform-origin:50% 50%;will-change:transform;}
+
+/* ===== L02-MIC-REF =====
+   [L02-MIC-REF] (2026-10-15, user request: "https://github.com/Prashantkumar12345678/Alu_malu_Kalu_HI02H04_L03_S01 - take the reference of
+   this file and make the mic button and the waves in it exactly the same as shown in this file wherever used, adjust its spacing and the
+   placement accordingly such that the whole layout looks perfectly fine; rest keep everything exactly the same in this file.") The read-aloud
+   mic of the story pages (pages 2-10: the tut frame's .tut-audio beside the sentence bar - the only mic this lesson shows; the sentence
+   pages' option chips are display:none) is that lesson's reading mic, value for value - its style.css `.stage.story-reading .reading-mic`
+   rules (the 2026-10 state: 88x86, left -115 / margin-top -43 on the bar's middle, drop-shadow 0 3px 6px 22%) and the wave rules it shares
+   with [L02-READ-ALOUD] above. The art (story_read_page.js [L02-MIC-REF]) now carries the yellow pill, the white ring and the navy glyph, so
+   the CSS disc, ring, gradient and box-shadow this chip drew until now are off and the reference's drop-shadow filter is on; the art fills
+   the chip (the centring offsets for the 62x60 speaker art are gone); the chip's centre sits 71 px left of the bar's edge on the bar's
+   vertical middle, where the old 44 px chip's centre was within a few px. While the child reads the glyph gives way to the five navy voice
+   bars, which bounce exactly as before (the [L02-READ-ALOUD] keyframes: the reference's readingReferenceWave, the same durations and delays)
+   while the pill and the ring drawn inside .mic-wave stay still (the reference's own `> rect` rule). The disabled chip (.p2-rec-done) wears
+   the reference's grey at .45 with its drop-shadow. Untouched: the one tap and the beats (story_read_page.js), the cue pulse (spkCuePulse
+   through `scale`, so the stillness lock stays), the sentence bar, the picture, आगे बढ़ें, the header and landing speaker chips. */
+.stage.tut.l02-story .story-caption.has-chip .tut-audio{left:-115px;top:50%;right:auto;bottom:auto;margin:-43px 0 0 0;padding:0;
+  width:88px;height:86px;border:0;border-radius:0;background:transparent;box-shadow:none;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.22));overflow:visible;}
+.stage.tut.l02-story .story-caption.has-chip .tut-audio svg{position:static;left:auto;top:auto;width:88px;height:86px;margin:0;display:block;overflow:visible;}
+.stage.tut.l02-story .story-caption.has-chip .tut-audio.p2-rec-done{filter:grayscale(1) drop-shadow(0 3px 6px rgba(0,0,0,.22));}
+/* the pill and ring drawn inside .mic-wave must stay still - only the voice bars (inside its <g>) move */
+.stage.tut .tut-audio svg .mic-wave > rect{animation:none !important;}
