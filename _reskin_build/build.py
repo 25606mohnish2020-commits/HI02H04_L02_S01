@@ -2457,6 +2457,60 @@ for _sid, _try in (("I3", "vo_q_hint"), ("P1", "vo_q_try"), ("M1", "vo_q_hint"),
     assert (_s.get("sent_ref") is True or _s.get("card_ref") is True) and _s["audio"].get("try_again") == _try and "wrong1_quiet" not in _s["data"], (_sid, _s["audio"])
     _s["data"]["wrong1_quiet"] = True
 assert card["assets"]["audio_text"]["vo_q_hint"].replace(" ।", "।") == "चित्र को ध्यान से देखिए।", card["assets"]["audio_text"]["vo_q_hint"]
+# ---- [L02-I1I2-FIG2] (2026-10-15, user request) I1 and I2 laid out from Figma "FLN by MJ" nodes 400-16 / 401-212 ("make the exact same
+# layout and the exact same images with the exact same placement of the elements and size as of these figma reference frames, in sync with
+# the VO, and keep the exact same animations and feedbacks of these pages as of now; rest keep everything exactly the same"). Same header,
+# three WIDER cards (331x314 @ x 100 / 475 / 850, y 247; the white card 326x307 @ 3,3) with the picture window 321.228x201.61 at the padding
+# box's top-left and the sentence at 28px (CSS adapt.css [L02-I1I2-FIG2], stage class .l02-q3-wide from card slide.fig_q3_wide; adapt.js
+# applyQ3). The six pictures are the frames' own (download_assets raw images): I1's three are byte-identical to sources already here
+# (q3_khana_source.png = "8904ee33-3f44-4458-88d0-d542760a4085 2", story_6_source_2.png = "Cozy Sunlit Reading Corner 2",
+# q3_khel_source_2.png = "Sunny Playroom Adventure 1"); I2's three are new (i2_toys_source_3.png = "image 253", i2_bed_source_2.png =
+# "image 250", i2_chair_source_2.png = "image 249"). Each is cut with cut_q3_option's maths at the frame's image box (Figma px of the padding
+# box; the khana picture keeps its Figma crop transform) over the new window, 3x (964x605 WEBP q88). I1 gets its own ids (i1_khana /
+# i1_kitab / i1_khilone - P1 shares q3_khana at the old crop; q3_kitab / q3_khilone are unregistered and deleted, the cuts above still
+# write them first); I2 keeps its ids, the files replaced (the [L02-I2-FIG] cuts above still write first). The sentences are one line
+# each now (I1's label_w is dropped); their text, clips and word timings are as they were. Design note: in both frames the middle card's
+# outer box sits 3px lower (y 250) while its picture and sentence stay level with the neighbours' on the artboard - taken as a slip: one
+# row at y 247, and the two middle pictures' boxes are placed 3px lower here so their windows reach 201.61 like the others.
+FIG2_WIN = (321.228, 201.61)
+FIG2_CUTS = {
+    "i1_khana":   ("q3_khana_source.png",   (741.0, 358.0), (-400.39, -156.39), ("crop", 1.0949, 1.2754, 0.0, -0.0007)),
+    "i1_kitab":   ("story_6_source_2.png",  (330.0, 247.0), (-6.39, -45.39),    ("cover",)),
+    "i1_khilone": ("q3_khel_source_2.png",  (322.0, 239.0), (-0.39, -37.39),    ("cover",)),
+    "i2_toys":    ("i2_toys_source_3.png",  (350.0, 263.0), (-14.39, -61.39),   ("cover",)),
+    "i2_bed":     ("i2_bed_source_2.png",   (374.0, 280.0), (-42.39, -78.39),   ("cover",)),
+    "i2_chair":   ("i2_chair_source_2.png", (340.0, 255.0), (-1.39, -53.39),    ("cover",)),
+}
+def cut_fig2(key, src, box, at, fill):
+    s = os.path.join(SCR, src); d = os.path.join(CUR, "assets", "Images", key + ".webp")
+    assert os.path.exists(s), "missing " + s
+    if os.path.exists(d) and os.path.getmtime(d) >= max(os.path.getmtime(s), os.path.getmtime(os.path.abspath(__file__))): return
+    from PIL import Image
+    im = Image.open(s).convert("RGB"); iw, ih = im.size
+    bw, bh = box; bx, by = at
+    if fill[0] == "crop":
+        _, fw, fh, fx, fy = fill; dw, dh = bw * fw, bh * fh; dx, dy = bx + bw * fx, by + bh * fy
+    else:
+        sc = max(bw / iw, bh / ih); dw, dh = iw * sc, ih * sc; dx, dy = bx + (bw - dw) / 2, by + (bh - dh) / 2
+    sx, sy = iw / dw, ih / dh
+    crop = ((0 - dx) * sx, (0 - dy) * sy, (FIG2_WIN[0] - dx) * sx, (FIG2_WIN[1] - dy) * sy)
+    assert crop[0] >= -1 and crop[1] >= -1 and crop[2] <= iw + 1 and crop[3] <= ih + 1, "%s: the window leaves the picture: %r" % (key, crop)
+    crop = tuple(max(0, min(v, m)) for v, m in zip(crop, (iw, ih, iw, ih)))
+    im.crop(tuple(int(round(v)) for v in crop)).resize((int(round(FIG2_WIN[0] * Q3_SCALE)), int(round(FIG2_WIN[1] * Q3_SCALE))), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
+    print("wrote", d, "crop", tuple(round(v, 1) for v in crop))
+for _k, (_src, _box, _at, _fill) in FIG2_CUTS.items(): cut_fig2(_k, _src, _box, _at, _fill)
+_i1, _i2 = _by_id["I1"], _by_id["I2"]
+assert _i1.get("fig_q3") is True and _i2.get("fig_q3") is True
+for _o in _i1["data"]["options"]:
+    _o["img"] = {"q3_khana": "i1_khana", "q3_kitab": "i1_kitab", "q3_khilone": "i1_khilone"}[_o["img"]]; _o.pop("label_w", None)
+assert [_o["img"] for _o in _i2["data"]["options"]] == ["i2_toys", "i2_bed", "i2_chair"]
+_i1["fig_q3_wide"] = True; _i1["q3_label_top"] = 232.61
+_i2["fig_q3_wide"] = True; _i2["q3_label_top"] = 231.61
+for _k in ("i1_khana", "i1_kitab", "i1_khilone"): card["assets"]["image"][_k] = "assets/Images/" + _k + ".webp"
+for _k in ("q3_kitab", "q3_khilone"):
+    _pth = card["assets"]["image"].pop(_k, None)
+    if _pth and os.path.exists(os.path.join(CUR, _pth)): os.remove(os.path.join(CUR, _pth)); print("removed", _pth)
+card["_emoji_fallback"].update({"i1_khana": "🍛", "i1_kitab": "📖", "i1_khilone": "🧸"})
 # ---- [L02-DIST-OPTIM] prune (see the note at the top): unused registered pictures, unreferenced files, every audio file that is not shipped
 for _k in PRUNED_IMAGES:
     _pth = card["assets"]["image"].pop(_k, None)

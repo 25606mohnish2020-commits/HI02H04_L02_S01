@@ -864,3 +864,28 @@ body > .end-screen{gap:calc(22px * var(--scale,1)) !important;}
 .stage.l02-q3.l02-q3-yellow .opt-cell::before{border-color:#DADADA;}
 .stage.l02-q3.l02-q3-yellow .opt-cell.wg-wrong:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.wg-rel:not(.correct):not(.ck-correct):not(.opt-guided)::before,
 .stage.l02-q3.l02-q3-yellow .opt-cell.crossed:not(.correct):not(.ck-correct):not(.opt-guided)::before,.stage.l02-q3.l02-q3-yellow .opt-cell.opt-redglow-1s:not(.correct):not(.ck-correct):not(.opt-guided)::before{border-color:#DADADA;}
+
+/* ===== I1 / I2 [L02-I1I2-FIG2] =====
+   [L02-I1I2-FIG2] (2026-10-15, user request: Figma "FLN by MJ" nodes 400-16 (I1) and 401-212 (I2) - "make the exact same layout and the
+   exact same images with the exact same placement of the elements and size as of these figma reference frames, in sync with the VO,
+   and keep the exact same animations and feedbacks of these pages as of now; rest keep everything exactly the same.") Both frames are
+   1280x720 with the [L02-Q3-FIG] header exactly as it is (band 1214.103x84 @ 39.9,44, mascot 116.513x120 @ 36,26) and three WIDER cards:
+   331x314 @ x 100 / 475 / 850, y 247 (44 apart; the [L02-Q3-FIG] cards are 252x314.113 @ 232 / 514 / 796, 30 apart - P1 keeps those),
+   each a #D9D9D9 box r13.31 holding the white card 326x307 @ (3,3), 2.386px #D5D8DF stroke, r14.316; the picture fills the white
+   card's padding box from its top down to 201.61 (321.228x201.61 @ 5.386,5.386 of the cell - the six pictures are cut at exactly that
+   window by build.py [L02-I1I2-FIG2], 3x, so the file fills it edge to edge); the sentence Baloo Bhai 2 SemiBold 28px #012F76 (line
+   height normal = 45px), centred, its box top 232.61 (I1) / 231.61 (I2) below the padding box's top (card slide.q3_label_top; adapt.js
+   sets --q3-label-top), one line on every card (I1's खिलौनों से खेला lost its label_w: the 331px card holds it). Stage class
+   .l02-q3-wide (card slide.fig_q3_wide, adapt.js applyQ3) on top of .l02-q3, so every other rule of the card page - the header, the
+   feedback colours on the white card's stroke, the kit's pop / shake / crown / dim, the word highlight - is the same code as before.
+   Design note: in both frames the MIDDLE card's outer box sits 3px lower (y 250) than its neighbours while its picture and sentence
+   stay level with theirs on the artboard (picture bottoms at 454, text tops at 485) - the outer box is taken as a slip, so the three
+   cards share one row at y 247 and the middle cards' picture windows reach 201.61 like the others (their Figma image boxes are placed
+   3px lower for it; build.py). The empty 132.923x56 frame at (1117,632) of both designs holds nothing and draws nothing. */
+.stage.l02-q3.l02-q3-wide .opt-grid{left:calc(100px * var(--fs));grid-template-columns:repeat(3,calc(331px * var(--fs))) !important;gap:calc(44px * var(--fs)) !important;}
+.stage.l02-q3.l02-q3-wide .opt-cell{width:calc(331px * var(--fs)) !important;height:calc(314px * var(--fs));}
+.stage.l02-q3.l02-q3-wide .opt-cell::before{left:calc(3px * var(--fs));top:calc(3px * var(--fs));width:calc(326px * var(--fs));height:calc(307px * var(--fs));}
+.stage.l02-q3.l02-q3-wide .opt-cell .story-q-opt-img{left:calc(5.386px * var(--fs));top:calc(5.386px * var(--fs));
+  width:calc(321.228px * var(--fs)) !important;height:calc(201.61px * var(--fs)) !important;}
+html body .stage.l02-q3.l02-q3-wide .opt-cell .story-q-opt-label.story-q-opt-label.story-q-opt-label{top:calc((5.386px + var(--q3-label-top,232.61px)) * var(--fs));
+  max-width:calc(321.228px * var(--fs));font-size:calc(28px * var(--fs)) !important;line-height:calc(45px * var(--fs)) !important;}

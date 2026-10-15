@@ -5089,7 +5089,9 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   function applyQ3(idx){
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, q3 = !!(s && s.fig_q3 === true);
     var st = document.getElementById("stage"); if(st){ st.classList.toggle("l02-q3", q3); st.classList.toggle("l02-q3-yellow", q3 && s.fig_q3_yellow === true);   // [L02-P1-FIG] the yellow cards
-      st.classList.toggle("l02-q3-contain", q3 && s.fig_q3_contain === true); }                                                                                       // [L02-BED-JOURNEY] cut-out icons shown whole
+      st.classList.toggle("l02-q3-contain", q3 && s.fig_q3_contain === true);
+      st.classList.toggle("l02-q3-wide", q3 && s.fig_q3_wide === true);                                                                                             // [L02-I1I2-FIG2] the 331px Figma cards (I1, I2)
+      st.style.setProperty("--q3-label-top", (q3 && typeof s.q3_label_top === "number") ? s.q3_label_top + "px" : ""); }                                            // [L02-I1I2-FIG2] the sentence box top (Figma px)                                                                                       // [L02-BED-JOURNEY] cut-out icons shown whole
     if(!s || !(q3 || s.mascot_replay === true)) return;
     var mw = document.getElementById("mascotWrap");
     if(mw) mw.onclick = function(){ if(typeof isPlaying !== "undefined" && isPlaying) return;
