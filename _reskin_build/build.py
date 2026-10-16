@@ -2698,6 +2698,36 @@ card["assets"]["image"]["p1_khana"] = "assets/Images/p1_khana.webp"
 _pth = card["assets"]["image"].pop("q3_khana", None)
 if _pth and os.path.exists(os.path.join(CUR, _pth)): os.remove(os.path.join(CUR, _pth)); print("removed", _pth)
 card["_emoji_fallback"]["p1_khana"] = "🍛"
+# ---- [L02-OK-SHABASH] (2026-10-16, user request) "At pages 17 P1, 19 M1 and 21 M2 on the correct option tapped by the user before the hand
+# nudge appears the «शाबाश! यही सही जवाब है।» VO should not exist; on the correct option tapped before the hand nudge, only the शाबाश VO and
+# then the VO of the correct option synced with the highlight animation should come, just like that of page 15 I3. Rest keep everything
+# exactly the same in this file." I3's beat ([L02-I3-OK-SENT]): a first- or second-try correct tap speaks the deck's one word «शाबाश।»
+# (vo_ok_sula, the batch's recording) and then the correct option's own line with its words lit by its own timings; the page advances
+# 700 ms later. The three pages take that beat: their praise (audio.correct) becomes vo_ok_sula. Before: P1's praise was the generic
+# vo_q_correct «शाबाश! यही सही जवाब है।» (I1's / I2's line - they keep it), spoken AFTER the tapped card's line; M1's / M2's were the
+# sentence-carrying vo_ok_kitab_padhi «शाबाश! माधव ने किताब पढ़ी।» / vo_ok_thak_gaya «शाबाश! वह थक गया था।», lit on the pill while they
+# spoke, the pill's own line skipped (okSentOff). Now on M1 / M2 (sent_ref) the swap follows from the card alone - a praise with no word
+# timings → the praise first, then the pill's line lit (sent_q_page.js okSentOff + [L02-I3-OK-SENT]); their old praise timings come out of
+# word_times_by_audio (nothing lights during «शाबाश।», as on I3). P1 is a Figma CARD page (card_ref + opt_words, not sent_ref), where
+# okSentOff never applied: the new card knob data.praise_first opens its gate there (sent_q_page.js [L02-OK-SHABASH]), so the order is
+# «शाबाश।», then «माधव उठ गया।» with its words lit ([L02-P1-WORDS]), then the advance. The guided tap after the reveal (the hand) stays
+# guided_quiet (confetti + the correct sound only); wrong taps, the read-out, the reveal, the SFX hold and the idle repeat are untouched;
+# G3 (praise with timings) and I1 / I2 keep theirs. The two recorded praise lines vo_ok_kitab_padhi / vo_ok_thak_gaya are spoken by no
+# page now; they stay registered, shipped and in the manifest (the voice team's recorded lines, as vo_q_hint's silent pages left it) -
+# RECORDED_UNSPOKEN below tells the [L02-VO-MANIFEST] check so. Card + sent_q_page.js; no clip changes.
+assert txt["vo_ok_sula"] == "शाबाश।" and os.path.exists(os.path.join(CUR, aud["vo_ok_sula"])), txt.get("vo_ok_sula")
+for _sid, _old_ok in (("P1", "vo_q_correct"), ("M1", "vo_ok_kitab_padhi"), ("M2", "vo_ok_thak_gaya")):
+    _s = _by_id[_sid]; _wt = _s["data"]["word_times_by_audio"]
+    assert _s["audio"].get("correct") == _old_ok and _s["data"].get("guided_quiet") is True and _s["data"].get("wrong1_quiet") is True, (_sid, _s["audio"])
+    _s["audio"]["correct"] = "vo_ok_sula"
+    if _sid == "P1":
+        assert _s.get("card_ref") is True and _s.get("opt_words") is True and "sent_ref" not in _s and "praise_first" not in _s["data"], _sid
+        _s["data"]["praise_first"] = True
+    else:
+        assert _s.get("sent_ref") is True and len(_wt.pop(_old_ok)) == 5, (_sid, _old_ok)   # the old praise's four lit words + end: gone with it
+    _ok_opt = next(o for o in _s["data"]["options"] if o.get("correct") is True)
+    assert "vo_ok_sula" not in _wt and len(_wt[_ok_opt["audio"]]) == len(txt[_ok_opt["audio"]].split()) + 1, (_sid, _ok_opt)   # the swap's second line has its timings; the praise has none
+RECORDED_UNSPOKEN = {"vo_ok_kitab_padhi", "vo_ok_thak_gaya"}
 # ---- [L02-DIST-OPTIM] prune (see the note at the top): unused registered pictures, unreferenced files, every audio file that is not shipped
 for _k in PRUNED_IMAGES:
     _pth = card["assets"]["image"].pop(_k, None)
@@ -2844,7 +2874,9 @@ def _vo_walk(o, out):
 _all_slide = []
 for _s in card["slides"]: _vo_walk(_s, _all_slide)
 _spoken = set(_all_slide) | set(ENGINE_LINES)   # what the lesson plays today ([L02-VO-BATCH-2]: the celebration's vo_cel_prompt is a registered batch line now)
-assert len(_spoken) == 61 and set(aud) == _spoken, "[L02-VO-MANIFEST] expected the 61 spoken lines to be exactly the registered ones: " + str(sorted(set(aud) ^ _spoken))
+assert not (_spoken & RECORDED_UNSPOKEN), "[L02-OK-SHABASH] a page speaks a praise line meant to be silent: " + str(sorted(_spoken & RECORDED_UNSPOKEN))
+_listed = _spoken | RECORDED_UNSPOKEN   # [L02-OK-SHABASH] (2026-10-16) + the two recorded praise lines no page speaks since M1 / M2 took I3's «शाबाश।»: registered, shipped and in the manifest as the voice team's lines
+assert len(_listed) == 61 and set(aud) == _listed, "[L02-VO-MANIFEST] expected the 61 listed lines (59 spoken + 2 recorded, unspoken) to be exactly the registered ones: " + str(sorted(set(aud) ^ _listed))
 # Fourth pass (2026-10-13, user request "Generate a new and latest manifest excel file for this file in which all the latest dialogues
 # should be covered as per this whole file"): the manifest lists what the lesson SPEAKS TODAY, in play order. One row differs from the
 # deck's 61: the celebration speaks the MTG204 line «बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!» (vo_cel_prompt, [L02-CEL-MTG204], shipped by
@@ -2858,7 +2890,7 @@ MANIFEST = list(VO_LINES)
 # [L02-VO-BATCH] (2026-10-06, third pass) the recordings of these 61 lines are in; the lesson speaks exactly them, with these words.
 _ids = [k for k, _ in MANIFEST]
 assert len(_ids) == len(set(_ids)) == 61, "[L02-VO-MANIFEST] 61 distinct lines expected: " + str(len(_ids))
-assert set(_ids) == _spoken, "[L02-VO-MANIFEST] the lines the lesson speaks are not the manifest's: " + str(sorted(set(_ids) ^ _spoken))
+assert set(_ids) == _listed, "[L02-VO-MANIFEST] the lines the lesson speaks (+ the two recorded, unspoken praise lines) are not the manifest's: " + str(sorted(set(_ids) ^ _listed))
 for _k, _t in MANIFEST:
     assert _t == _t.strip() and " ।" not in _t and "  " not in _t and _t, "[L02-VO-MANIFEST] line text " + _k
     assert txt[_k] == _t and os.path.exists(os.path.join(CUR, aud[_k])), "[L02-VO-MANIFEST] " + _k

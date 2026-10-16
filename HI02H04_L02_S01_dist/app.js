@@ -5773,7 +5773,19 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
                            whose praise has NO word timings speaks the praise FIRST and then the correct pill's own line with its words lit
                            in time (its own timings), the order the other pages' praise-with-sentence has; the engine's own praise call that
                            follows the pill's line is ended at once (the praise has been heard), so the page advances 700 ms after the
-                           sentence as the others do. Pages whose praise carries timings (G3 / M1 / M2) are untouched. */
+                           sentence as the others do. Pages whose praise carries timings (G3 / M1 / M2) are untouched.
+     [L02-OK-SHABASH]      (2026-10-16, user request: "at pages 17 P1, 19 M1 and 21 M2 on the correct option tapped by the user before the
+                           hand nudge appears the «शाबाश! यही सही जवाब है।» VO should not exist; only the शाबाश VO and then the VO of the
+                           correct option synced with the highlight animation should come, just like that of page 15 I3") The three pages
+                           take I3's beat: the card gives each the one-word praise vo_ok_sula «शाबाश।» (build.py [L02-OK-SHABASH]) - a
+                           praise with no timings, so on M1 / M2 (sent_ref) the [L02-I3-OK-SENT] swap above runs by itself: the praise
+                           first, then the pill's own line with its words lit by its own timings, the advance 700 ms later (their old
+                           sentence-carrying praise and its lit words are gone). P1 is a Figma CARD page (card_ref + opt_words, not
+                           sent_ref), where okSentOff never applied and the engine spoke the tapped card's line (lit, [L02-P1-WORDS]) and
+                           THEN the praise (the generic vo_q_correct): the card knob data.praise_first opens okSentOff's gate on such a
+                           page, so the same swap runs there - «शाबाश।», then «माधव उठ गया।» with its words lit, then the advance. The
+                           guided tap after the reveal (the hand) stays guided_quiet; wrong taps, the read-out, the reveal, the SFX hold
+                           and the idle repeat are as they were. I1 / I2 (vo_q_correct, no knob) and G3 (praise with timings) are untouched. */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }
@@ -5915,9 +5927,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     var o = optionOf(sl, src); return !!o && o.correct !== true;
   }
   // the engine speaking the CORRECT pill's own line right after a correct tap (state.locked, no reveal) while the card has a praise
-  // line: that line follows at once and carries the sentence, so this one is skipped and the sentence is heard once
+  // line: that line follows at once and carries the sentence, so this one is skipped and the sentence is heard once (a praise with no
+  // timings swaps the order instead - the praise first, then this line lit: [L02-I3-OK-SENT] in the play() seam)
   function okSentOff(sl, src){
-    if(sl.sent_ref !== true) return false;                                    // [L02-Q-BEATS] a card page's praise is generic: its answer's own sentence stays
+    if(sl.sent_ref !== true && !(sl.data && sl.data.praise_first === true)) return false;   // [L02-Q-BEATS] a card page's praise is generic: its answer's own sentence stays - unless the card asks for the praise first ([L02-OK-SHABASH], P1)
     if(reviewing || !state.locked || state.scaffoldLevel === 3) return false;
     if(!sl.audio || !sl.audio.correct) return false;
     var o = optionOf(sl, src); return !!o && o.correct === true;
