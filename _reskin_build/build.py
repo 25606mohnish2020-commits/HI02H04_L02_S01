@@ -359,20 +359,29 @@ card = json.loads(m.group(1))
 # offsets inside the 9px stroke ([L02-LANDING-PIC-2] in adapt.css: -18/-95; the design's -19 would leave the last column of the
 # stroke's box bare, so a 1px nudge). The old scene (landing_title.webp, the Figma 98-2 picture) leaves the dist; its source stays in
 # _reskin_build/landing_title_source.png. Nothing else on the page moves: the card box, the bird, the play button, the reveal.
+# [L02-LANDING-TITLE-3] (2026-10-16, user request) "At the title page replace the heading text with this png keeping the positioning and the
+# placement exactly the same as of now; rest keep everything exactly the same." The user's PNG (2170x725, RGBA: the same "सोना नहीं, खेलना
+# है !" lettering on its cream cloud at 3x, with transparent margins above and below) is kept as _reskin_build/landing2_title_source_2.png
+# and takes the sticker's place. Its visible part (alpha > 8: 2157x522, 4.13 wide for its height; the old sticker's was 725x196, 3.70) is
+# FITTED INSIDE the same 416x113 layer box at the same spot (contain, centred): the title keeps its width and its centre, the cloud comes out
+# a little shorter (416x101 layer px) than the old one. The scene, the box and everything else on the page are as they were.
 LANDING_PIC = "assets/Images/landing_title_2.webp"
 _L2_SCENE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_scene_source.png")
-_L2_TITLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_title_source.png")
+_L2_TITLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_title_source_2.png")   # [L02-LANDING-TITLE-3]; landing2_title_source.png = the Figma sticker, kept
 _L2_DST = os.path.join(CUR, LANDING_PIC)
 assert os.path.exists(_L2_SCENE) and os.path.exists(_L2_TITLE), "[L02-LANDING-PIC-2] missing sources"
-if not os.path.exists(_L2_DST) or os.path.getmtime(_L2_DST) < max(os.path.getmtime(_L2_SCENE), os.path.getmtime(_L2_TITLE)):
+if not os.path.exists(_L2_DST) or os.path.getmtime(_L2_DST) < max(os.path.getmtime(_L2_SCENE), os.path.getmtime(_L2_TITLE), os.path.getmtime(os.path.abspath(__file__))):
     from PIL import Image as _Img
     _scene = _Img.open(_L2_SCENE).convert("RGB"); _sticker = _Img.open(_L2_TITLE).convert("RGBA")
     _S = _scene.size[0] / 1114.0                                     # the scene's pixels per layer px (1.5)
     assert abs(_scene.size[1] / 627.0 - _S) < 0.01, _scene.size
-    _st = _sticker.resize((round(416 * _S), round(113 * _S)), _Img.LANCZOS)
-    _scene.paste(_st, (round(366 * _S), round(116 * _S)), _st)     # the sticker at card (356,30) = picture (366,116), 416x113
+    _bb = _sticker.split()[3].point(lambda v: 255 if v > 8 else 0).getbbox(); _sticker = _sticker.crop(_bb)   # [L02-LANDING-TITLE-3] the visible art
+    _BW, _BH = round(416 * _S), round(113 * _S); _k = min(_BW / _sticker.width, _BH / _sticker.height)
+    _w, _h = round(_sticker.width * _k), round(_sticker.height * _k)
+    _st = _sticker.resize((_w, _h), _Img.LANCZOS)
+    _scene.paste(_st, (round(366 * _S) + (_BW - _w) // 2, round(116 * _S) + (_BH - _h) // 2), _st)   # contain, centred in the sticker's box: card (356,30) = picture (366,116), 416x113
     _scene.save(_L2_DST, "WEBP", quality=88, method=6)
-    print("wrote", _L2_DST, _scene.size)
+    print("wrote", _L2_DST, _scene.size, "title art", (_w, _h), "in the", (_BW, _BH), "box, crop", _bb)
 assert os.path.exists(_L2_DST), "missing " + LANDING_PIC
 for s in card["slides"]:
     if s["type"] == "STORY_READ_PAGE": s["caption_chip"] = True
