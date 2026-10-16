@@ -137,15 +137,15 @@
    "खेलने",
    "लगा।"
   ],
-  "md5": "521232e6cbf74bd6ae409c06ee9ba57d",
+  "md5": "913f8f8b8377bca5316e419bca1ae7f0",
   "times": [
    0.09,
-   0.66,
-   0.9,
-   1.33,
-   1.49,
-   2.12,
-   2.33
+   0.46,
+   0.79,
+   1.27,
+   1.55,
+   1.96,
+   2.32
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },
@@ -176,14 +176,14 @@
    "सो",
    "गया।"
   ],
-  "md5": "88432e044424b44b15119245553c2c83",
+  "md5": "288ff5e53fc31f3f01397f1f7ac1210c",
   "times": [
    0.09,
-   0.74,
-   1.07,
-   1.76,
-   2.03,
-   2.39
+   0.58,
+   0.94,
+   1.75,
+   2.04,
+   2.41
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },

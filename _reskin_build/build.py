@@ -665,7 +665,18 @@ slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16b_source.wav"), 
 # 1.865 x 16 / 13.5 = 2.21 s; the new take speaks them in 1.745 s -> tempo 1.745 / 2.21 = 0.7894 (a 21% slower file; the page's
 # sentence_rate 0.8 still on top, as on every story page). word_times re-measure off the new clip by md5; their span is asserted to be
 # 2.23 s (the 2.21 s + the 20 ms end pad) within 60 ms. The batch's vo_story_7.wav stays in its folder as delivered.
-slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16_source.wav"), 0.7894); SLOW_TAKE_SPAN["T7"] = 2.23
+# ---- [L02-T7-VO-3] (2026-10-16, user request, later the same day) "Replace the VO of Page T7 with this VO (Downloads/vo_khilaune_1.wav) and
+# adjust the speed of this VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence;
+# this new VO should be replaced in wav format not mp3. Rest keep everything exactly the same in this file." A 24 kHz mono 16-bit PCM WAV
+# (2.92 s, -16.5 LUFS), kept as _reskin_build/vo_story_7_2026-10-16b_source.wav; it takes the place of the morning's take ([L02-T7-VO-2]
+# above: vo_story_7_2026-10-16_source.wav / _slow.wav stay on disk unused). The same sizing as that take's: the highlight is paced for a
+# 2.21 s reading of the six words (the shipped clip's span; word_times 0.09 -> 2.33); this take reads them in 2.265 s (the envelope rule:
+# 0.255 -> 2.520) - a touch slower than the pace, so rubberband tempo 2.265 / 2.21 = 1.0249 (a 2.5% FASTER file this time, pitch kept)
+# into vo_story_7_2026-10-16b_slow.wav (the _slow name is slow_take's convention), vo_story_7's source through VO_OVERRIDE; vo_clip trims /
+# levels / encodes it into assets/Audio/vo_story_7.wav as every other line. The page is untouched (sentence_rate 0.8, the words "फिर वह
+# खिलौनों से खेलने लगा।" - the new take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted
+# below to be the old 2.23 s within 60 ms.
+slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16b_source.wav"), 1.0249); SLOW_TAKE_SPAN["T7"] = 2.23   # [L02-T7-VO-3] tempo = this take's 2.265 s speech span / the paced 2.21 s (the morning's take: 0.7894 off 1.745 s)
 # ---- [L02-T9-VO-2] (2026-10-16, user request) "Replace the VO of Page T9 with this VO (Downloads/3.mp3) and adjust the speed of this VO such
 # that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be replaced in
 # wav format not mp3; also add और in the hindi text of the sentence at the beginning of the sentence on this page in the exact same font size
@@ -677,7 +688,18 @@ slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16_source.wav"), 0
 # them in 1.800 s -> tempo 1.800 / 2.28 = 0.7885 (a 21% slower file; sentence_rate 0.8 still on top). word_times re-measure by md5; their
 # span is asserted to be 2.30 s (2.28 s + the 20 ms end pad) within 60 ms. The page's pop-with-sentence sound (7 s cut) still outlasts the
 # longer line. The batch's vo_story_8b.wav stays in its folder as delivered.
-slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16_source.wav"), 0.7885); SLOW_TAKE_SPAN["T9"] = 2.30
+# ---- [L02-T9-VO-3] (2026-10-16, user request, later the same day) "Replace the VO of Page T9 with this VO (Downloads/"vo_thakgya_1 (1).wav")
+# and adjust the speed of this VO such that it matches the present speed of the synced word by word highlight animation of the hindi
+# sentence; this new VO should be replaced in wav format not mp3. Rest keep everything exactly the same in this file." A 24 kHz mono 16-bit
+# PCM WAV (2.44 s, -19.5 LUFS), kept as _reskin_build/vo_story_8b_2026-10-16b_source.wav; it takes the place of the morning's take
+# ([L02-T9-VO-2] above: vo_story_8b_2026-10-16_source.wav / _slow.wav stay on disk unused). The same sizing as that take's: the highlight is
+# paced for a 2.28 s reading of the five words (the shipped clip's span; word_times 0.09 -> 2.39); this take reads them in 1.840 s (the
+# envelope rule: 0.260 -> 2.100) -> rubberband tempo 1.840 / 2.28 = 0.8070 (a 19% slower file, pitch kept) into
+# vo_story_8b_2026-10-16b_slow.wav, vo_story_8b's source through VO_OVERRIDE; vo_clip trims / levels / encodes it into
+# assets/Audio/vo_story_8b.wav as every other line. The page is untouched (sentence_rate 0.8, the words "और वह थककर सो गया।" - the new take
+# was not checked by ear; the pop-with-sentence sound still outlasts the line); word_times re-measure off the new clip by md5 and their span
+# is asserted below to be the old 2.30 s within 60 ms.
+slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16b_source.wav"), 0.8070); SLOW_TAKE_SPAN["T9"] = 2.30   # [L02-T9-VO-3] tempo = this take's 1.840 s speech span / the paced 2.28 s (the morning's take: 0.7885 off 1.800 s)
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
