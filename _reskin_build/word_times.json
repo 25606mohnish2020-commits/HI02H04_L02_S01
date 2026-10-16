@@ -8,15 +8,15 @@
    "चुका",
    "था।"
   ],
-  "md5": "43ba2d960fdac0eab194ebdbcb980063",
+  "md5": "a6d10ecb3bf2d345e503ea8587c634f8",
   "times": [
    0.09,
-   0.72,
-   0.94,
-   1.5,
-   1.7,
+   0.81,
+   1.01,
+   1.55,
+   1.75,
    2.1,
-   2.35
+   2.37
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },

@@ -642,7 +642,17 @@ def slow_take(name, src, tempo):
         print("wrote", dst, "rubberband tempo %.4f" % tempo)
     VO_OVERRIDE[name] = dst
 SLOW_TAKE_SPAN = {}   # story page id -> the span (s) its re-measured word_times must cover (word_times[-1] - word_times[0]); asserted after the measurement
-slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16_source.wav"), 0.7795); SLOW_TAKE_SPAN["T1"] = 2.26   # tempo = the take's 1.750 s speech span / the replaced take's 2.245 s; the replaced word_times ran 0.09 -> 2.35
+# ---- [L02-T1-VO-3] (2026-10-16, user request, later the same day) "Replace the VO of Page T1 with this VO (Downloads/"vo_khana_1 (1).wav")
+# and adjust the speed of this VO such that it matches the present speed of the synced word by word highlight animation of the hindi
+# sentence; this new VO should be replaced in wav format not mp3. Rest keep everything exactly the same in this file." A 24 kHz mono 16-bit
+# PCM WAV (2.56 s, -18.2 LUFS), kept as _reskin_build/vo_story_1_2026-10-16b_source.wav; it takes the place of the morning's take
+# ([L02-T1-VO-2] above: vo_story_1_2026-10-16_source.wav / _slow.wav stay on disk unused). The same sizing as that take's: the highlight is
+# paced for the replaced batch take's 2.245 s speech span (word_times 0.09 -> 2.35, 2.26 s of clip time, 2.8 s heard at sentence_rate 0.8),
+# this take speaks the sentence in 1.905 s (the envelope rule: 0.265 -> 2.170) -> rubberband tempo 1.905 / 2.245 = 0.8486 (a 15% slower
+# file, pitch kept) into vo_story_1_2026-10-16b_slow.wav, vo_story_1's source through VO_OVERRIDE; vo_clip trims / levels / encodes it into
+# assets/Audio/vo_story_1.wav as every other line. The page is untouched (sentence_rate 0.8, the words "दोपहर का खाना हो चुका था।" - the new
+# take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted below to be the old 2.26 s within 60 ms.
+slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16b_source.wav"), 0.8486); SLOW_TAKE_SPAN["T1"] = 2.26   # [L02-T1-VO-3] tempo = this take's 1.905 s speech span / the batch take's 2.245 s (the morning's take: 0.7795 off 1.750 s)
 # ---- [L02-T7-VO-2] (2026-10-16, user request) "Replace the VO of Page T7 with this VO (Downloads/"2 (1).mp3") and adjust the speed of this
 # VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
 # replaced in wav format not mp3; also add फिर in the hindi text of the sentence at the beginning of the sentence on this page in the exact
