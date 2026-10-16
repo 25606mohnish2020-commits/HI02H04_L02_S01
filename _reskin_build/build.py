@@ -2112,6 +2112,13 @@ for _o in i3["data"]["options"]: I3_WT[_o["audio"]] = word_times_for(_o["audio"]
 # [L02-VO-BATCH] the praise line is the deck's one word "शाबाश।" now (no sentence part), so the correct pill's words are not lit during it
 assert txt["vo_ok_sula"] == "शाबाश।", txt["vo_ok_sula"]
 i3["data"]["word_times_by_audio"] = I3_WT
+# [L02-I3-OK-SENT] (2026-10-16, user request) "At page 15 I3 on any correct attempt before the hand nudge is shown why the VO of the correct
+# option along with the synced highlight animation is not there? like the other pages? make this change on page 15 I3." I3's praise is the
+# deck's one word «शाबाश।» (vo_ok_sula, the batch's recording) with no sentence and so no entry in word_times_by_audio - and sent_q_page.js
+# skipped the correct pill's own line on every sentence page with a praise, as on G3 / M1 / M2 the praise carries the sentence and lights the
+# pill's words: on I3 that left «शाबाश।» alone, nothing lit. sent_q_page.js [L02-I3-OK-SENT]: where the praise has no timings the correct tap
+# speaks the praise first and then the pill's own line (vo_opt_sula_rahi) with its words lit by its own timings (I3_WT above), then the page
+# advances 700 ms later as the others do. No card data changes; G3 / M1 / M2 (their praise carries timings) are untouched.
 i3["data"]["prompt_pop_ms"] = int(round(clip_s("vo_q_maa_kya") * 1000))
 SULA_SRC = os.path.join(SCR, "i3_sula_source.png"); SULA_DST = os.path.join(CUR, "assets", "Images", "i3_sula.webp"); SULA_X0 = 285
 assert os.path.exists(SULA_SRC), "missing " + SULA_SRC

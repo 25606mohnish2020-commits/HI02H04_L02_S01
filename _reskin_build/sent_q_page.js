@@ -64,7 +64,16 @@
                            only. The line the engine speaks after it (audio.try_again — «चित्र को ध्यान से देखिए।» on the sentence pages,
                            «फिर से कोशिश कीजिए, कहानी याद करिए।» on P1) is not spoken: the play() seam ends it at once, so the option reads
                            normal again when the 1 s wrong beat is over and the 7 s quiet count starts there. The second wrong tap's
-                           read-out and the third's reveal are as before; G3 / I1 / I2 (no flag) keep their line. */
+                           read-out and the third's reveal are as before; G3 / I1 / I2 (no flag) keep their line.
+     [L02-I3-OK-SENT]      (2026-10-16, user request: "at page 15 I3 on any correct attempt before the hand nudge is shown why the VO of the
+                           correct option along with the synced highlight animation is not there, like the other pages?") On G3 / M1 / M2 the
+                           praise line (audio.correct) carries the answer's sentence («शाबाश! माधव ने किताब पढ़ी।») and its timings light the
+                           correct pill's words, so the pill's own line is skipped (okSentOff). I3's praise is the deck's one word «शाबाश।» -
+                           no sentence, no timings - so the skip left the correct tap with no sentence and no lit words. Now a sentence page
+                           whose praise has NO word timings speaks the praise FIRST and then the correct pill's own line with its words lit
+                           in time (its own timings), the order the other pages' praise-with-sentence has; the engine's own praise call that
+                           follows the pill's line is ended at once (the praise has been heard), so the page advances 700 ms after the
+                           sentence as the others do. Pages whose praise carries timings (G3 / M1 / M2) are untouched. */
 (function(){ "use strict";
   var POP_MS = 2000, WRONG_BEAT_MS = 1000, REVIEW_GAP_MS = 500, DEFAULT_IDLE_MS = 5000, DEFAULT_PROMPT_POP_MS = 3200;
   function slideAt(idx){ return (typeof CARD === "object" && CARD && CARD.slides) ? CARD.slides[idx] : null; }
@@ -87,12 +96,13 @@
   var holding = false, passthrough = false, holdTimer = null, sfx = null;   // the correct tap's SFX hold
   var quietGuided = false;                                  // [L02-Q-BEATS] guided_quiet: the guided tap has been taken (no line, no pop)
   var idleStrict = false, idlePoll = null, quietSince = 0;  // [L02-Q-BEATS] prompt_idle_strict: the quiet-and-free count
+  var okSwap = null;                                        // [L02-I3-OK-SENT] the correct tap's praise-then-sentence swap in progress ({idx, praiseId, pill, spoken})
   function cancel(){
     timers.forEach(function(t){ clearTimeout(t); }); timers = [];
     optWords = null; reviewing = false; wordStop(); idleCancel();
     if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
     if(sfx){ try{ sfx.pause(); }catch(e){} sfx = null; }
-    holding = false; quietGuided = false;
+    holding = false; quietGuided = false; okSwap = null;
   }
   function whenQuiet(frame, fn){
     (function poll(){
@@ -246,7 +256,21 @@
           }, WRONG_BEAT_MS));
           return;
         }
-        if(okSentOff(sl, src)){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }
+        // [L02-I3-OK-SENT] (see the header) the engine's praise call after the swapped sentence: the praise has been heard - end it at once
+        if(okSwap && okSwap.idx === ix && okSwap.spoken && !okSwap.pill && okSwap.praiseId === idOf(src)){ okSwap = null; if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }
+        if(okSentOff(sl, src) && !(okSwap && okSwap.idx === ix && okSwap.pill)){
+          var okIdS = sl.audio.correct, okTS = ((sl.data && sl.data.word_times_by_audio) || {})[okIdS];
+          if(!Array.isArray(okTS)){                                           // [L02-I3-OK-SENT] a praise with no sentence: the praise first, then this line with its words lit
+            var pillSrc = src, cbP = onEnd, okSrcS = srcOf(okIdS);
+            okSwap = { idx: ix, praiseId: idOf(okSrcS), pill: true, spoken: false };
+            return window.play(okSrcS, function(){
+              if(curIdx() !== ix){ okSwap = null; return; }                 // the page was left while the praise spoke
+              okSwap.spoken = true;
+              window.play(pillSrc, function(){ if(okSwap && okSwap.idx === ix) okSwap.pill = false; if(cbP) cbP(); });
+            });
+          }
+          if(onEnd) timers.push(setTimeout(onEnd, 0)); return;
+        }
         if(tryLineOff(sl, src)){ if(onEnd) timers.push(setTimeout(onEnd, 0)); return; }   // [L02-WRONG1-QUIET]
         if(isReviewLine(sl, src)){
           reviewing = true; state.hintActive = true;
