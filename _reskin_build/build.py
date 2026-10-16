@@ -600,6 +600,31 @@ assert len(VO_BATCH_IDS) == len(VO_LINES) == 61, len(VO_LINES)
 # point and the close 300 ms after the line are as they were ([L02-STD-GATE]); the screen is as long as the new line needs. The manifest
 # words stay "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!" (the new take was not checked by ear).
 VO_OVERRIDE = {}   # [L02-VO-BATCH-2] (2026-10-14) the new batch's own takes of the cue and the guided gate stand; the 2026-10-07/08 files stay in _reskin_build unused
+# ---- [L02-T1-VO-2] (2026-10-16, user request) "Replace the VO of Page T1 with this VO (Downloads/"1 .mp3") and reduce the speed of this VO
+# such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
+# replaced in wav format not mp3. Rest keep everything exactly the same in this file." The file is a 24 kHz mono 16-bit PCM WAV despite
+# its name (2.44 s, -18.6 LUFS), kept as _reskin_build/vo_story_1_2026-10-16_source.wav. Its reading is faster than the batch take it
+# replaces: 1.750 s from the first word's onset to the last word's end against 2.245 s (both by the envelope rule of
+# measure_word_times_envelope below — the first / last 20 ms window within 38 dB of the peak and 12 dB over the floor; the shipped T1
+# entry of word_times.json read 0.09 -> 2.35, i.e. the highlight ran 2.26 s of clip time, 2.8 s heard at data.sentence_rate 0.8). So the
+# take is time-stretched with its pitch kept by ffmpeg's rubberband (tempo = 1.750 / 2.245 = 0.7795: a 22% slower file, transients kept
+# crisp) into _reskin_build/vo_story_1_2026-10-16_slow.wav — remade when missing or older than the source (delete it after a change of
+# T1_VO_TEMPO) — and THAT file is vo_story_1's source (VO_OVERRIDE, the [L02-CUE-VO-2] path): vo_clip trims / levels / encodes it like
+# every other line into assets/Audio/vo_story_1.wav (48 k mono PCM, the lesson's WAV format). The page itself is untouched:
+# data.sentence_rate stays 0.8 with pages T2-T9 (the browser's time-stretch on top, as before), so the sentence is heard over the same
+# 2.8 s the highlight took until now; data.word_times re-measure off the new clip by md5 (word_times_for), and the span they cover is
+# asserted after the measurement to be the old one within 60 ms. The batch's vo_story_1.wav stays in its folder as delivered. The words
+# stay "दोपहर का खाना हो चुका था।" (the new take was not checked by ear).
+T1_VO_SRC = os.path.join(SCR, "vo_story_1_2026-10-16_source.wav")
+T1_VO_SLOW = os.path.join(SCR, "vo_story_1_2026-10-16_slow.wav")
+T1_VO_TEMPO = 0.7795      # = the new take's 1.750 s speech span / the replaced take's 2.245 s (rubberband: output length = input / tempo)
+T1_VO_SPAN_WAS = 2.26     # the replaced take's word_times[-1] - word_times[0] (0.09 -> 2.35): the span the new clip's word_times must cover
+assert os.path.exists(T1_VO_SRC), "[L02-T1-VO-2] missing " + T1_VO_SRC
+if not os.path.exists(T1_VO_SLOW) or os.path.getmtime(T1_VO_SLOW) < os.path.getmtime(T1_VO_SRC):
+    ff("-i", T1_VO_SRC, "-af", "rubberband=tempo=%.4f:transients=crisp" % T1_VO_TEMPO, "-ac", "1", "-ar", "24000", *AUD_ENC, T1_VO_SLOW)
+    assert os.path.exists(T1_VO_SLOW), "ffmpeg did not write " + T1_VO_SLOW
+    print("wrote", T1_VO_SLOW, "rubberband tempo %.4f" % T1_VO_TEMPO)
+VO_OVERRIDE["vo_story_1"] = T1_VO_SLOW
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -749,6 +774,9 @@ def word_times_for(clip, words):
     return times
 for s in story + [t9]:
     s["data"]["word_times"] = word_times_for(s["data"]["whole_audio"], [w["text"] for w in s["data"]["words"]])
+# [L02-T1-VO-2] the new T1 clip must carry the highlight over the span the replaced take did (the stretch above was sized for it)
+_t1_wt = next(_s for _s in story if _s["id"] == "T1")["data"]["word_times"]
+assert abs((_t1_wt[-1] - _t1_wt[0]) - T1_VO_SPAN_WAS) <= 0.06, "[L02-T1-VO-2] T1 word span %.2f s, expected %.2f: re-size T1_VO_TEMPO" % (_t1_wt[-1] - _t1_wt[0], T1_VO_SPAN_WAS)
 # ---- [L02-FIND-FIG] "page 11" (the user's count) = the first "find Madhav in the picture" page, G2 (TAP_IN_SCENE), laid out
 # from Figma "FLN by MJ" node 110-2 ("Formative html area", 1280x720): the header band + mascot circle, the picture box
 # 935x442 @ (175,174) with a 4px #386AF6 stroke and r20 holding the designer's picture ("image 221", a bedroom scene with
