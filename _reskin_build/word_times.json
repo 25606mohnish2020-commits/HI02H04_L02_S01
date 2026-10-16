@@ -130,20 +130,22 @@
  },
  "vo_story_7": {
   "words": [
+   "फिर",
    "वह",
    "खिलौनों",
    "से",
    "खेलने",
    "लगा।"
   ],
-  "md5": "0384309d82fe41ab78e2ecb8c49a106e",
+  "md5": "521232e6cbf74bd6ae409c06ee9ba57d",
   "times": [
    0.09,
-   0.48,
-   0.91,
-   1.16,
-   1.61,
-   1.97
+   0.66,
+   0.9,
+   1.33,
+   1.49,
+   2.12,
+   2.33
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },

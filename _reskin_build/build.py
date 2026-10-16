@@ -524,7 +524,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
     ("vo_story_5", "उसने दीवार पर चित्र बनाए।"),
     ("vo_story_6", "उसने किताब पढ़ी।"),
-    ("vo_story_7", "वह खिलौनों से खेलने लगा।"),
+    ("vo_story_7", "फिर वह खिलौनों से खेलने लगा।"),   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
     ("vo_story_8a", "खेलते-खेलते उसे नींद आने लगी।"),
     ("vo_story_8b", "वह थककर सो गया।"),
     # the guided transition (the fleet's line; the deck has no line for it)
@@ -615,16 +615,33 @@ VO_OVERRIDE = {}   # [L02-VO-BATCH-2] (2026-10-14) the new batch's own takes of 
 # 2.8 s the highlight took until now; data.word_times re-measure off the new clip by md5 (word_times_for), and the span they cover is
 # asserted after the measurement to be the old one within 60 ms. The batch's vo_story_1.wav stays in its folder as delivered. The words
 # stay "दोपहर का खाना हो चुका था।" (the new take was not checked by ear).
-T1_VO_SRC = os.path.join(SCR, "vo_story_1_2026-10-16_source.wav")
-T1_VO_SLOW = os.path.join(SCR, "vo_story_1_2026-10-16_slow.wav")
-T1_VO_TEMPO = 0.7795      # = the new take's 1.750 s speech span / the replaced take's 2.245 s (rubberband: output length = input / tempo)
-T1_VO_SPAN_WAS = 2.26     # the replaced take's word_times[-1] - word_times[0] (0.09 -> 2.35): the span the new clip's word_times must cover
-assert os.path.exists(T1_VO_SRC), "[L02-T1-VO-2] missing " + T1_VO_SRC
-if not os.path.exists(T1_VO_SLOW) or os.path.getmtime(T1_VO_SLOW) < os.path.getmtime(T1_VO_SRC):
-    ff("-i", T1_VO_SRC, "-af", "rubberband=tempo=%.4f:transients=crisp" % T1_VO_TEMPO, "-ac", "1", "-ar", "24000", *AUD_ENC, T1_VO_SLOW)
-    assert os.path.exists(T1_VO_SLOW), "ffmpeg did not write " + T1_VO_SLOW
-    print("wrote", T1_VO_SLOW, "rubberband tempo %.4f" % T1_VO_TEMPO)
-VO_OVERRIDE["vo_story_1"] = T1_VO_SLOW
+def slow_take(name, src, tempo):
+    """[L02-T1-VO-2] a later take of line <name>, time-stretched with its pitch kept (ffmpeg rubberband, output length = input / tempo,
+    transients kept crisp) from _reskin_build/<...>_source.wav into the _slow.wav beside it — remade when missing or older than the
+    source (delete it after a change of tempo) — and made that line's source (VO_OVERRIDE): vo_clip trims / levels / encodes it like
+    every other line into assets/Audio/<name>.wav."""
+    assert os.path.exists(src) and src.endswith("_source.wav"), "[L02-T1-VO-2] missing / misnamed " + src
+    dst = src[:-len("_source.wav")] + "_slow.wav"
+    if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
+        ff("-i", src, "-af", "rubberband=tempo=%.4f:transients=crisp" % tempo, "-ac", "1", "-ar", "24000", *AUD_ENC, dst)
+        assert os.path.exists(dst), "ffmpeg did not write " + dst
+        print("wrote", dst, "rubberband tempo %.4f" % tempo)
+    VO_OVERRIDE[name] = dst
+SLOW_TAKE_SPAN = {}   # story page id -> the span (s) its re-measured word_times must cover (word_times[-1] - word_times[0]); asserted after the measurement
+slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16_source.wav"), 0.7795); SLOW_TAKE_SPAN["T1"] = 2.26   # tempo = the take's 1.750 s speech span / the replaced take's 2.245 s; the replaced word_times ran 0.09 -> 2.35
+# ---- [L02-T7-VO-2] (2026-10-16, user request) "Replace the VO of Page T7 with this VO (Downloads/"2 (1).mp3") and adjust the speed of this
+# VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
+# replaced in wav format not mp3; also add फिर in the hindi text of the sentence at the beginning of the sentence on this page in the exact
+# same font size and color. Rest keep everything exactly the same in this file." The file is again a 24 kHz mono PCM WAV (2.40 s, -18.5 LUFS),
+# kept as _reskin_build/vo_story_7_2026-10-16_source.wav. The sentence becomes "फिर वह खिलौनों से खेलने लगा।" — six words (the words override
+# below, and VO_LINES so txt / the manifest say what the page speaks): the same .p2-word spans as before, so the same size and colour; the
+# read-aloud beat is 6 s by the one-second-per-word rule and the highlight has six words. "The present speed" with a word more = the same
+# pace per word: the replaced take spoke its five words over 1.865 s (the envelope rule; its word_times ran 0.09 -> 1.97), weighted as the
+# envelope measurement weights words (syllables + 0.5: 2.5 + 3.5 + 1.5 + 3.5 + 2.5 = 13.5), so six words weighing 16 (फिर: 2.5) get
+# 1.865 x 16 / 13.5 = 2.21 s; the new take speaks them in 1.745 s -> tempo 1.745 / 2.21 = 0.7894 (a 21% slower file; the page's
+# sentence_rate 0.8 still on top, as on every story page). word_times re-measure off the new clip by md5; their span is asserted to be
+# 2.23 s (the 2.21 s + the 20 ms end pad) within 60 ms. The batch's vo_story_7.wav stays in its folder as delivered.
+slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16_source.wav"), 0.7894); SLOW_TAKE_SPAN["T7"] = 2.23
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -651,7 +668,9 @@ for _k, _t in VO_LINES: vo_clip(_k, _t)
 for _s in story:
     if _s["id"] == "T3": _s["data"]["words"] = [{"text": w} for w in ["पर,", "माधव", "को", "तो", "नींद", "ही", "नहीं", "आ", "रही", "थी।"]]
     if _s["id"] == "T4": _s["data"]["words"] = [{"text": w} for w in ["माँ", "के", "सोते", "ही", "वह", "उठ", "गया।"]]
+    if _s["id"] == "T7": _s["data"]["words"] = [{"text": w} for w in "फिर वह खिलौनों से खेलने लगा।".split()]   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
 assert [w["text"] for w in next(s for s in story if s["id"] == "T3")["data"]["words"]] == "पर, माधव को तो नींद ही नहीं आ रही थी।".split()
+assert [w["text"] for w in next(s for s in story if s["id"] == "T7")["data"]["words"]] == txt["vo_story_7"].split() == "फिर वह खिलौनों से खेलने लगा।".split()   # [L02-T7-VO-2]
 def sfx_cut_start(src, length=POP_S):
     out = ff("-i", src, "-af", "aresample=24000,asetnsamples=n=%d,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-" % int(24000 * SFX_WIN), "-f", "null", "-")
     vals = [(-120.0 if x == "-inf" else float(x)) for x in re.findall(r"RMS_level=(-?[\d.]+|-inf)", out)]
@@ -774,9 +793,10 @@ def word_times_for(clip, words):
     return times
 for s in story + [t9]:
     s["data"]["word_times"] = word_times_for(s["data"]["whole_audio"], [w["text"] for w in s["data"]["words"]])
-# [L02-T1-VO-2] the new T1 clip must carry the highlight over the span the replaced take did (the stretch above was sized for it)
-_t1_wt = next(_s for _s in story if _s["id"] == "T1")["data"]["word_times"]
-assert abs((_t1_wt[-1] - _t1_wt[0]) - T1_VO_SPAN_WAS) <= 0.06, "[L02-T1-VO-2] T1 word span %.2f s, expected %.2f: re-size T1_VO_TEMPO" % (_t1_wt[-1] - _t1_wt[0], T1_VO_SPAN_WAS)
+# [L02-T1-VO-2] [L02-T7-VO-2] a slowed later take must carry the highlight over the span its stretch was sized for (SLOW_TAKE_SPAN)
+for _id, _span in SLOW_TAKE_SPAN.items():
+    _wt = next(_s for _s in story + [t9] if _s["id"] == _id)["data"]["word_times"]
+    assert abs((_wt[-1] - _wt[0]) - _span) <= 0.06, "[L02-T1-VO-2] %s word span %.2f s, expected %.2f: re-size its slow_take tempo" % (_id, _wt[-1] - _wt[0], _span)
 # ---- [L02-FIND-FIG] "page 11" (the user's count) = the first "find Madhav in the picture" page, G2 (TAP_IN_SCENE), laid out
 # from Figma "FLN by MJ" node 110-2 ("Formative html area", 1280x720): the header band + mascot circle, the picture box
 # 935x442 @ (175,174) with a 4px #386AF6 stroke and r20 holding the designer's picture ("image 221", a bedroom scene with
