@@ -700,6 +700,18 @@ slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16b_source.wav"), 
 # was not checked by ear; the pop-with-sentence sound still outlasts the line); word_times re-measure off the new clip by md5 and their span
 # is asserted below to be the old 2.30 s within 60 ms.
 slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16b_source.wav"), 0.8070); SLOW_TAKE_SPAN["T9"] = 2.30   # [L02-T9-VO-3] tempo = this take's 1.840 s speech span / the paced 2.28 s (the morning's take: 0.7885 off 1.800 s)
+# ---- [L02-T2-VO-2] (2026-10-16, user request) "Replace the VO of Page T2 with this VO (Downloads/vo_sulane_1.wav) and adjust the speed of
+# this VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
+# replaced in wav format not mp3. Rest keep everything exactly the same in this file." A 24 kHz mono 16-bit PCM WAV (2.64 s, -19.0 LUFS),
+# kept as _reskin_build/vo_story_2_2026-10-16_source.wav; T2's first later take, so it replaces the batch's own vo_story_2.wav (which stays in
+# its folder as delivered). The same sizing as the T1 / T7 / T9 takes above: the highlight is paced for the batch take's 2.92 s reading of the
+# six words (the shipped clip's span; word_times 0.08 -> 3.02, 2.94 s of clip time, 3.7 s heard at sentence_rate 0.8); this take reads them in
+# 2.065 s (the envelope rule: 0.250 -> 2.315) -> rubberband tempo 2.065 / 2.92 = 0.7072 (a 29% slower file - the largest stretch of the four;
+# pitch kept, transients crisp) into vo_story_2_2026-10-16_slow.wav, vo_story_2's source through VO_OVERRIDE; vo_clip trims / levels / encodes
+# it into assets/Audio/vo_story_2.wav as every other line. The page is untouched (sentence_rate 0.8, the words "माधव की माँ उसे सुलाने लगी।" -
+# the new take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted below to be the old 2.94 s
+# within 60 ms.
+slow_take("vo_story_2", os.path.join(SCR, "vo_story_2_2026-10-16_source.wav"), 0.7072); SLOW_TAKE_SPAN["T2"] = 2.94   # [L02-T2-VO-2] tempo = this take's 2.065 s speech span / the batch take's 2.92 s
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
