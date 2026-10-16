@@ -1593,7 +1593,7 @@ _sh_s = os.path.join(SCR, "rc_boy_shadow_ellipse2802_source.svg"); _sh_d = os.pa
 assert os.path.exists(_sh_s), "missing " + _sh_s
 if not bed_fresh(_sh_d, _sh_s): shutil.copyfile(_sh_s, _sh_d); print("wrote", _sh_d)
 sfx_clip("sfx_rc", "sfx_rc_source.mp3", 0.30, 3.20)                                            # the motor, looped by the JS while the car drives
-def rc_done(name, src, win):
+def rc_done(name, src, win, size=(400, 392)):
     """[L02-RC2] A won question's picture as it fills a checkpoint's circle (Figma 267-1053 "image 242": the 213x118 picture at (-64,-8) of
     the token's 100x98 inner box, i.e. the window x 64..164 / y 8..106 of it) — that window cut from the full-size source, 400x392 (4x)."""
     s = os.path.join(SCR, src); d = os.path.join(BED_IMG, name)
@@ -1601,7 +1601,7 @@ def rc_done(name, src, win):
     if bed_fresh(d, s): return
     im = Image.open(s).convert("RGB"); W, H = im.size
     x0, x1 = W * win[0] / win[4], W * win[2] / win[4]; y0, y1 = H * win[1] / win[5], H * win[3] / win[5]
-    im.crop((int(round(x0)), int(round(y0)), int(round(x1)), int(round(y1)))).resize((400, 392), Image.LANCZOS).save(d, "WEBP", quality=88, method=6)
+    im.crop((int(round(x0)), int(round(y0)), int(round(x1)), int(round(y1)))).resize(size, Image.LANCZOS).save(d, "WEBP", quality=88, method=6)   # [L02-RC-FULL] size: 411x399 for the 141x137 tokens
     print("wrote", d, "window", (round(x0), round(y0), round(x1), round(y1)), "of", (W, H))
 rc_done("rc_done_1.webp", "i3_sula_source.png", (64, 8, 164, 106, 213, 118))               # the Figma's "ChatGPT Image Sep 26, 2026, 04_20_36 PM" export is BYTE-IDENTICAL to i3_sula_source.png (md5 f91cd074…)
 for k in ("rc_scene", "rc_q", "rc_car", "rc_car_fr", "rc_car_bk", "rc_boy", "rc_title", "rc_done_1"): card["assets"]["image"][k] = "assets/Images/" + k + ".webp"
@@ -1902,6 +1902,86 @@ assert rc5["data"]["rc"]["boy"] == [236.0, 64.0, 97.6, 184.3] and rc5.get("rc_fi
 _m2_now = next(s for s in card["slides"] if s["id"] == "M2")
 card["slides"].insert(card["slides"].index(_m2_now) + 1, rc5)
 assert [s["id"] for s in card["slides"]][card["slides"].index(_m2_now):card["slides"].index(_m2_now) + 3] == ["M2", "RC5", "CEL"], "RC5 must sit between M2 and CEL"
+
+# ---- [L02-RC-FULL] (2026-10-16, user request) "At Pages RC1, RC2, RC3, RC4 and RC5 make this exact same layout of full screen, exactly as
+# shown in these figma screens instead of the existing layout on these pages but keep the complete animations, sound effects and the
+# functionality exactly the same as of now. Rest keep everything exactly the same in this file." Figma "FLN by MJ" nodes 344-3137,
+# 344-3329, 344-3520, 344-3539, 344-3557, 344-3575, 344-3592, 344-3609, 344-3625 - nine flattened 1x exports (1280x720), kept as
+# _reskin_build/rc_344_frames/rc_344_frame_1.png .. _9.png in the order they were given (1 = the finale: every checkpoint filled, the boy
+# cheering; 2 / 3 = RC4 with the car in checkpoint 4's ring / driving towards it; 4 / 5 = RC3; 6 / 7 = RC2; 8 / 9 = RC1 with the car in
+# checkpoint 1's ring / at rest at the carpet's head, every checkpoint a "?"). The room is the 338 room again but FULL SCREEN: no title
+# picture, no bordered box - the picture is the whole 1280x720 stage (CSS .l02-rc-full, adapt.css; adapt.js applyRC: the layer's
+# coordinates are frame px, no 4 px stroke to subtract, no title). Measured on frame 9 (frames 7 and 8 are the same room pixel for pixel,
+# 1 / 3 / 6 within a pixel; 2 / 4 / 5 have the room drawn 2.7 % larger - frame 5's car is mapped back through that scale):
+#  - the four checkpoints 141x137 (a 2 px #F6E28B rim, the inner 124 ring 8 / 7 px in, the "?" 38x60 at (51,37)) at (264,450) (568,311)
+#    (811,463) (1086,375) - the same ellipse scaled ~1.35 (the picture itself is scaled 1.31 from the box's 976x550);
+#  - the BOY = the GIF's first frame, 117.3x217.7 at (331,135): MIRRORED on RC1 (frame 9: template match score 29 mirrored, 122 as
+#    drawn) and AS DRAWN on RC2-RC4 (frames 2-7: 31-69 as drawn, 122-123 mirrored; the same canvas, the designer dropped the GIF at
+#    other animation frames) - as the pages had it before ([L02-RC-FULL-BOY-SIDE], 2026-10-16, user request: "use the opposite sided
+#    GIF of the boy at pages RC2, RC3 and RC4 as shown in the figma"); a soft shadow under his feet (the 58x12 ellipse SVG scaled to
+#    76x16, centred (393,355) under the mirrored boy, mirrored with him about the canvas's middle to (386,355) on RC2-RC4); RC5's
+#    cheering boy = Last.gif's first frame, as drawn, 130.9x247.1 at (307,132) (score 21), his shadow 76x16 centred (382,374);
+#  - the CAR at rest: RC1 the side render 94 px at (67,326) turned 3 deg (heading -3, as before); RC2 the rear render 84 px at (430,461),
+#    level (heading -14 = the render's own); RC3 the front render 80.8 px centred (754.1,422.8) turned 1 deg (heading 35; its view deg
+#    stays 34); RC4 the rear render 82 px at (968,469), level (heading -14). The card's slot keeps the 54.404 / 50 proportion
+#    ([L02-RC1-FIG-2]: the picture inset 2.202 / 50 of its size);
+#  - the checkpoints' pictures: the frames show WIDER windows of the same four sources than the b-crops (frame 1 against each source:
+#    1.8-8.9/255) -> rc_done_1c .. 4c (411x399 = 3x the 137x133 inside the rim); the b-crops, the title and rc_scene_2 are shown by no
+#    page any more -> pruned ([L02-DIST-OPTIM]; their build steps above still run, their sources stay).
+# The scene picture: frame 9 with the baked car lifted (frame 7's bare carpet copied in, exact) and the baked boy + shadow lifted (row
+# interpolation) -> rc_scene_344_clean.py -> assets/Images/rc_scene_3.webp; the discs stay baked under the live tokens, as before. The
+# four legs are re-traced on it (rc_path_trace_344.py -> rc_leg_344_source.json, frame coords: the distance-transform ridge of the
+# carpet, the discs filled in, leg3 / leg4 starting tangent to the car's heading as before) - each keeps ITS CURRENT DURATION (3.15 /
+# 2.5 / 2.02 / 1.9 s: the drive, the motor's swell along it and every timer after it are as they were; the car just covers the bigger
+# screen). Everything else of the five pages is untouched: start_ms / hold_ms / place_ms, the chime, the glow, the motor following the
+# speed, the "?" bob, the finale pops and confetti, end_ms, the VO opener on RC1, the phases and the order of the pages.
+import rc_scene_344_clean as _rc344
+_RC344_CLEAN, _rc344_info = _rc344.ensure_clean(); _RC344_DST = os.path.join(CUR, "assets", "Images", "rc_scene_3.webp")
+if _rc344_info: print("wrote", _RC344_CLEAN, _rc344_info)
+if not os.path.exists(_RC344_DST) or os.path.getmtime(_RC344_DST) < os.path.getmtime(_RC344_CLEAN):
+    _im = Image.open(_RC344_CLEAN).convert("RGB"); assert _im.size == (1280, 720), _im.size
+    _im.save(_RC344_DST, "WEBP", quality=90, method=6); print("wrote", _RC344_DST, "1280x720")
+card["assets"]["image"]["rc_scene_3"] = "assets/Images/rc_scene_3.webp"
+RCF_TOKENS = [[264, 450], [568, 311], [811, 463], [1086, 375]]; RCF_TOKEN_WH = (141, 137)   # frame px; the CSS draws the 141x137 token
+RCF_BOY = [331.0, 135.0, 117.3, 217.7]; RCF_SHADOW = [355, 347, 76, 16]                       # RC1: the mirrored boy, the shadow ellipse 76x16 centred (393,355)
+RCF_SHADOW_R = [348, 347, 76, 16]                                                              # [L02-RC-FULL-BOY-SIDE] RC2-RC4: the boy as drawn, the shadow mirrored with him (centred (386,355))
+RCF_CHEER = [307.0, 132.0, 130.9, 247.1]; RCF_CHEER_SHADOW = [344, 366, 76, 16]              # centred (382,374)
+def _rcf_car(pic_xy, pic, heading, views):
+    """The render's picture box (frame px) -> the card's car slot: the 54.404 slot holds a 50 picture inset 2.202, kept in proportion."""
+    inset = pic * 2.202 / 50
+    return {"box": [round(pic_xy[0] - inset, 3), round(pic_xy[1] - inset, 3)], "size": round(pic * 54.404 / 50, 3), "rot": heading, "views": views}
+RCF_CARS = {"RC1": ((67.0, 326.0), 94.0, -3.0, RC_VIEWS), "RC2": ((430.0, 461.0), 84.0, -14, RC2_VIEWS),
+            "RC3": ((713.74, 382.36), 80.8, 35, RC3_VIEWS), "RC4": ((968.0, 469.0), 82.0, -14, RC2_VIEWS)}
+RCF_SECONDS = {"RC1": 3.15, "RC2": 2.5, "RC3": 2.02, "RC4": 1.9}   # = the legs' durations before this change (rc_leg_338_source.json), kept
+with open(os.path.join(SCR, "rc_leg_344_source.json"), encoding="utf-8") as _f: _leg344 = json.load(_f)
+assert _leg344["origin"] == [0, 0] and _leg344["src"] == os.path.basename(_RC344_CLEAN), (_leg344["origin"], _leg344["src"])
+for _k, _s_ in (("RC1", rc), ("RC2", rc2), ("RC3", rc3), ("RC4", rc4), ("RC5", rc5)):
+    assert _s_["id"] == _k and _s_.get("rc_fig") is True
+    _s_["rc_full"] = True; _s_["data"]["image_id"] = "rc_scene_3"
+    _R = _s_["data"]["rc"]; _R["tokens"] = [list(t) for t in RCF_TOKENS]
+    if _k == "RC5": _R["boy"] = list(RCF_CHEER); _R["boy_flip"] = False; _R["shadow"] = list(RCF_CHEER_SHADOW)
+    elif _k == "RC1": _R["boy"] = list(RCF_BOY); _R.pop("boy_flip", None); _R["shadow"] = list(RCF_SHADOW)   # mirrored = the CSS default, as frame 9 draws him
+    else: _R["boy"] = list(RCF_BOY); _R["boy_flip"] = False; _R["shadow"] = list(RCF_SHADOW_R)   # [L02-RC-FULL-BOY-SIDE] RC2-RC4: as drawn, as frames 2-7 (and the pages before) had him
+    if _k in RCF_CARS:
+        _pxy, _pic, _hd, _views = RCF_CARS[_k]; _R["car"] = _rcf_car(_pxy, _pic, _hd, _views)
+        _lg = _leg344["legs"]["leg" + _k[2]]; _c0 = [round(_pxy[0] + _pic / 2, 2), round(_pxy[1] + _pic / 2, 2)]
+        _ce = [RCF_TOKENS[int(_k[2]) - 1][0] + RCF_TOKEN_WH[0] / 2, RCF_TOKENS[int(_k[2]) - 1][1] + RCF_TOKEN_WH[1] / 2]
+        assert _lg["pts"][0] == _c0 and _lg["pts"][-1] == _ce and len(_lg["pts"]) > 60, ("rc_leg_344_source.json's " + _k + " leg was traced for other end points: rerun rc_path_trace_344.py", _lg["pts"][0], _c0, _lg["pts"][-1], _ce)
+        assert _lg["seconds"] == RCF_SECONDS[_k] and (_lg.get("start_heading") == (_hd if _k in ("RC3", "RC4") else None)), (_k, _lg["seconds"], _lg.get("start_heading"))
+        _R["leg"] = {"pts": _lg["pts"], "s": _lg["seconds"]}
+    else: assert _R["car"] is None
+    for _p in _R.get("placed", []): _p["image"] = {"rc_done_1b": "rc_done_1c", "rc_done_2b": "rc_done_2c", "rc_done_3b": "rc_done_3c", "rc_done_4": "rc_done_4c"}[_p["image"]]
+rc_done("rc_done_1c.webp", "i3_sula_source.png", (416, 38, 1279, 876, 1681, 936), size=(411, 399))
+rc_done("rc_done_2c.webp", "p1_utha_source.png", (503, 84, 1387, 935, 1453, 1083), size=(411, 399))
+rc_done("rc_done_3c.webp", "m1_padha_source_2.png", (302, 113, 1159, 951, 1448, 1086), size=(411, 399))
+rc_done("rc_done_4c.webp", "m2_soya_source_2.png", (384, 211, 1261, 1062, 1448, 1086), size=(411, 399))
+for _k in ("rc_done_1c", "rc_done_2c", "rc_done_3c", "rc_done_4c"): card["assets"]["image"][_k] = "assets/Images/" + _k + ".webp"
+PRUNED_IMAGES |= {"rc_title", "rc_scene_2", "rc_done_1b", "rc_done_2b", "rc_done_3b", "rc_done_4"}   # shown by no page any more: unregistered and removed below ([L02-DIST-OPTIM])
+for _k in ("rc_title", "rc_scene_2", "rc_done_1b", "rc_done_2b", "rc_done_3b", "rc_done_4"):
+    assert not any(s_["data"].get("image_id") == _k or any(p_["image"] == _k for p_ in (s_["data"].get("rc") or {}).get("placed", [])) for s_ in card["slides"] if isinstance(s_.get("data"), dict)), _k + " is still shown by a page"
+assert all(s_["data"]["rc"]["hold_ms"] == h_ for s_, h_ in ((rc, 2500), (rc2, 1500), (rc3, 1500), (rc4, 1500))) and rc["data"]["rc"]["start_ms"] == 600 and all(s_["data"]["rc"]["start_ms"] == 1800 for s_ in (rc2, rc3, rc4)) \
+    and all(s_["data"]["rc"]["place_ms"] == 500 and s_["data"]["rc"]["place_sfx"] == "sfx_place" for s_ in (rc2, rc3, rc4, rc5)) and all(s_["data"]["rc"]["motor"] == "speed" and s_["data"]["rc"]["sfx"] == "sfx_rc" for s_ in (rc, rc2, rc3, rc4)) \
+    and rc5["data"]["rc"]["end_ms"] == 6000 and rc5["data"]["rc"]["finale"] == {"at_ms": 1800, "gap_ms": 400, "sfx": None, "confetti": [0]}, "[L02-RC-FULL] the RC flow (timings, sounds) must be exactly as it was"
 
 # ---- [L02-STD-SFX] the celebration page's sound: the card's sfx_celebrate (the engine's jingle under the star burst) is replaced by the
 # standard confetti clip — the one place of the lesson that already had a sound where a standard one applies. sfx_celebrate.ogg stays in

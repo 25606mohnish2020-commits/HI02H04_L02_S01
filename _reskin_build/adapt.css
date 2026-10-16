@@ -588,6 +588,23 @@ html body .stage.l02-q3 .opt-cell .story-q-opt-label.story-q-opt-label.story-q-o
    takes over the token's animation once the last picture's glow has finished (the glow's end state is no shadow, like the base). */
 @keyframes l02-rc-pop{0%{transform:scale(1)}35%{transform:scale(1.22)}65%{transform:scale(.94)}100%{transform:scale(1)}}
 .stage.l02-rc .l02-rc-token.pop{animation:l02-rc-pop .6s cubic-bezier(.33,0,.2,1) both;transform-origin:50% 50%;will-change:transform;}
+/* [L02-RC-FULL] (2026-10-16, user request) the five car pages RC1-RC5 laid out FULL SCREEN from Figma "FLN by MJ" 344-3137 .. 344-3625
+   (card slide.rc_full, stage class .l02-rc-full beside .l02-rc; build.py [L02-RC-FULL]): no title picture, no bordered box - the room
+   picture IS the 1280x720 stage. The engine's picture box is stretched over the whole stage, starting 140 px above the slide area under
+   the hidden header row (so .slide-stage must not clip it), its stroke / rounding / shadow off; the layer's coordinates are frame px
+   (adapt.js subtracts no stroke). The checkpoints are the Figma's 141x137 ellipses (the 2 px #F6E28B rim as before, the inner 124 ring
+   6 / 5 px inside the rim, the "?" 38x60 at (49,35) inside the rim); the boy, his shadow and the car take their sizes from the card as
+   before. Everything else of [L02-RC-FIG] / [L02-RC-MOTION] / [L02-RC2] / [L02-RC5-FINALE] (the bob, the glow, the placing pop, the
+   finale pop, the car's views) applies unchanged. */
+.stage.l02-rc.l02-rc-full .slide-stage{overflow:visible;}
+.stage.l02-rc.l02-rc-full .tis-frame{left:0;top:-140px;width:calc(1280px * var(--fs)) !important;height:calc(720px * var(--fs)) !important;
+  border:0;border-radius:0;box-shadow:none;background:transparent;}
+.stage.l02-rc.l02-rc-full .tis-img{left:0;top:0;width:calc(1280px * var(--fs)) !important;height:calc(720px * var(--fs)) !important;}
+.stage.l02-rc.l02-rc-full .l02-rc-layer{width:calc(1280px * var(--fs));height:calc(720px * var(--fs));}
+.stage.l02-rc.l02-rc-full .l02-rc-title{display:none;}
+.stage.l02-rc.l02-rc-full .l02-rc-token{width:calc(141px * var(--fs));height:calc(137px * var(--fs));}
+.stage.l02-rc.l02-rc-full .l02-rc-token .l02-rc-ring{left:calc(6px * var(--fs));top:calc(5px * var(--fs));width:calc(124px * var(--fs));height:calc(124px * var(--fs));}
+.stage.l02-rc.l02-rc-full .l02-rc-token .l02-rc-q{left:calc(49px * var(--fs));top:calc(35px * var(--fs));width:calc(38px * var(--fs));height:calc(60px * var(--fs));}
 /* ===== [L02-STD-GATE] (2026-10-05, user request) the transition screens' bird is the standard Swiftee transition animation
    (assets/UI/gate_swiftee.webp — build.py [L02-STD-GATE]: the user's "Standard Swiftee Transition Animation.gif", an animated WebP,
    cropped to the bird and retimed so its beak first opens 1250 ms in). It is drawn as tall as the old peeking bird's full pose was: the

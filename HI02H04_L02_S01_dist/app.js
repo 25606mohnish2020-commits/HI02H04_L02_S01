@@ -5178,12 +5178,17 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     var s = (typeof CARD !== "undefined" && CARD.slides) ? CARD.slides[idx] : null, on = !!(s && s.rc_fig === true);
     var st = document.getElementById("stage"); if(!st) return;
     st.classList.toggle("l02-rc", on);
+    // [L02-RC-FULL] (2026-10-16, user request) card slide.rc_full: the full-screen layout of Figma 344 - the room is the whole stage (CSS
+    // .l02-rc-full), the card's coordinates are frame px (no 4 px stroke to subtract) and the page has no title picture
+    var full = on && s.rc_full === true;
+    st.classList.toggle("l02-rc-full", full);
     var title = st.querySelector(".l02-rc-title");
-    if(!on){ if(title) title.remove(); return; }
-    var R = (s.data && s.data.rc) || {}, fs = 1333 / 1280, B = 4, px = function(v){ return (v * fs).toFixed(3) + "px"; };
+    if(!on || full){ if(title) title.remove(); title = null; }
+    if(!on) return;
+    var R = (s.data && s.data.rc) || {}, fs = 1333 / 1280, B = full ? 0 : 4, px = function(v){ return (v * fs).toFixed(3) + "px"; };
     var frame = document.querySelector("#slideHost .tis-frame");
     if(!frame || frame.querySelector(".l02-rc-layer")) return;
-    if(!title){ title = bedImg("l02-rc-title", R.title || "assets/Images/rc_title.webp"); st.appendChild(title); }
+    if(!title && !full){ title = bedImg("l02-rc-title", R.title || "assets/Images/rc_title.webp"); st.appendChild(title); }   // [L02-RC-FULL] no title on the full-screen pages
     var layer = bedEl("div", "l02-rc-layer");
     var imgSrc = function(id){ return (id.indexOf("/") >= 0) ? id : ((CARD.assets && CARD.assets.image && CARD.assets.image[id]) || ("assets/Images/" + id + ".webp")); };
     var tokens = (R.tokens || []).map(function(t){
@@ -5197,7 +5202,9 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
       if(pl.animate) placing.push(tok); else tok.classList.add("placed");
     });
     if(R.shadow){ var sh = bedImg("l02-rc-shadow", R.shadow_src || "assets/Images/rc_shadow.svg");   // the 58x12 ellipse sits at the centre of its 118x72 blurred SVG
-      sh.style.left = px(R.shadow[0] + R.shadow[2] / 2 - 59 - B); sh.style.top = px(R.shadow[1] + R.shadow[3] / 2 - 36 - B); layer.appendChild(sh); }
+      var shW = R.shadow[2] || 58, shH = R.shadow[3] || 12, cvW = 118 * shW / 58, cvH = 72 * shH / 12;   // [L02-RC-FULL] an ellipse of another size scales its blurred canvas with it (the 344 frames: 76x16)
+      if(shW !== 58 || shH !== 12){ sh.style.width = px(cvW); sh.style.height = px(cvH); }
+      sh.style.left = px(R.shadow[0] + shW / 2 - cvW / 2 - B); sh.style.top = px(R.shadow[1] + shH / 2 - cvH / 2 - B); layer.appendChild(sh); }
     if(R.boy){ var boy = bedImg("l02-rc-boy", R.boy_src || "assets/Images/rc_boy.webp"); boy.style.left = px(R.boy[0] - B); boy.style.top = px(R.boy[1] - B);
       // [L02-RC1-FIG-2] (2026-10-10) the box's own width / height when the card gives them (RC1's frame 338-3 draws the boy at 90.3x167.5; the CSS 76x142 stays the default)
       if(R.boy.length >= 4 && (R.boy[2] !== 76 || R.boy[3] !== 142)){ boy.style.width = px(R.boy[2]); boy.style.height = px(R.boy[3]); }
