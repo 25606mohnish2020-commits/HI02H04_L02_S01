@@ -365,6 +365,10 @@ card = json.loads(m.group(1))
 # and takes the sticker's place. Its visible part (alpha > 8: 2157x522, 4.13 wide for its height; the old sticker's was 725x196, 3.70) is
 # FITTED INSIDE the same 416x113 layer box at the same spot (contain, centred): the title keeps its width and its centre, the cloud comes out
 # a little shorter (416x101 layer px) than the old one. The scene, the box and everything else on the page are as they were.
+# [L02-LANDING-TITLE-4] (2026-10-16, user request) "increase the size of the heading text png by 15% more but at the exact same position and
+# placement": the fitted art is scaled by LANDING_TITLE_SCALE = 1.15 about the SAME CENTRE (the box's: card (564,86.5)) -> 478x116 layer
+# px (718x174 picture px), still well inside the card. Nothing else on the page moves.
+LANDING_TITLE_SCALE = 1.15
 LANDING_PIC = "assets/Images/landing_title_2.webp"
 _L2_SCENE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_scene_source.png")
 _L2_TITLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "landing2_title_source_2.png")   # [L02-LANDING-TITLE-3]; landing2_title_source.png = the Figma sticker, kept
@@ -376,12 +380,13 @@ if not os.path.exists(_L2_DST) or os.path.getmtime(_L2_DST) < max(os.path.getmti
     _S = _scene.size[0] / 1114.0                                     # the scene's pixels per layer px (1.5)
     assert abs(_scene.size[1] / 627.0 - _S) < 0.01, _scene.size
     _bb = _sticker.split()[3].point(lambda v: 255 if v > 8 else 0).getbbox(); _sticker = _sticker.crop(_bb)   # [L02-LANDING-TITLE-3] the visible art
-    _BW, _BH = round(416 * _S), round(113 * _S); _k = min(_BW / _sticker.width, _BH / _sticker.height)
+    _BW, _BH = round(416 * _S), round(113 * _S); _k = min(_BW / _sticker.width, _BH / _sticker.height) * LANDING_TITLE_SCALE   # [L02-LANDING-TITLE-4] +15 %
     _w, _h = round(_sticker.width * _k), round(_sticker.height * _k)
     _st = _sticker.resize((_w, _h), _Img.LANCZOS)
-    _scene.paste(_st, (round(366 * _S) + (_BW - _w) // 2, round(116 * _S) + (_BH - _h) // 2), _st)   # contain, centred in the sticker's box: card (356,30) = picture (366,116), 416x113
+    _cx, _cy = round(366 * _S) + _BW / 2, round(116 * _S) + _BH / 2                                  # the sticker box's centre: card (356,30) + (208,56.5) = picture (366,116) + ...
+    _scene.paste(_st, (round(_cx - _w / 2), round(_cy - _h / 2)), _st)                               # centred on it, whatever the art's size
     _scene.save(_L2_DST, "WEBP", quality=88, method=6)
-    print("wrote", _L2_DST, _scene.size, "title art", (_w, _h), "in the", (_BW, _BH), "box, crop", _bb)
+    print("wrote", _L2_DST, _scene.size, "title art", (_w, _h), "centred at", (_cx, _cy), "(the", (_BW, _BH), "box), crop", _bb)
 assert os.path.exists(_L2_DST), "missing " + LANDING_PIC
 for s in card["slides"]:
     if s["type"] == "STORY_READ_PAGE": s["caption_chip"] = True
