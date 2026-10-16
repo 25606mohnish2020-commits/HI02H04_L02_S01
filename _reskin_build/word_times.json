@@ -170,18 +170,20 @@
  },
  "vo_story_8b": {
   "words": [
+   "और",
    "वह",
    "थककर",
    "सो",
    "गया।"
   ],
-  "md5": "49559d2266ddf82c8309da4d26e12381",
+  "md5": "88432e044424b44b15119245553c2c83",
   "times": [
    0.09,
-   0.51,
-   1.27,
-   1.65,
-   1.97
+   0.74,
+   1.07,
+   1.76,
+   2.03,
+   2.39
   ],
   "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
  },

@@ -438,12 +438,12 @@ t8["data"]["whole_audio"] = "vo_story_8a"
 t8["data"]["alt_hi"] = "माधव खेलते-खेलते जम्हाई ले रहा है।"
 t9["id"] = "T9"
 t9["data"]["image_id"] = "story_9"
-t9["data"]["words"] = [{"text": w} for w in ["वह", "थककर", "सो", "गया।"]]   # [L02-VO-BATCH]
+t9["data"]["words"] = [{"text": w} for w in ["और", "वह", "थककर", "सो", "गया।"]]   # [L02-VO-BATCH]; [L02-T9-VO-2] (2026-10-16) और at the front, with the new take
 t9["data"]["whole_audio"] = "vo_story_8b"
 t9["data"]["alt_hi"] = "माधव खिलौनों के बीच सो गया, माँ हैरान खड़ी है।"
 card["slides"].insert(card["slides"].index(t8) + 1, t9)
 aud["vo_story_8a"] = "assets/Audio/vo_story_8a." + AUD_EXT; txt["vo_story_8a"] = "खेलते-खेलते उसे नींद आने लगी।"   # [L02-VO-BATCH] the recordings' words (the clips are made below)
-aud["vo_story_8b"] = "assets/Audio/vo_story_8b." + AUD_EXT; txt["vo_story_8b"] = "वह थककर सो गया।"
+aud["vo_story_8b"] = "assets/Audio/vo_story_8b." + AUD_EXT; txt["vo_story_8b"] = "और वह थककर सो गया।"   # [L02-T9-VO-2]
 # ---- [L02-POP-SFX] the picture's pop has a sound. The user's assets/SFX/"Page N.mp3" are raw library tracks (1.8 s to 3 min,
 # several opening in silence), so each is cut to the pop's 2 s, levelled and encoded like every other clip (Opus, mono, 48 k)
 # into assets/Audio/sfx_pop_<n>.ogg (n = story page index, page N = n + 1); story_read_page.js starts that clip with the pop
@@ -526,7 +526,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_story_6", "उसने किताब पढ़ी।"),
     ("vo_story_7", "फिर वह खिलौनों से खेलने लगा।"),   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
     ("vo_story_8a", "खेलते-खेलते उसे नींद आने लगी।"),
-    ("vo_story_8b", "वह थककर सो गया।"),
+    ("vo_story_8b", "और वह थककर सो गया।"),   # [L02-T9-VO-2] (2026-10-16) और at the front, with the new take
     # the guided transition (the fleet's line; the deck has no line for it)
     ("vo_pt_guided", "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!"),
     # G2 — find Madhav in the picture (deck slide 14): prompt, the three hints, the correct line (the lesson's; the deck has none)
@@ -642,6 +642,18 @@ slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16_source.wav"), 0
 # sentence_rate 0.8 still on top, as on every story page). word_times re-measure off the new clip by md5; their span is asserted to be
 # 2.23 s (the 2.21 s + the 20 ms end pad) within 60 ms. The batch's vo_story_7.wav stays in its folder as delivered.
 slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16_source.wav"), 0.7894); SLOW_TAKE_SPAN["T7"] = 2.23
+# ---- [L02-T9-VO-2] (2026-10-16, user request) "Replace the VO of Page T9 with this VO (Downloads/3.mp3) and adjust the speed of this VO such
+# that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be replaced in
+# wav format not mp3; also add और in the hindi text of the sentence at the beginning of the sentence on this page in the exact same font size
+# and color. Rest keep everything exactly the same." The same as [L02-T7-VO-2] for page 9: the file is a 24 kHz mono PCM WAV (2.52 s,
+# -19.9 LUFS), kept as _reskin_build/vo_story_8b_2026-10-16_source.wav; the sentence becomes "और वह थककर सो गया।" — five words (t9's words
+# above, VO_LINES / txt / the manifest; the same .p2-word spans, so the same size and colour; a 5 s read-aloud beat by the one-second-per-word
+# rule). The same pace per word: the replaced take spoke its four words over 1.860 s (the envelope rule; word_times 0.09 -> 1.97), weighing
+# 2.5 + 4.5 + 1.5 + 2.5 = 11 (syllables + 0.5), so five words weighing 13.5 (और: 2.5) get 1.860 x 13.5 / 11 = 2.28 s; the new take speaks
+# them in 1.800 s -> tempo 1.800 / 2.28 = 0.7885 (a 21% slower file; sentence_rate 0.8 still on top). word_times re-measure by md5; their
+# span is asserted to be 2.30 s (2.28 s + the 20 ms end pad) within 60 ms. The page's pop-with-sentence sound (7 s cut) still outlasts the
+# longer line. The batch's vo_story_8b.wav stays in its folder as delivered.
+slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16_source.wav"), 0.7885); SLOW_TAKE_SPAN["T9"] = 2.30
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -671,6 +683,7 @@ for _s in story:
     if _s["id"] == "T7": _s["data"]["words"] = [{"text": w} for w in "फिर वह खिलौनों से खेलने लगा।".split()]   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
 assert [w["text"] for w in next(s for s in story if s["id"] == "T3")["data"]["words"]] == "पर, माधव को तो नींद ही नहीं आ रही थी।".split()
 assert [w["text"] for w in next(s for s in story if s["id"] == "T7")["data"]["words"]] == txt["vo_story_7"].split() == "फिर वह खिलौनों से खेलने लगा।".split()   # [L02-T7-VO-2]
+assert [w["text"] for w in t9["data"]["words"]] == txt["vo_story_8b"].split() == "और वह थककर सो गया।".split()   # [L02-T9-VO-2]
 def sfx_cut_start(src, length=POP_S):
     out = ff("-i", src, "-af", "aresample=24000,asetnsamples=n=%d,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-" % int(24000 * SFX_WIN), "-f", "null", "-")
     vals = [(-120.0 if x == "-inf" else float(x)) for x in re.findall(r"RMS_level=(-?[\d.]+|-inf)", out)]
