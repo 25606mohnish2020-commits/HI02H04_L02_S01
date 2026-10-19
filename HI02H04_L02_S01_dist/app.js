@@ -51,6 +51,40 @@
 /* ===== FLN ANIMATION KIT: still-mode END ===== */
 ;
 
+/* ===== [L02-LOAD-ORDER] (2026-10-19, user request: "on the Vercel link the images and animations take a little long to load") =====
+   Page 1's own art (the loader logo, the waving bird, the title picture) was sharing the connection with some 3 MB+ of files meant
+   for later (the transition bird, the celebration sheets, the music bed's buffer), so on a phone connection the bird reached Page 1
+   seconds after the loader had gone. window.l02Art says when that art is in: l02Art.wait(fn, capMs) runs fn once the three pictures
+   have loaded (or failed), or after capMs, whichever comes first. The blocks that fetch things for later pages wait on it, and the
+   boot loader's 2 s hold waits on it too (capped), so Page 1 opens with its pictures in place.
+   window.l02Replay: the header bird's celebrate animation plays once, and the engine restarts it on each page with a new URL
+   (?r=<page start>) - a fresh download of the 390 KB file on every page, so the reaction showed late. l02Replay.url(src, key) hands
+   out a fresh object URL of ONE fetched copy per key instead (a new URL is still a new image whose animation starts at its first
+   frame), or null until that copy is in, when the engine's own ?r= URL is used as before. Nothing else changes. */
+(function(){
+  var SEL = [".boot-loader img", ".start-gate .sg-mascot", "#sgFrame img"], done = false, q = [];
+  function fire(){ if(done) return; done = true; var l = q; q = []; l.forEach(function(f){ f(); }); }
+  function check(){
+    var left = SEL.map(function(s){ return document.querySelector(s); }).filter(function(i){ return i && !i.complete; });
+    if(!left.length){ fire(); return; }
+    left.forEach(function(i){ i.addEventListener("load", check, { once:true }); i.addEventListener("error", check, { once:true }); });
+  }
+  window.l02Art = { get done(){ return done; }, wait: function(fn, capMs){
+    var ran = false, once = function(){ if(ran) return; ran = true; try{ fn(); }catch(e){} };
+    if(done){ once(); return; }
+    q.push(once); if(capMs != null) setTimeout(once, capMs); } };
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", check); else check();
+  var reps = {};
+  function rep(src){ return reps[src] || (reps[src] = { blob:null, asked:false, key:null, url:null }); }
+  window.l02Replay = {
+    prime: function(src){ var r = rep(src); if(r.asked || typeof fetch !== "function" || !/^https?:$/.test(location.protocol)) return; r.asked = true;
+      fetch(src).then(function(x){ if(!x.ok) throw new Error(x.status); return x.blob(); }).then(function(b){ r.blob = b; }).catch(function(){}); },
+    url: function(src, key){ var r = rep(src); if(!r.blob){ this.prime(src); return null; }
+      if(r.key !== key){ if(r.url){ try{ URL.revokeObjectURL(r.url); }catch(e){} } r.url = URL.createObjectURL(r.blob); r.key = key; }
+      return r.url; } };
+})();
+;
+
 /* ===== <script id="ENGINE (2026.07.16i-r4-unified + STORY_READ_PAGE)"> ===== */
 const CARD = JSON.parse(document.getElementById('cardData').textContent);
   const AUDIO_EXT = (CARD.assets && CARD.assets.audio_ext) || "mp3";  // .mp3 (maths) / .ogg (Hindi FLN)
@@ -203,7 +237,8 @@ function setSwMood(m){ swMood = m;
   const animated = expression !== "talking";
   const bust = (animated && expression === "celebrate") ? ("?r=" + ((typeof state !== "undefined" && state.slideStart) || 1)) : "";
   img.onerror = () => { img.onerror = null; img.src = "assets/UI/mascot.webp"; };
-  img.src = "assets/UI/sw_head_" + expression + (animated ? "_anim" : "") + ".webp" + bust;
+  const src = "assets/UI/sw_head_" + expression + (animated ? "_anim" : "") + ".webp";
+  img.src = (bust && window.l02Replay && window.l02Replay.url(src, bust)) || (src + bust);   // [L02-LOAD-ORDER] same restart, no re-download
 }
 /* CONFETTI BURST — reference standard (MTKGA02_L01_S02_Sorting_Objects_GOLDEN via कहानी–तोता): 100 modest
    10x10 pieces FALL from the top of the stage for 3s; only position, colour and start delay vary. The wrap
@@ -4126,7 +4161,7 @@ function boot(){
       playLanding();
       setTimeout(()=>{ if(bl.parentNode) bl.remove(); }, 440);
     };
-    setTimeout(ready, 2000);
+    setTimeout(()=>{ if(window.l02Art) window.l02Art.wait(ready, 4000); else ready(); }, 2000);   // [L02-LOAD-ORDER] the 2 s hold; if Page 1's pictures are still coming, wait for them (at most 4 s more)
   })();
   // A tap on Page 1 plays the VO where the browser refused to start it by itself (desktop browsers before the first
   // click). A tap during the LOADING SCREEN must not start it early: playLanding waits for Page 1, and that tap only
@@ -4998,8 +5033,9 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
    frame (gate_swiftee_up.webp); the lift-in, the line's wipe and the drop are CSS (adapt.css) driven by patch 3j's classes.
    [L02-GATE-REF] (2026-10-10): the file is the HI02H04_L01_S01 reference's own peeking_talk_up.webp now (CARD.gate.anim); same handling. */
 (function(){
-  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/peeking_talk_up.webp", blob = null, url = null, failed = false;
-  var pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true);
+  var SRC = (typeof CARD !== "undefined" && CARD.gate && CARD.gate.anim) || "assets/UI/peeking_talk_up.webp", blob = null, url = null, failed = false, pre = null;
+  var load = function(){ return pre || (pre = (typeof fetch === "function") ? fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){ failed = true; }) : Promise.resolve(failed = true)); };
+  if(window.l02Art) window.l02Art.wait(load, 6000); else load();   // [L02-LOAD-ORDER] after Page 1's own pictures (a gate that opens sooner starts it itself, below)
   function hand(img, res){
     var done = false, fin = function(){ if(done) return; done = true; res(); };
     if(url){ try{ URL.revokeObjectURL(url); }catch(e){} url = null; }
@@ -5007,7 +5043,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(blob){ url = URL.createObjectURL(blob); img.src = url; } else { img.src = SRC + "?r=" + Date.now(); }
     setTimeout(fin, 1500);                                           // never leave a gate waiting on a load that does not fire
   }
-  window.l02GateBird = { src: SRC, start: function(img){ return new Promise(function(res){ if(!img){ res(); return; } if(blob || failed) hand(img, res); else pre.then(function(){ hand(img, res); }); }); } };
+  window.l02GateBird = { src: SRC, start: function(img){ return new Promise(function(res){ if(!img){ res(); return; } if(blob || failed) hand(img, res); else load().then(function(){ hand(img, res); }); }); } };
 })();
 
 /* ===== L02-I1-CONFETTI-JS =====
@@ -5568,8 +5604,9 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     })();
   }
   /* warm the sheets during the lesson, so the end screen never opens on an empty box */
-  setTimeout(()=>{ try { const A = CARD && CARD.end_anim; if(A && A.shabaash){
+  const celWarm = ()=> setTimeout(()=>{ try { const A = CARD && CARD.end_anim; if(A && A.shabaash){
     window.__celWarm = [A.shabaash.src, A.talk.src, A.idle.src].map(u => { const i = new Image(); i.src = u; if(i.decode) i.decode().catch(()=>{}); return i; }); } } catch(e){} }, 1500);
+  if(window.l02Art) window.l02Art.wait(celWarm, 6000); else celWarm();   // [L02-LOAD-ORDER] the 1.5 s count starts once Page 1's own pictures are in
 })();
 
 /* ===== L02-SPK-CHIP =====
@@ -5642,7 +5679,8 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
 (function(){
   var img = document.querySelector(".start-gate .sg-mascot"); if(!img) return;
   var SRC = img.getAttribute("src") || "assets/UI/new_landing_swiftee_anim.webp", blob = null, url = null, n = 0;
-  if(typeof fetch === "function" && /^https?:$/.test(location.protocol)) fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){});
+  var grab = function(){ if(typeof fetch === "function" && /^https?:$/.test(location.protocol)) fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); }).then(function(b){ blob = b; }).catch(function(){}); };
+  if(window.l02Art) window.l02Art.wait(grab, 6000); else grab();   // [L02-LOAD-ORDER] once the <img> has it, so this is a cache hit, not a second download
   window.l02LandBird = { restart: function(el){ el = el || img; if(!el) return;
     if(url){ try{ URL.revokeObjectURL(url); }catch(e){} url = null; }
     el.removeAttribute("src"); void el.offsetWidth;
@@ -6251,7 +6289,10 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
     if(oStop) P.stop = function(when){ var r = oStop.apply(this, arguments); try{ if(nodes.has(this)){ nodes.set(this, at(this, when) + 120); update(); } }catch(e){} return r; };
   });
   // ---- the bed ----
-  try{ el = new Audio(SRC); el.loop = true; el.preload = "auto"; apply(); }catch(e){ el = null; }
+  try{ el = new Audio(SRC); el.loop = true; el.preload = "none"; apply(); }catch(e){ el = null; }
+  // [L02-LOAD-ORDER] the bed buffers once Page 1's own pictures are in (it is first heard on the Play tap; a play() before then loads it itself)
+  var buffer = function(){ if(el && el.preload === "none") el.preload = "auto"; };
+  if(window.l02Art) window.l02Art.wait(buffer, 6000); else buffer();
   function armTap(){ if(tapArmed) return; tapArmed = true;
     var once = function(){ document.removeEventListener("pointerdown", once, true); document.removeEventListener("keydown", once, true); tapArmed = false; if(wanted) start(); };
     document.addEventListener("pointerdown", once, true); document.addEventListener("keydown", once, true); }
@@ -6285,5 +6326,63 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   window.__bgm = { get el(){ return el; }, get wanted(){ return wanted; }, get sounding(){ return sounding.size; },
     get nodesDuckMs(){ return Math.max(0, nodesUntil() - Date.now()); }, get level(){ return level; }, get target(){ return target; },
     get range(){ return [FIRST, LAST]; } };
+})();
+;
+
+/* ===== [L02-WARM-AHEAD] (2026-10-19, user request: "on the Vercel link the images and animations take a little long to load") =====
+   Every page fetched its pictures and voice lines only when it opened, so on a phone connection the picture popped in after the
+   page, and the first line (and the animations timed to it) started late. Once Page 1's own pictures are in ([L02-LOAD-ORDER]),
+   this block fetches - three at a time, in the order the lesson needs them - page 1's pictures and sounds, the header bird's
+   reaction animations and the shared sfx, then pages 2-3; and whenever a page opens, the two pages after it. Pictures go through
+   new Image() (kept, so the page's own <img> reuses the loaded picture with no request); sounds through fetch() into the browser's
+   cache. Each page's list is read from the card - every string that names a card image / audio id, an image_id, a vo_ / sfx_ id or
+   an assets/ path, the phase-transition line where the phase changes, and the RC pages' built-in pieces - so it follows the card
+   with no list of its own. Nothing is shown, played or timed differently. window.__l02Warm exposes the state for verification. */
+(function(){
+  if(typeof CARD !== "object" || !CARD || !CARD.slides || !window.l02Art) return;
+  var A = CARD.assets || {}, IMG = A.image || {}, AUD = A.audio || {}, IX = A.img_ext || "png", AX = A.audio_ext || "mp3";
+  var seen = new Set(), queue = [], keep = [], warmed = new Set(), busy = 0, MAX = 3, started = false, landed = 0;
+  var isImg = function(u){ return /\.(webp|png|svg|jpe?g|gif)$/i.test(u); };
+  function pump(){
+    while(busy < MAX && queue.length){
+      var u = queue.shift(), fin = function(){ busy--; landed++; pump(); }; busy++;
+      if(isImg(u)){ var im = new Image(); im.onload = im.onerror = fin; im.src = u; keep.push(im); }
+      else if(typeof fetch === "function") fetch(u).then(function(r){ return r.ok ? r.blob() : null; }).then(fin, fin);
+      else fin();
+    }
+  }
+  function add(list){ list.forEach(function(u){ if(u && !seen.has(u)){ seen.add(u); queue.push(u); } }); pump(); }
+  function slideList(i){
+    var s = CARD.slides[i], img = [], snd = []; if(!s) return [];
+    (function walk(v, key){
+      if(typeof v === "string"){
+        if(IMG[v]) img.push(IMG[v]); else if(AUD[v]) snd.push(AUD[v]);
+        else if(/^assets\//.test(v)) (isImg(v) ? img : snd).push(v);
+        else if(/image_id/.test(key)) img.push("assets/Images/" + v + "." + IX);
+        else if(/^(vo|sfx)_\w+$/.test(v)) snd.push("assets/Audio/" + v + "." + AX);
+      } else if(Array.isArray(v)) v.forEach(function(x){ walk(x, key); });
+      else if(v && typeof v === "object") Object.keys(v).forEach(function(k){ walk(v[k], k); });
+    })(s, "");
+    var R = s.data && s.data.rc;                                         // the RC pages' pieces the engine draws by default
+    if(R){ img.push(R.q || "assets/Images/rc_q.webp"); if(R.shadow) img.push(R.shadow_src || "assets/Images/rc_shadow.svg"); if(R.boy) img.push(R.boy_src || "assets/Images/rc_boy.webp"); }
+    var prev = CARD.slides[i - 1], pt = AUD["vo_pt_" + s.phase];       // the transition screen's line opens a new phase
+    if(pt && (!prev || prev.phase !== s.phase)) snd.unshift(pt);
+    return img.concat(snd);
+  }
+  function ahead(from, n){ for(var i = Math.max(0, from); i < from + n && i < CARD.slides.length; i++){ if(!warmed.has(i)){ warmed.add(i); add(slideList(i)); } } }
+  var UI = ["assets/UI/sw_head_tryagain_anim.webp", "assets/UI/sw_head_hint_anim.webp", "assets/UI/hint_active.webp", "assets/UI/sw_lg_hint.webp", "assets/UI/sw_lg_tryagain.webp"]
+    .concat(["sfx_play_button", "sfx_next_button", "sfx_correct_feedback", "sfx_incorrect_feedback"].map(function(id){ return "assets/Audio/" + id + "." + AX; }));
+  window.l02Art.wait(function(){
+    started = true;
+    var at = (typeof state === "object" && state && typeof state.idx === "number" && document.getElementById("startGate") && document.getElementById("startGate").classList.contains("hidden")) ? state.idx : 0;
+    ahead(at, 1);
+    if(window.l02Replay) window.l02Replay.prime("assets/UI/sw_head_celebrate_anim.webp");
+    add(UI);
+    ahead(at + 1, 2);
+  }, 6000);
+  var origMount = window.mountSlide;
+  if(typeof origMount === "function") window.mountSlide = function(idx){ var r = origMount.apply(this, arguments); try{ if(started) ahead((idx | 0), 3); }catch(e){} return r; };
+  window.__l02Warm = { get started(){ return started; }, get queued(){ return queue.length; }, get busy(){ return busy; }, get landed(){ return landed; },
+    get urls(){ return Array.from(seen); }, get pages(){ return Array.from(warmed); } };
 })();
 ;
