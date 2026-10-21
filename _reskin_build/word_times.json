@@ -36,24 +36,31 @@
  "_about": "[L02-READ-ALOUD] word start times (s) in each story clip, then the end of the last word (the reference's WORD_TIMES rule). Keyed by clip id; md5 + words say which recording / sentence an entry belongs to (a stale entry is re-measured by build.py). measure_word_times.py writes the aligned times; 'measured': 'hand' marks a hand-corrected entry.",
  "vo_story_2": {
   "words": [
+   "खाने",
+   "के",
+   "बाद,",
    "माधव",
    "की",
    "माँ",
    "उसे",
    "सुलाने",
-   "लगी।"
+   "लगी ।"
   ],
-  "md5": "413d9458e3db1ae6a60c2b6e5e28921b",
+  "md5": "cb8e141c86234c4172915d43a2666225",
   "times": [
-   0.08,
-   0.61,
-   0.81,
-   1.04,
-   1.39,
-   2.0,
-   2.17
+   0.09,
+   0.53,
+   0.73,
+   1.35,
+   1.88,
+   2.05,
+   2.21,
+   2.45,
+   2.96,
+   3.32
   ],
-  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+  "measured": "hand",
+  "note": "[L02-T2-VO-3] 2026-10-21: the envelope fallback read [0.09, 0.53, 0.73, 1.05, 1.7, 1.88, 2.08, 2.4, 3.19, 3.32]: it lit maadhav in the pause after 'khaane ke baad,' and slid kii / maan / use / laagii a syllable early or late. Corrected by hand on the 5 ms envelope and zero-crossing rate (the voice back after the pause 1.35, the k releases 1.88, m onset 2.05, the dip into u 2.21, the s frication 2.45, the l onset 2.96) and checked against faster-whisper small word timestamps (de-prompted transcript: khaane ke baad maadav kii maan use sulaane lagii)."
  },
  "vo_story_3": {
   "words": [
