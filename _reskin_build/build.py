@@ -537,7 +537,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_pt_tutorial", "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!"),
     # the story pages T1-T9 (deck slides 5-13): the mic cue, then each sentence
     ("vo_tap_speaker_sentence_story", "इस बटन पर टैप करिए और वाक्य पढ़िए।"),
-    ("vo_story_1", "दोपहर का खाना हो चुका था।"),
+    ("vo_story_1", "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।"),   # [L02-T1-VO-4] (2026-10-21) the new sentence and take (was "दोपहर का खाना हो चुका था।")
     ("vo_story_2", "माधव की माँ उसे सुलाने लगी।"),
     ("vo_story_3", "पर, माधव को तो नींद ही नहीं आ रही थी।"),
     ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
@@ -727,6 +727,17 @@ for _name, _src in (("vo_story_1", "vo_story_1_2026-10-16b_source.wav"), ("vo_st
                     ("vo_story_8b", "vo_story_8b_2026-10-16b_source.wav"), ("vo_story_2", "vo_story_2_2026-10-16_source.wav")):
     assert os.path.exists(os.path.join(SCR, _src)), "[L02-VO-NORMAL] missing " + _src
     VO_OVERRIDE[_name] = os.path.join(SCR, _src)
+# ---- [L02-T1-VO-4] (2026-10-21, user request) "At Page 1 T1 of this file replace the text with दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।
+# this text in the white bar and replace the VO synced with it with this VO (Downloads/"audio_1 .wav"). Rest keep everything exactly the same
+# in this file." The file is a 24 kHz mono 16-bit PCM WAV (4.68 s, the voice from 0.28 s), kept as _reskin_build/vo_story_1_2026-10-21_source.wav;
+# it takes the place of the 2026-10-16b take (that file stays on disk unused). vo_clip trims / levels / encodes it as recorded (normal speed,
+# [L02-VO-NORMAL]) into assets/Audio/vo_story_1.wav; T1's words become the new sentence's twelve (the words override below, and VO_LINES so
+# txt / the manifest say what the page speaks), in the same .p2-word spans of the white bar, so the same type and colour (the bar's own
+# one-line fit applies as on every page); the read-aloud beat follows the one-second-per-word rule (12 s). The envelope fallback put
+# माँ / के / साथ / खाना a word late on this take, so word_times.json carries a hand-corrected vo_story_1 entry ("measured": "hand", its note
+# says how it was read), which word_times_for keeps as long as the clip's md5 and the words are unchanged.
+VO_OVERRIDE["vo_story_1"] = os.path.join(SCR, "vo_story_1_2026-10-21_source.wav")
+assert os.path.exists(VO_OVERRIDE["vo_story_1"]), "[L02-T1-VO-4] missing " + VO_OVERRIDE["vo_story_1"]
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -754,6 +765,8 @@ for _s in story:
     if _s["id"] == "T3": _s["data"]["words"] = [{"text": w} for w in ["पर,", "माधव", "को", "तो", "नींद", "ही", "नहीं", "आ", "रही", "थी।"]]
     if _s["id"] == "T4": _s["data"]["words"] = [{"text": w} for w in ["माँ", "के", "सोते", "ही", "वह", "उठ", "गया।"]]
     if _s["id"] == "T7": _s["data"]["words"] = [{"text": w} for w in "फिर वह खिलौनों से खेलने लगा।".split()]   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
+    if _s["id"] == "T1": _s["data"]["words"] = [{"text": w} for w in "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।".split()]   # [L02-T1-VO-4] (2026-10-21) the new sentence, with the new take
+assert [w["text"] for w in next(s for s in story if s["id"] == "T1")["data"]["words"]] == txt["vo_story_1"].split() == "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।".split()   # [L02-T1-VO-4]
 assert [w["text"] for w in next(s for s in story if s["id"] == "T3")["data"]["words"]] == "पर, माधव को तो नींद ही नहीं आ रही थी।".split()
 assert [w["text"] for w in next(s for s in story if s["id"] == "T7")["data"]["words"]] == txt["vo_story_7"].split() == "फिर वह खिलौनों से खेलने लगा।".split()   # [L02-T7-VO-2]
 assert [w["text"] for w in t9["data"]["words"]] == txt["vo_story_8b"].split() == "और वह थककर सो गया।".split()   # [L02-T9-VO-2]

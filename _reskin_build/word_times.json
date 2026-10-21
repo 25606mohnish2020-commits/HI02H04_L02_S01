@@ -2,23 +2,36 @@
  "vo_story_1": {
   "words": [
    "दोपहर",
-   "का",
+   "के",
+   "समय",
+   "माधव",
+   "अपनी",
+   "माँ",
+   "के",
+   "साथ",
    "खाना",
-   "हो",
-   "चुका",
+   "खा",
+   "रहा",
    "था।"
   ],
-  "md5": "b578dd4073157e0cb9cdeb7bd0a48ffe",
+  "md5": "1fc824e58df0247f50792c34bf86dfe1",
   "times": [
    0.09,
-   0.7,
-   0.86,
-   1.32,
-   1.49,
-   1.79,
-   2.01
+   0.72,
+   0.84,
+   1.55,
+   2.25,
+   2.46,
+   2.68,
+   2.78,
+   3.17,
+   3.56,
+   3.78,
+   4.01,
+   4.19
   ],
-  "measured": "envelope (build.py fallback; run measure_word_times.py for the aligned times)"
+  "measured": "hand",
+  "note": "[L02-T1-VO-4] 2026-10-21: the envelope fallback read [0.09, 0.72, 0.93, 1.49, 2.25, 2.68, 2.86, 3.06, 3.32, 3.56, 3.78, 4.01, 4.19] and put maa / ke / saath / khaana one word late (it took the k-closure before ke for the start of maa). Corrected by hand on the 5 ms envelope and zero-crossing rate (s frication 0.84 / 2.78, kh aspiration 3.17, the k release 2.68, the voice back after the pause 1.55, the dip after apnii 2.46) and checked against faster-whisper small word timestamps (de-prompted transcript: ... apnii maan kisaat khaana kaarahaa thaa)."
  },
  "_about": "[L02-READ-ALOUD] word start times (s) in each story clip, then the end of the last word (the reference's WORD_TIMES rule). Keyed by clip id; md5 + words say which recording / sentence an entry belongs to (a stale entry is re-measured by build.py). measure_word_times.py writes the aligned times; 'measured': 'hand' marks a hand-corrected entry.",
  "vo_story_2": {
