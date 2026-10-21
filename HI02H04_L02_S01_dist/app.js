@@ -1,6 +1,148 @@
 /* HI02H04_L02_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order
    (the reference-lesson-only scripts are left out; STORY_READ_PAGE is this lesson's own tutorial module). */
 
+/* ===== [L02-TAB-PAUSE] (2026-10-21, user request: "When the user switches to another browser tab, then the file should automatically
+   pause there, including all background music, VO playback and any sound effect. Rest keep everything exactly the same.") =====
+   The first block in the file, so every block below goes through it. When the tab goes to the background (visibilitychange → hidden)
+   the lesson holds exactly where it is; when the tab comes back it carries on from that same point:
+   - sound: every Audio element that is playing (the music bed, the VO chain, the sfx clips, the landing welcome, the car / footsteps
+     loops) is paused, and every WebAudio context that has sounded (the engine's taps, the animation kit's bursts) is suspended; on
+     return each resumes from where it stopped. The engine never sees the hold: a held clip's own 'pause' event is swallowed (so the VO
+     chain, the bed's ducking and the read-out do not take it for a tap cutting the line), a play() promise cut by the hold settles
+     when the clip plays on, and a play() / resume() asked for while away waits for the return.
+   - time: setTimeout / setInterval are held (each keeps the time it had left), performance.now() and the requestAnimationFrame clock
+     stop, and CSS animations pause, so no hint, auto-advance, gate, read-aloud beat or word highlight moves on while the tab is away.
+     Date.now() is left as it is, so the signals' timestamps stay wall-clock.
+   With the tab in front nothing differs: every wrapper passes straight through. window.__tabHold exposes read-only state for checks. */
+(function(){
+  var held = false, since = 0, lost = 0, gen = 0, noop = function(){};     // away now; when this hold began; ms held before it; holds so far
+  var pNow = performance.now.bind(performance);
+  performance.now = function(){ return (held ? since : pNow()) - lost; };
+  // ---- timers: the page gets ids of our own, each backed by a native timer while the tab is in front ----
+  var nST = window.setTimeout, nSI = window.setInterval, nCT = window.clearTimeout;
+  var tmr = new Map(), seq = 0;                                                // id -> { fn, args, ms, every, nid, due, left, kick }
+  function arm(t, ms){ t.due = pNow() + ms; t.nid = (t.every && !t.kick) ? nSI.call(window, fire, ms, t) : nST.call(window, fire, ms, t); }
+  function fire(t){
+    if(tmr.get(t.id) !== t) return;
+    if(held){ t.nid = 0; t.left = 0; return; }                                 // came due just as the tab went: it runs first on return
+    if(!t.every) tmr.delete(t.id);
+    else if(t.kick){ t.kick = false; arm(t, t.ms); }                           // a resumed interval goes back on its native beat
+    else t.due = pNow() + t.ms;
+    t.fn.apply(window, t.args);
+  }
+  function later(every, a){
+    var fn = a[0]; if(typeof fn !== "function"){ var code = String(fn); fn = function(){ (0, eval)(code); }; }
+    var t = { id: ++seq, fn: fn, args: Array.prototype.slice.call(a, 2), ms: Math.max(0, +a[1] || 0), every: every, nid: 0, left: 0, kick: false };
+    tmr.set(t.id, t);
+    if(held) t.left = t.ms; else arm(t, t.ms);
+    return t.id;
+  }
+  function cancel(id){ var t = tmr.get(id); if(!t) return; tmr.delete(id); if(t.nid){ nCT.call(window, t.nid); t.nid = 0; } }
+  window.setTimeout = function(){ return later(false, arguments); };
+  window.setInterval = function(){ return later(true, arguments); };
+  window.clearTimeout = window.clearInterval = cancel;
+  // ---- frames: the frame clock skips the time away; a frame that slips in while away waits for the return ----
+  var nRAF = window.requestAnimationFrame, nCAF = window.cancelAnimationFrame, parked = new Map();   // rAF id -> its callback
+  if(nRAF && nCAF){
+    window.requestAnimationFrame = function(cb){
+      if(typeof cb !== "function") return nRAF.call(window, cb);
+      var id = 0, run = function(ts){ run.nid = 0; if(held){ parked.set(id, run); return; } parked.delete(id); cb(ts - lost); };
+      return (id = nRAF.call(window, run));
+    };
+    window.cancelAnimationFrame = function(id){ var run = parked.get(id); if(!run){ nCAF.call(window, id); return; }
+      parked.delete(id); if(run.nid){ nCAF.call(window, run.nid); run.nid = 0; } };
+  }
+  // ---- media elements: the playing ones pause on the way out and play on from there on the way back ----
+  var MP = window.HTMLMediaElement && HTMLMediaElement.prototype, nPlay = MP && MP.play, nPause = MP && MP.pause;
+  var live = new Set(), asleep = new Set(), waiting = new Map();             // playing now; held by us; play() asked for while away
+  var swallow = new WeakMap(), cutGen = new WeakMap(), again = new WeakMap(), seen = new WeakSet();
+  function watch(m){                                                          // first listener on each element, so a held clip's own
+    if(seen.has(m)) return; seen.add(m);                                      // 'pause' never reaches the engine's listeners
+    var off = function(e){
+      if(e.type === "pause"){ var n = swallow.get(m) | 0; if(n > 0){ swallow.set(m, n - 1); e.stopImmediatePropagation(); return; } }
+      live.delete(m);
+    };
+    m.addEventListener("pause", off, true); m.addEventListener("ended", off, true); m.addEventListener("error", off, true);
+  }
+  function wait(m, ok, no){ var w = waiting.get(m); if(!w) waiting.set(m, w = []); w.push([ok, no]); }
+  function go(m){ var p = null; try{ p = nPlay.call(m); }catch(e){}
+    if(p && typeof p.then === "function") p.then(null, function(){ if(m.paused) live.delete(m); }); return p; }
+  if(nPlay && nPause){
+    MP.play = function(){
+      var m = this, g = gen; watch(m);
+      if(held) return new Promise(function(ok, no){ wait(m, ok, no); });
+      live.add(m);
+      var p = nPlay.apply(m, arguments);
+      if(!p || typeof p.then !== "function") return p;
+      return new Promise(function(ok, no){
+        p.then(ok, function(e){
+          if(e && e.name === "AbortError" && (cutGen.get(m) | 0) > g){         // cut by the hold before it began: settles as it plays on
+            if(held) wait(m, ok, no); else { var q = again.get(m); if(q && typeof q.then === "function") q.then(ok, no); else ok(); }
+            return;
+          }
+          if(m.paused) live.delete(m);
+          no(e);
+        });
+      });
+    };
+    MP.pause = function(){
+      var m = this, w = waiting.get(m);
+      if(w){ waiting.delete(m); w.forEach(function(s){ s[1](abortErr()); }); }
+      if(asleep.has(m)){ asleep.delete(m); cutGen.delete(m);                 // the engine stops a held clip: its listeners hear the pause
+        var n = swallow.get(m) | 0; if(n > 0) swallow.set(m, n - 1); else { try{ m.dispatchEvent(new Event("pause")); }catch(e){} } }
+      return nPause.apply(m, arguments);
+    };
+  }
+  function abortErr(){ try{ return new DOMException("The play() request was interrupted by a call to pause().", "AbortError"); }
+    catch(e){ var x = new Error("The play() request was interrupted by a call to pause()."); x.name = "AbortError"; return x; } }
+  // ---- WebAudio: a context that has sounded is suspended on the way out and resumed on the way back ----
+  var AC = window.AudioContext || window.webkitAudioContext, ctxs = new Set(), woke = new Set();
+  var nResume = AC && AC.prototype.resume, nSuspend = AC && AC.prototype.suspend;
+  function nap(c){ if(c.state !== "running") return; woke.add(c); try{ var p = nSuspend.call(c); if(p && p.then) p.then(null, noop); }catch(e){} }
+  if(nResume && nSuspend){
+    AC.prototype.resume = function(){ ctxs.add(this); if(held){ woke.add(this); return Promise.resolve(); } return nResume.apply(this, arguments); };
+    var SN = window.AudioScheduledSourceNode;
+    var protos = (SN && SN.prototype && SN.prototype.start) ? [SN.prototype]
+      : [window.OscillatorNode, window.AudioBufferSourceNode].filter(function(C){ return C && C.prototype && C.prototype.start; }).map(function(C){ return C.prototype; });
+    protos.forEach(function(P){
+      var oStart = P.start;
+      P.start = function(){ var c = this.context; if(c instanceof AC){ ctxs.add(c); if(held) nap(c); } return oStart.apply(this, arguments); };
+    });
+  }
+  // ---- hold / release ----
+  var root = document.documentElement;
+  try{ var css = document.createElement("style");
+    css.textContent = "html.l02-held *,html.l02-held *::before,html.l02-held *::after{animation-play-state:paused !important;}";
+    (document.head || root).appendChild(css); }catch(e){}
+  function hold(){
+    if(held) return; held = true; since = pNow(); gen++;
+    root.classList.add("l02-held");
+    tmr.forEach(function(t){ if(t.nid){ nCT.call(window, t.nid); t.nid = 0; t.left = Math.max(0, t.due - since); } });
+    live.forEach(function(m){ if(m.paused || m.ended) return;
+      try{ nPause.call(m); }catch(e){ return; }
+      swallow.set(m, (swallow.get(m) | 0) + 1); cutGen.set(m, gen); asleep.add(m); });
+    live.clear();
+    ctxs.forEach(nap);
+  }
+  function release(){
+    if(!held) return; held = false; lost += pNow() - since;
+    woke.forEach(function(c){ if(c.state === "closed") return; try{ var p = nResume.call(c); if(p && p.then) p.then(null, noop); }catch(e){} });
+    woke.clear();
+    var back = new Set(asleep), asked = waiting; asleep.clear(); waiting = new Map();
+    asked.forEach(function(w, m){ back.add(m); });
+    back.forEach(function(m){ live.add(m); var p = go(m); again.set(m, p);
+      (asked.get(m) || []).forEach(function(s){ if(p && typeof p.then === "function") p.then(s[0], s[1]); else s[0](); }); });
+    root.classList.remove("l02-held");
+    parked.forEach(function(run){ if(!run.nid) run.nid = nRAF.call(window, run); });
+    tmr.forEach(function(t){ if(!t.nid){ t.kick = t.every; arm(t, t.left); } });
+  }
+  document.addEventListener("visibilitychange", function(){ if(document.hidden) hold(); else release(); });
+  var front = function(){ if(held && !document.hidden) release(); };         // a tap or focus means the tab is in front again
+  window.addEventListener("pageshow", front); window.addEventListener("focus", front); window.addEventListener("pointerdown", front, true);
+  window.__tabHold = { get held(){ return held; }, get heldMs(){ return lost + (held ? pNow() - since : 0); }, get timers(){ return tmr.size; },
+    get asleep(){ return asleep.size; }, get playing(){ return live.size; } };
+})();
+
 /* ===== <script id="FLN-ANIMATION-KIT-CORE"> ===== */
 /* ===== FLN ANIMATION KIT: core BEGIN ===== */
 (function(){ "use strict";
