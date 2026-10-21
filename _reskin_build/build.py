@@ -414,7 +414,7 @@ aud, txt = card["assets"]["audio"], card["assets"]["audio_text"]
 for k, v in {
     "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",   # [L02-GATE-LINE] → [L02-VO-BATCH] the recorded line; the headline is its last words, चलिए, शुरू करें!
     "vo_pt_guided": "बहुत बढ़िया! अब हम साथ मिलकर शुरू करते हैं। चलिए, साथ में करें!",
-    "vo_pt_practice": "वाह! अब आपकी बारी।",
+    "vo_pt_practice": "अब आपकी बारी!",   # [L02-GATE-PRACTICE-VO] (2026-10-21) the new take speaks the headline alone (was "वाह! अब आपकी बारी।")
     # "vo_tap_swiftee_replay": "फिर से सुनने के लिए मुझ पर टैप करिए।" — the title page's bird-cue line: gone since [L02-NO-BIRD-CUE] (2026-10-05)
     "vo_tap_speaker_sentence": "वाक्य सुनने के लिए यहाँ टैप करिए।",
 }.items():
@@ -577,7 +577,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_opt_kursi_par", "कुर्सी पर"),
     ("vo_reveal_khilone_beech", "माधव खिलौनों के बीच सो गया था। यह सही उत्तर है, इसपर टैप कीजिए।"),
     # the practice transition (the fleet's line), then the RC-car screen's opener (deck slide 18)
-    ("vo_pt_practice", "वाह! अब आपकी बारी।"),
+    ("vo_pt_practice", "अब आपकी बारी!"),   # [L02-GATE-PRACTICE-VO] (2026-10-21) the new take (was "वाह! अब आपकी बारी।")
     ("vo_rc_intro", "अब आप बताइए कि माधव की कहानी में क्या-क्या हुआ?"),
     # I3 — चित्र में माँ क्या कर रही हैं? (deck slide 19): prompt, options, the reveal, the correct line the deck gives ("शाबाश।")
     ("vo_q_maa_kya", "चित्र में माँ क्या कर रही हैं?"),
@@ -752,6 +752,17 @@ assert os.path.exists(VO_OVERRIDE["vo_story_1"]), "[L02-T1-VO-4] missing " + VO_
 # read), kept while the clip's md5 and the words are unchanged.
 VO_OVERRIDE["vo_story_2"] = os.path.join(SCR, "vo_story_2_2026-10-21_source.wav")
 assert os.path.exists(VO_OVERRIDE["vo_story_2"]), "[L02-T2-VO-3] missing " + VO_OVERRIDE["vo_story_2"]
+# ---- [L02-GATE-PRACTICE-VO] (2026-10-21, user request) "After Page 13 I2 at the transition screen of pink hindi text replace the bg audio with
+# this VO (Downloads/"audio_3 .wav") insynced with the pink hindi text animation. Rest keep everything exactly the same in this file." That
+# screen is the PRACTICE phase gate (I2 -> RC1; the headline अब आपकी बारी! in the gate's pink #CD0FD5, wiped in by .pg-pop at
+# phase_gate_caption.practice.at_ms). The file is a 24 kHz mono 16-bit PCM WAV (1.68 s, -19.8 LUFS, the voice 0.32 -> 1.34 s), kept as
+# _reskin_build/vo_pt_practice_2026-10-21_source.wav; faster-whisper (small) hears "अप आपकी बारी" in it, i.e. the headline's own words and
+# nothing before them (the batch take said "वाह! अब आपकी बारी।", the headline from its second speech run at 1175 ms). vo_clip trims / levels /
+# encodes it into assets/Audio/vo_pt_practice.wav as every other line; VO_LINES and the gate-line registry say "अब आपकी बारी!" (the
+# headline's words); GATE_CAPTION re-pins the practice headline to the new clip's first (only) speech run, so the pink words wipe in as the
+# voice starts saying them. The background music bed under the gate, the bird, the 4 s hold and the close are as they were.
+VO_OVERRIDE["vo_pt_practice"] = os.path.join(SCR, "vo_pt_practice_2026-10-21_source.wav")
+assert os.path.exists(VO_OVERRIDE["vo_pt_practice"]), "[L02-GATE-PRACTICE-VO] missing " + VO_OVERRIDE["vo_pt_practice"]
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
@@ -1404,7 +1415,7 @@ def speech_runs(name, thr=0.06, win_ms=25, join_ms=120):
         i = j
     return runs
 GATE_CAPTION = {   # phase: (the clip, the run that begins the headline's words (0-based), the clip's run count, the onset ms — measured, see above)
-    "tutorial": ("vo_pt_tutorial", 2, 4, 3475), "guided": ("vo_pt_guided", 2, 4, 3550), "practice": ("vo_pt_practice", 1, 3, 1175)}   # [L02-VO-BATCH-2] re-pinned on the new takes (scratchpad gate_onsets.py: speech runs + faster-whisper words; were 3/5 3175, 2/4 3775, 1/3 1200)
+    "tutorial": ("vo_pt_tutorial", 2, 4, 3475), "guided": ("vo_pt_guided", 2, 4, 3550), "practice": ("vo_pt_practice", 0, 1, 100)}   # [L02-GATE-PRACTICE-VO] (2026-10-21) practice re-pinned on the new take: one run, 100-1125 ms, the headline's words from its start (was 1/3 1175 on the batch take). [L02-VO-BATCH-2] re-pinned on the new takes (scratchpad gate_onsets.py: speech runs + faster-whisper words; were 3/5 3175, 2/4 3775, 1/3 1200)
 GATE_WORDS = {"tutorial": "चलिए, शुरू करें!", "guided": "चलिए, साथ में करें!", "practice": "अब आपकी बारी!"}   # = the engine's PHASE_GATE_TITLE
 card["phase_gate_caption"] = {}
 for _ph, (_vo, _run, _nruns, _at) in GATE_CAPTION.items():
