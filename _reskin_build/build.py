@@ -403,8 +403,13 @@ for s in card["slides"]:
 # ladder: data.sentence_rate 0.72 -> 0.8 on every story page (about 11% faster; the pitch still kept). Nothing else moves: the highlight
 # follows the clip's clock as before, so it speeds up with the voice by itself; the read-aloud beat (a second per word), the cue line
 # (at 1.0), the clips and their measured word timings are as they were.
+# [L02-VO-NORMAL] (2026-10-21, user request) "From Page 1 T1 to Page 9 T9 dont reduce the speed of the VOs at any of these pages, the VOs
+# should be kept at their normal speeds insynced with the word highlight animation when the VOs are played at these pages. Rest keep
+# everything exactly the same in this file." No story page carries data.sentence_rate any more, so story_read_page.js leaves the clip at its
+# own playbackRate (1.0) and the highlight, which follows the clip's clock against data.word_times, runs at the voice's own pace. The later
+# takes of T1 / T2 / T7 / T9 are no longer time-stretched either ([L02-VO-NORMAL] below, where the slow_take calls were).
 for _s in card["slides"]:
-    if _s["type"] == "STORY_READ_PAGE": _s["data"]["sentence_rate"] = 0.8   # [L02-SENT-RATE-UP] 2026-10-15: 0.72 -> 0.8 (see the note above)
+    if _s["type"] == "STORY_READ_PAGE": _s["data"].pop("sentence_rate", None)   # [L02-VO-NORMAL] 2026-10-21: 0.8 -> none (normal speed)
 aud, txt = card["assets"]["audio"], card["assets"]["audio_text"]
 for k, v in {
     "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",   # [L02-GATE-LINE] → [L02-VO-BATCH] the recorded line; the headline is its last words, चलिए, शुरू करें!
@@ -652,7 +657,7 @@ SLOW_TAKE_SPAN = {}   # story page id -> the span (s) its re-measured word_times
 # file, pitch kept) into vo_story_1_2026-10-16b_slow.wav, vo_story_1's source through VO_OVERRIDE; vo_clip trims / levels / encodes it into
 # assets/Audio/vo_story_1.wav as every other line. The page is untouched (sentence_rate 0.8, the words "दोपहर का खाना हो चुका था।" - the new
 # take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted below to be the old 2.26 s within 60 ms.
-slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16b_source.wav"), 0.8486); SLOW_TAKE_SPAN["T1"] = 2.26   # [L02-T1-VO-3] tempo = this take's 1.905 s speech span / the batch take's 2.245 s (the morning's take: 0.7795 off 1.750 s)
+# [L02-VO-NORMAL] not stretched since 2026-10-21 (see below): slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16b_source.wav"), 0.8486); SLOW_TAKE_SPAN["T1"] = 2.26   # [L02-T1-VO-3] tempo = this take's 1.905 s speech span / the batch take's 2.245 s (the morning's take: 0.7795 off 1.750 s)
 # ---- [L02-T7-VO-2] (2026-10-16, user request) "Replace the VO of Page T7 with this VO (Downloads/"2 (1).mp3") and adjust the speed of this
 # VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
 # replaced in wav format not mp3; also add फिर in the hindi text of the sentence at the beginning of the sentence on this page in the exact
@@ -676,7 +681,7 @@ slow_take("vo_story_1", os.path.join(SCR, "vo_story_1_2026-10-16b_source.wav"), 
 # levels / encodes it into assets/Audio/vo_story_7.wav as every other line. The page is untouched (sentence_rate 0.8, the words "फिर वह
 # खिलौनों से खेलने लगा।" - the new take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted
 # below to be the old 2.23 s within 60 ms.
-slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16b_source.wav"), 1.0249); SLOW_TAKE_SPAN["T7"] = 2.23   # [L02-T7-VO-3] tempo = this take's 2.265 s speech span / the paced 2.21 s (the morning's take: 0.7894 off 1.745 s)
+# [L02-VO-NORMAL] not stretched since 2026-10-21 (see below): slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16b_source.wav"), 1.0249); SLOW_TAKE_SPAN["T7"] = 2.23   # [L02-T7-VO-3] tempo = this take's 2.265 s speech span / the paced 2.21 s (the morning's take: 0.7894 off 1.745 s)
 # ---- [L02-T9-VO-2] (2026-10-16, user request) "Replace the VO of Page T9 with this VO (Downloads/3.mp3) and adjust the speed of this VO such
 # that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be replaced in
 # wav format not mp3; also add और in the hindi text of the sentence at the beginning of the sentence on this page in the exact same font size
@@ -699,7 +704,7 @@ slow_take("vo_story_7", os.path.join(SCR, "vo_story_7_2026-10-16b_source.wav"), 
 # assets/Audio/vo_story_8b.wav as every other line. The page is untouched (sentence_rate 0.8, the words "और वह थककर सो गया।" - the new take
 # was not checked by ear; the pop-with-sentence sound still outlasts the line); word_times re-measure off the new clip by md5 and their span
 # is asserted below to be the old 2.30 s within 60 ms.
-slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16b_source.wav"), 0.8070); SLOW_TAKE_SPAN["T9"] = 2.30   # [L02-T9-VO-3] tempo = this take's 1.840 s speech span / the paced 2.28 s (the morning's take: 0.7885 off 1.800 s)
+# [L02-VO-NORMAL] not stretched since 2026-10-21 (see below): slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16b_source.wav"), 0.8070); SLOW_TAKE_SPAN["T9"] = 2.30   # [L02-T9-VO-3] tempo = this take's 1.840 s speech span / the paced 2.28 s (the morning's take: 0.7885 off 1.800 s)
 # ---- [L02-T2-VO-2] (2026-10-16, user request) "Replace the VO of Page T2 with this VO (Downloads/vo_sulane_1.wav) and adjust the speed of
 # this VO such that it matches the present speed of the synced word by word highlight animation of the hindi sentence; this new VO should be
 # replaced in wav format not mp3. Rest keep everything exactly the same in this file." A 24 kHz mono 16-bit PCM WAV (2.64 s, -19.0 LUFS),
@@ -711,7 +716,17 @@ slow_take("vo_story_8b", os.path.join(SCR, "vo_story_8b_2026-10-16b_source.wav")
 # it into assets/Audio/vo_story_2.wav as every other line. The page is untouched (sentence_rate 0.8, the words "माधव की माँ उसे सुलाने लगी।" -
 # the new take was not checked by ear); word_times re-measure off the new clip by md5 and their span is asserted below to be the old 2.94 s
 # within 60 ms.
-slow_take("vo_story_2", os.path.join(SCR, "vo_story_2_2026-10-16_source.wav"), 0.7072); SLOW_TAKE_SPAN["T2"] = 2.94   # [L02-T2-VO-2] tempo = this take's 2.065 s speech span / the batch take's 2.92 s
+# [L02-VO-NORMAL] not stretched since 2026-10-21 (see below): slow_take("vo_story_2", os.path.join(SCR, "vo_story_2_2026-10-16_source.wav"), 0.7072); SLOW_TAKE_SPAN["T2"] = 2.94   # [L02-T2-VO-2] tempo = this take's 2.065 s speech span / the batch take's 2.92 s
+# ---- [L02-VO-NORMAL] (2026-10-21, user request) "From Page 1 T1 to Page 9 T9 dont reduce the speed of the VOs at any of these pages, the VOs
+# should be kept at their normal speeds insynced with the word highlight animation when the VOs are played at these pages." The four later
+# takes above go to vo_clip as recorded (no rubberband stretch, so no _slow.wav; those files stay on disk unused): vo_clip trims / levels /
+# encodes them into assets/Audio/<name>.wav as every other line (it remakes a line only for a newer source, so delete those four WAVs to
+# force it after this change), and their word_times re-measure off the new clips by md5. SLOW_TAKE_SPAN stays empty: the highlight is no
+# longer sized to an earlier pace, it follows each take at its own speed. The pages also lose data.sentence_rate ([L02-VO-NORMAL] above).
+for _name, _src in (("vo_story_1", "vo_story_1_2026-10-16b_source.wav"), ("vo_story_7", "vo_story_7_2026-10-16b_source.wav"),
+                    ("vo_story_8b", "vo_story_8b_2026-10-16b_source.wav"), ("vo_story_2", "vo_story_2_2026-10-16_source.wav")):
+    assert os.path.exists(os.path.join(SCR, _src)), "[L02-VO-NORMAL] missing " + _src
+    VO_OVERRIDE[_name] = os.path.join(SCR, _src)
 def vo_clip(name, text):
     """A recorded line of the batch: <VO_BATCH_DIR>/<name>.wav -> assets/Audio/<name>.<AUD_EXT>, trimmed / levelled / encoded like tts_clip."""
     if name in PRUNED_AUDIO: txt[name] = text; aud.pop(name, None); return   # [L02-DIST-OPTIM] not shipped (vo_celebrate: the manifest keeps its line)
