@@ -2562,6 +2562,18 @@ story_cut(8, "story_8_source.png", STORY8_TOP)
 # is unchanged.
 STORY9_TOP = 108
 story_cut(9, "story_9_source.png", STORY9_TOP)
+# ---- [L02-T1-PIC] (2026-10-21, user request) "At Page 1 T1 of this file replace the image with this image. Rest keep everything exactly the
+# same in this file." Page 1 (T1, "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।") shows the user's new picture — the same dining room as the
+# designer's story_1 (the leaf and flower frames, the staircase, the blue sofa through the door, the window), now with the meal on: rice
+# in both plates and in the bowl, Madhav eating with a spoon, his mother beside him, chin on her hand (_reskin_build/story_1_source.png,
+# 1671x941) — in place of the designer's crop story_1.webp was (a static asset until now). Same cut as T5..T9: the full width at 1380:708
+# = 857 of the 941 rows, the window at rows 39-896 — the vertical placement that best matches the old picture (mean grey difference
+# minimum over every top row), so the frames sit at the top edge and the table at the same height as before; the old file was a
+# tighter crop, so a little more of the room shows at the sides. The alt text said the meal was over ("माँ और माधव खाना खाकर उठे,
+# थालियाँ खाली हैं।"), which this picture no longer shows, so it describes the new one.
+STORY1_TOP = 39
+story_cut(1, "story_1_source.png", STORY1_TOP)
+next(s for s in card["slides"] if s["id"] == "T1")["data"]["alt_hi"] = "माधव अपनी माँ के साथ बैठकर खाना खा रहा है।"   # [L02-T1-PIC]
 for n in range(1, 10):
     assert os.path.exists(os.path.join(CUR, "assets/Images/story_%d.webp" % n)), "missing story_%d.webp" % n
 for _k in PRUNED_AUDIO:   # [L02-DIST-OPTIM] the registered-but-unplayed clips: unregistered (vo_celebrate keeps its text for the manifest)
