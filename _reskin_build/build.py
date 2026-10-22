@@ -537,7 +537,7 @@ VO_LINES = [   # (audio id, the line) — the 2026-10-04 deck's words, in the le
     ("vo_pt_tutorial", "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!"),
     # the story pages T1-T9 (deck slides 5-13): the mic cue, then each sentence
     ("vo_tap_speaker_sentence_story", "इस बटन पर टैप करिए और वाक्य पढ़िए।"),
-    ("vo_story_1", "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।"),   # [L02-T1-VO-4] (2026-10-21) the new sentence and take (was "दोपहर का खाना हो चुका था।")
+    ("vo_story_1", "माधव अपनी माँ के साथ खाना खा रहा था।"),   # [L02-T1-VO-5] (2026-10-22) the new sentence and take; the manifest's danda sits on the word (the page shows "था ।" as typed) (was "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।" [L02-T1-VO-4]; "दोपहर का खाना हो चुका था।" before that)
     ("vo_story_2", "खाने के बाद, माधव की माँ उसे सुलाने लगी।"),   # [L02-T2-VO-3] (2026-10-21) the new sentence and take; the manifest's danda sits on the word (the page shows "लगी ।" as typed) (was "माधव की माँ उसे सुलाने लगी।")
     ("vo_story_3", "पर, माधव को तो नींद ही नहीं आ रही थी।"),
     ("vo_story_4", "माँ के सोते ही वह उठ गया।"),
@@ -738,6 +738,20 @@ for _name, _src in (("vo_story_1", "vo_story_1_2026-10-16b_source.wav"), ("vo_st
 # says how it was read), which word_times_for keeps as long as the clip's md5 and the words are unchanged.
 VO_OVERRIDE["vo_story_1"] = os.path.join(SCR, "vo_story_1_2026-10-21_source.wav")
 assert os.path.exists(VO_OVERRIDE["vo_story_1"]), "[L02-T1-VO-4] missing " + VO_OVERRIDE["vo_story_1"]
+# ---- [L02-T1-VO-5] (2026-10-22, user request) "At Page 1 T1 of this file replace the existing hindi text in the white bar with this text
+# माधव अपनी माँ के साथ खाना खा रहा था । and its VO with "C:\Users\25606\Downloads\audio_1  (2).wav" this VO synced with the exact same animation
+# as of now. Rest keep everything exactly the same in this file." The file is a 24 kHz mono 16-bit PCM WAV (3.24 s, -17.2 LUFS, the voice
+# 0.29 -> 2.90 s), kept as _reskin_build/vo_story_1_2026-10-22_source.wav; it takes the place of the 2026-10-21 take (that file stays on
+# disk unused). vo_clip trims / levels / encodes it as recorded (normal speed, [L02-VO-NORMAL]) into assets/Audio/vo_story_1.wav. T1's
+# words become the new sentence's nine, exactly as typed — the space before the danda included — with the danda kept in the last word's
+# span ("था ।"), so it is never lit on its own (the words override below; VO_LINES so txt / the manifest say what the page speaks, with
+# the danda on the word as the manifest's [L02-VO-MANIFEST] rule wants it — T2's rule, [L02-T2-VO-3]); the same .p2-word spans of the
+# white bar, so the same type and colour (the bar's own one-line fit applies as on every page). The animation is as it was: the
+# read-aloud beat follows the one-second-per-word rule (9 s now), then the sentence speaks with the word being said lit in time with
+# the recording (data.word_times, re-measured off the new clip by md5: see the vo_story_1 entry of word_times.json). The picture, the
+# alt text ([L02-T1-PIC]), the cue, the pop and every other page are untouched.
+VO_OVERRIDE["vo_story_1"] = os.path.join(SCR, "vo_story_1_2026-10-22_source.wav")
+assert os.path.exists(VO_OVERRIDE["vo_story_1"]), "[L02-T1-VO-5] missing " + VO_OVERRIDE["vo_story_1"]
 # ---- [L02-T2-VO-3] (2026-10-21, user request) "At Page 2 T2 of this file replace the text with खाने के बाद, माधव की माँ उसे सुलाने लगी । this text
 # in the white bar and replace the VO synced with it with this VO (Downloads/"audio_2  (1).wav"). Rest keep everything exactly the same in
 # this file." The file is a 24 kHz mono 16-bit PCM WAV (3.76 s, -19.1 LUFS, the voice 0.30 -> 3.51 s with a pause after "खाने के बाद,"), kept as
@@ -790,8 +804,9 @@ for _s in story:
     if _s["id"] == "T3": _s["data"]["words"] = [{"text": w} for w in ["पर,", "माधव", "को", "तो", "नींद", "ही", "नहीं", "आ", "रही", "थी।"]]
     if _s["id"] == "T4": _s["data"]["words"] = [{"text": w} for w in ["माँ", "के", "सोते", "ही", "वह", "उठ", "गया।"]]
     if _s["id"] == "T7": _s["data"]["words"] = [{"text": w} for w in "फिर वह खिलौनों से खेलने लगा।".split()]   # [L02-T7-VO-2] (2026-10-16) फिर at the front, with the new take
-    if _s["id"] == "T1": _s["data"]["words"] = [{"text": w} for w in "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।".split()]   # [L02-T1-VO-4] (2026-10-21) the new sentence, with the new take
-assert [w["text"] for w in next(s for s in story if s["id"] == "T1")["data"]["words"]] == txt["vo_story_1"].split() == "दोपहर के समय माधव अपनी माँ के साथ खाना खा रहा था।".split()   # [L02-T1-VO-4]
+    if _s["id"] == "T1": _s["data"]["words"] = [{"text": w} for w in ["माधव", "अपनी", "माँ", "के", "साथ", "खाना", "खा", "रहा", "था ।"]]   # [L02-T1-VO-5] (2026-10-22) the new sentence, with the new take; the danda stays with था (the twelve of [L02-T1-VO-4] before)
+assert " ".join(w["text"] for w in next(s for s in story if s["id"] == "T1")["data"]["words"]) == "माधव अपनी माँ के साथ खाना खा रहा था ।"   # [L02-T1-VO-5] as typed
+assert txt["vo_story_1"] == "माधव अपनी माँ के साथ खाना खा रहा था ।".replace(" ।", "।")   # [L02-T1-VO-5] the spoken line, the danda on the word
 for _s in story:
     if _s["id"] == "T2": _s["data"]["words"] = [{"text": w} for w in ["खाने", "के", "बाद,", "माधव", "की", "माँ", "उसे", "सुलाने", "लगी ।"]]   # [L02-T2-VO-3] (2026-10-21) the new sentence; the danda stays with लगी
 assert " ".join(w["text"] for w in next(s for s in story if s["id"] == "T2")["data"]["words"]) == "खाने के बाद, माधव की माँ उसे सुलाने लगी ।"   # [L02-T2-VO-3] as typed
