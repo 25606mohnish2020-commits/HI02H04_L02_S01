@@ -3104,7 +3104,61 @@ const SlideModules = {
       // so the chip's wave arcs can only blink for the sentence itself, never for the narration that may cut it short
       const wordsOff = ()=>{ cancelAnimationFrame(syncRaf); wordEls.forEach(w => w.classList.remove("on")); cap.classList.remove("p2-speaking");
         const c = cap.querySelector(".tut-audio"); if(c) c.classList.remove("p2-chip-pulse"); };   // and the narration pulse, if a clip cut it short
-      const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); };
+      // [L02-T1-MIC-HAND] (2026-10-23, user request: "https://hi-02-h11-l02-s02-dev-handoff.vercel.app/ - take the reference of page 3 T3 of
+      // this file and apply the exact same hand nudge at page 1 T1 of this file such that when the VO of the microphone button starts on
+      // the page 1 T1 the exact same hand nudge of this reference file will come along with the synced pulsating mic button animation;
+      // apply this change at only Page 1 T1; rest keep everything exactly the same") Page 1 ONLY (slide T1): the moment the cue line
+      // «इस बटन पर टैप करिए और वाक्य पढ़िए।» starts - the chip's pulse starts with it (setCue) - the reference's hand nudge points at the
+      // mic. The hand is the reference's own: its `.nudge-hand` (this style.css carries the same rules, value for value: 96 x 96, the same
+      // assets/UI/nudge_hand_new.svg - byte-identical here -, drop-shadow 0 6px 10px 22 %, the nudgeMove bob 2 px -> -14 px once a second,
+      // z-index 55, no pointer events) placed as its pointNudgeAt / _placeNudge place it on the mic of its MEET_PAIR pages (T3, T5): the
+      // hand's left edge 48 design px left of the mic's centre, its top 4 px under the mic's bottom edge, pushed past any label text that
+      // shares the mic's column, never off the stage (clamped up into it as a last resort), re-placed on the next frame. NOT this lesson's
+      // kit #nudgeHand (86 x 108, press + ripple rings): that is a different hand. The hand sits in .slide-host (not positioned, so its
+      // box is .slide-stage's - the reference's own context) and is thrown away with the page by clearHost. It shows for exactly as long
+      // as the chip pulses and goes with the pulse: the cue's end, the chip's tap (startRec), a narration (none on T1); it comes back with
+      // every repeat of the cue (data.cue_repeat_ms: 7 s of nothing) and with the title-bar speaker's replay of the line
+      // (replayInstruction) - both run through setCue. (The reference's hand stays until its mic is tapped because its mic pulses until
+      // then; here the pulse is the cue's own, so the hand follows the pulse.) Pages 2-10 are untouched: no hand there.
+      const MIC_HAND = slide.id === "T1";
+      let micHand = null;
+      const micHandPlace = (el, nh)=>{                                     // the reference's _placeNudge, value for value
+        if(!el || !el.getBoundingClientRect) return;
+        const r = el.getBoundingClientRect();
+        const sw = document.querySelector(".slide-stage").getBoundingClientRect();
+        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
+        nh.style.left = ((r.left - sw.left)/scale + r.width/scale/2 - 48) + "px";
+        const HAND_H = 96, GAP = 4, stageH = sw.height/scale;
+        const top = (r.top - sw.top)/scale, h = r.height/scale;
+        let below = top + h + GAP;
+        const _tile = el.closest(".opt-cell, .gender-cat, .sentence-word, .tut-card, .q-cell, .ms-item") || el.parentElement;
+        if(_tile){
+          _tile.querySelectorAll(".lbl, .cat-word, .sw-text, .opt-label, .story-q-opt-label, .pic-label, .count-badge")
+            .forEach(t => {
+              const tr = t.getBoundingClientRect();
+              if(tr.width < 2 || tr.height < 2) return;
+              if(tr.right < r.left || tr.left > r.right) return;      // not in this column - ignore
+              const tb = (tr.bottom - sw.top)/scale;
+              if(tb > below - HAND_H && tb + GAP > below) below = tb + GAP;   // clear it
+            });
+        }
+        if(below + HAND_H > stageH) below = Math.max(0, stageH - HAND_H);   // never off-stage, never flipped above
+        nh.style.top = below + "px";
+      };
+      const micHandShow = ()=>{                                            // the reference's pointNudgeAt(mic)
+        if(!MIC_HAND || !alive()) return;
+        const chip = chipEl(); if(!chip) return;
+        if(!micHand || !micHand.isConnected){
+          micHand = document.createElement("div"); micHand.className = "nudge-hand l02-mic-hand";
+          micHand.innerHTML = '<img src="assets/UI/nudge_hand_new.svg" alt="">';
+          $("slideHost").appendChild(micHand);
+        }
+        requestAnimationFrame(()=>{ if(micHand && micHand.classList.contains("show")) micHandPlace(chip, micHand); });   // once more when the frame has settled
+        micHandPlace(chip, micHand);
+        micHand.classList.add("show");
+      };
+      const micHandHide = ()=>{ if(micHand) micHand.classList.remove("show"); };
+      const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); if(on) micHandShow(); else micHandHide(); };   // [L02-T1-MIC-HAND] the hand with the pulse
       // [L02-CUE-SILENT] (2026-10-07, user request) pages 2-9 (card data.cue_silent_first): the FIRST cue is the chip's pulse ALONE — no
       // line — for as long as the line would take (data.cue_pulse_ms: the clip's length, so the pulse looks the same with or without the
       // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (7 s; 4 s for a while), and
