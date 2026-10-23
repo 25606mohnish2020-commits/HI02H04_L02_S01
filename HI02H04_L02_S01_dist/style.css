@@ -3009,6 +3009,10 @@ html.no-anim .phase-gate.pg-ref #phaseGateImg,html.no-anim .phase-gate.pg-ref .p
 body.is-start .start-gate .sg-vo{animation:l02SgVoIn .34s ease-out .78s both !important;}
 /* the reference's off state: from the first frame until the welcome line has ended, and again whenever a line plays (adapt.js) */
 .sg-vo.sg-vo-off,.start-gate .sg-vo.sg-vo-off{pointer-events:none !important;opacity:.5 !important;filter:grayscale(1) brightness(1.2) !important;}
+/* [L02-SPK-READY] (2026-10-23, user request) the title-bar chip while the page's VO is not over yet - from the page's open until its first line (a
+   story page: its first cue) has ended, and through every beat in which the page is not quiet and free (app.js [L02-SPK-READY]): the same off look
+   as .playing above and the landing's .sg-vo-off, the waves still */
+#audioChip.spk-wait{pointer-events:none !important;opacity:.5 !important;filter:grayscale(1) brightness(1.2) !important;}
 /* ===== L02-SPK-FUNC =====
    [L02-SPK-FUNC] (2026-10-10, user request) while the landing speaker's replay runs, the Play button is in its waiting state (no .ready:
    the grey waiting art of [L02-STD-PLAY-BTN]) and cannot be tapped - the reference's waiting button is pointer-events:none too; the

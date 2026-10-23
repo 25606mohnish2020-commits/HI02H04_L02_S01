@@ -3158,7 +3158,8 @@ const SlideModules = {
         micHand.classList.add("show");
       };
       const micHandHide = ()=>{ if(micHand) micHand.classList.remove("show"); };
-      const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); if(on) micHandShow(); else micHandHide(); };   // [L02-T1-MIC-HAND] the hand with the pulse
+      const setCue = (on)=>{ cueOn = on; cap.classList.toggle("p2-cue", on); if(on) micHandShow(); else micHandHide();   // [L02-T1-MIC-HAND] the hand with the pulse
+        if(window.l02Spk){ l02Spk.hold("cue", on); if(!on) l02Spk.heard(); } };   // [L02-SPK-READY] the cue - the line, or pages 2-10's silent pulse - is the page's opening VO: the title-bar speaker waits for its end, and is off through every repeat
       // [L02-CUE-SILENT] (2026-10-07, user request) pages 2-9 (card data.cue_silent_first): the FIRST cue is the chip's pulse ALONE — no
       // line — for as long as the line would take (data.cue_pulse_ms: the clip's length, so the pulse looks the same with or without the
       // voice); after it the line comes WITH the pulse once the child has done nothing for data.cue_repeat_ms (7 s; 4 s for a while), and
@@ -3301,6 +3302,7 @@ const SlideModules = {
       const startRec = ()=>{
         if(!alive() || recOn || recDone) return;
         recOn = true;
+        if(window.l02Spk) l02Spk.hold("read", true);                        // [L02-SPK-READY] the beat and the sentence that follows it: the speaker is off until the sentence is over
         // [L02-MIC-TAP-SFX] (2026-10-13, user request) "at the enabled microphone button apply the same sound effect on tapping as of the
         // next button": the tap that starts the beat sounds the standard next-button clip (adapt.js stdSfx, [L02-STD-SFX-JS] — the same
         // call आगे बढ़ें makes), fire-and-forget on its own element so the beat's stopAudio() below never touches it. Only here: a tap on the
@@ -3317,6 +3319,7 @@ const SlideModules = {
         clearTimeout(recTimer);
         recTimer = setTimeout(()=>{
           recOn = false;
+          if(window.l02Spk) l02Spk.hold("read", false);                     // [L02-SPK-READY] (the sentence itself keeps it off through .playing)
           cancelAnimationFrame(syncRaf); wordEls.forEach(w => w.classList.remove("on"));
           if(chip){ chip.classList.remove("p2-rec"); chip.classList.add("p2-rec-done"); chip.setAttribute("aria-disabled", "true"); }
           if(!alive()) return;
@@ -6580,5 +6583,63 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
   if(typeof origMount === "function") window.mountSlide = function(idx){ var r = origMount.apply(this, arguments); try{ if(started) ahead((idx | 0), 3); }catch(e){} return r; };
   window.__l02Warm = { get started(){ return started; }, get queued(){ return queue.length; }, get busy(){ return busy; }, get landed(){ return landed; },
     get urls(){ return Array.from(seen); }, get pages(){ return Array.from(warmed); } };
+})();
+;
+
+/* ===== [L02-SPK-READY] (2026-10-23, user request) ===== */
+/* "In this file from page 1 T1 to the end the speaker button icon used near the bird - whether near the standing bird or in the title
+   bar - should only get enabled on any page when all the VOs of that page are over; apply this change to all the pages of this file,
+   rest keep everything exactly the same."
+   The in-page speaker of this lesson is the title-bar chip by the bird (#audioChip: the story, find and question pages; the car pages
+   and the celebration hide it). No page of this lesson draws a standing bird with a speaker: the story pages' chip beside the sentence
+   is the read-aloud microphone, a different control, untouched ([L02-MIC-REF]), and the landing's speaker by the standing bird already
+   follows this rule ([L02-SPK-CHIP]: off from the first frame until the welcome has ended, and whenever a line sounds).
+   Until now the chip was off only WHILE a line sounded (.playing, the engine's setPlaying) and live in every gap: from a page's open
+   until its first line began (the question pages after a car page open with two seconds of scene sound before the question), between
+   the lines of a sequence (the question pages' wrong beat, the read-out of the pills, the sound hold of a correct tap), through the
+   story pages' read-aloud beat (where its tap is ignored anyway) and before a story page's first cue.
+   Now the chip is OFF (.spk-wait, style.css [L02-SPK-READY]: the same grey, half-transparent, untappable look as .playing and the
+   landing's .sg-vo-off, the waves still) from the moment a page mounts until the page's opening VO is over, and again whenever the page
+   is not quiet and free. It is ON only while ALL of these hold:
+     - a line of this page has ended: the engine's .playing has gone off on the chip once since the page mounted (the question pages'
+       question, the find page's question, the room pages' question after their scene sound); a story page counts its first cue instead -
+       page 1's spoken line, pages 2-10's silent pulse ([L02-CUE-SILENT]) - the moment that cue ends (story_read_page.js, l02Spk.heard());
+     - nothing is sounding: no .playing on the chip, no body.vo-playing;
+     - no beat is running: the question pages' wrong beat and read-out (state.hintActive, [L02-Q-BEATS]), the engine's hint popup
+       (showBox: state.hintActive), the correct tap's sound hold and the locked page after a correct tap or the reveal (state.locked -
+       the question pages' own quiet-and-free rule, [L02-Q-BEATS] idleBusy), a story page's cue (spoken or silent) and its read-aloud
+       beat (l02Spk.hold).
+   So: a question page's chip comes on when the question has been asked and goes off for each line and beat until the page is over; the
+   find page's when its question has been asked (off during each hint line and its repeats); a story page's when its first cue is over,
+   off through every repeat of the cue, the beat and the sentence, and on again after the sentence (its re-read tap, [L02-SPK-FUNC]).
+   The tap itself and what it replays are unchanged, as is the mic chip.
+   Wiring, nothing else touched: the chip's class is watched (setPlaying toggles .playing on it), window.mountSlide is wrapped - last of
+   all the wrappers, so a page starts unheard and with no holds once everything else has mounted it -, the story page reports its cue
+   and beat through window.l02Spk, and a 100 ms poll follows state.hintActive / state.locked, which are plain flags. window.__l02Spk
+   exposes the state for verification. */
+(function(){
+  var chip = document.getElementById("audioChip"); if(!chip) return;
+  var heard = false, holds = {}, wasOn = chip.classList.contains("playing");
+  function held(){ for(var k in holds){ if(holds[k]) return true; } return false; }
+  function sounding(){ return chip.classList.contains("playing") || document.body.classList.contains("vo-playing"); }
+  function busy(){ return !heard || held() || sounding() || !!(typeof state === "object" && state && (state.hintActive || state.locked)); }
+  function sync(){
+    var off = busy();
+    if(chip.classList.contains("spk-wait") !== off){ chip.classList.toggle("spk-wait", off); chip.setAttribute("aria-disabled", String(off)); }
+  }
+  new MutationObserver(function(){ var on = chip.classList.contains("playing"); if(wasOn && !on) heard = true; wasOn = on; sync(); })
+    .observe(chip, { attributes: true, attributeFilter: ["class"] });
+  window.l02Spk = {
+    hold: function(key, on){ holds[key] = !!on; sync(); },      // a page beat with nothing sounding (a story page's silent cue, its read-aloud beat)
+    heard: function(){ heard = true; sync(); }                  // the page's opening VO is over (a story page's first cue)
+  };
+  var origMount = window.mountSlide;
+  if(typeof origMount === "function"){
+    window.mountSlide = function(idx){ var r = origMount.apply(this, arguments); heard = false; holds = {}; wasOn = chip.classList.contains("playing"); sync(); return r; };
+  }
+  setInterval(sync, 100);
+  document.addEventListener("click", function(){ setTimeout(sync, 0); }, true);   // a tap's beat (the wrong beat, the sound hold, the mic) is seen the moment its handlers have run, not at the next poll
+  sync();   // a ?slide=N dev load mounted before this block ran
+  window.__l02Spk = { get heard(){ return heard; }, get holds(){ return Object.keys(holds).filter(function(k){ return holds[k]; }); }, get off(){ return chip.classList.contains("spk-wait"); } };
 })();
 ;
