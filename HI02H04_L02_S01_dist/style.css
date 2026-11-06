@@ -3248,3 +3248,27 @@ html body .stage.l02-q3.l02-q3-wide .opt-cell .story-q-opt-label.story-q-opt-lab
    (byte-identical), cut at the frame's image boxes over the window (build.py [L02-P1-FIG2]; p1_khana is P1's own cut now, q3_khana retired).
    The VO, the word highlight on the answer's line, the kit's feedback and the advance are as they were. Design note: as on I1 / I2 the
    middle card's outer box sits 3px lower in the frame while its contents stay level - one row at y 247 here too. */
+
+/* ===== T1-T9 sentence bar = the reference's S04 bar [L02-REF-BAR] =====
+   [L02-REF-BAR] (2026-11-06, user request: "From Pages 1 T1 to 9 T9 make the white colored text box on each of these pages exactly the
+   same as of this reference file's https://hind-dear-story.vercel.app/ page 4 S04. Align the microphone button a little more with that
+   of the white text box keeping the distance between the white text box and the microphone button exactly the same in this file. Apply
+   these changes to this file rest keep everything exactly the same in this file.") The reference's S04 bar (.l02-story .mr-read
+   .mr-caption, measured live) already has this bar's size (471x71), radius (20), padding (0 12), fill, type (700, 32px, 1.15, #012F76)
+   and centred row. Four differences remain, and they are copied here value for value:
+   - the place: top 297 (this bar sat at 293 - 4px higher);
+   - the outline: 4px solid #FFFFFF where [L02-GREY-STROKES] had the 4px #DADADA rim;
+   - the shadow: the reference's lifted double shadow 0 5px 0 rgba(11,42,90,.10) + 0 10px 26px rgba(11,42,90,.12) (this bar had none);
+   - the word gap: the reference lays its words as flex items 0.26em apart (gap 0 .26em); here they sat in one inline box (.p2-words)
+     with plain spaces (0.20em). That box is unwrapped (display:contents) so the words become the bar's flex items with the same gap;
+     the space text between them is then not drawn, the line stays on one line (white-space:nowrap) and the module's one-line fit
+     (fitCaption) still shrinks a sentence that would not fit - T1-T3 one pixel more than before for the wider gap.
+   The mic: it rides in the bar, so it moves down with it and keeps its 115px left / 88x86 size, i.e. the same distance to the bar.
+   Its 88x86 box was centred on the bar, but the visible yellow pill with its white ring is drawn in the upper part of the art (art units
+   0-52 of 60, centre at 26), so the button looked 5.73px high. Its box now sits 5.73px lower (86/60 x 4) so the ring's centre is on
+   the bar's middle. Everything else - the pulse, the voice bars, the greyed state, the T1 hand (placed from the mic's box, so it follows),
+   the words' highlight, the picture, आगे बढ़ें - is untouched. */
+.stage.tut.l02-story .story-caption{top:calc(297px * var(--fs));border:4px solid #FFFFFF;background:#FFFFFF;
+  box-shadow:0 5px 0 rgba(11,42,90,.10),0 10px 26px rgba(11,42,90,.12);gap:0 .26em;}
+.stage.tut.l02-story .story-caption .p2-words{display:contents;}
+.stage.tut.l02-story .story-caption.has-chip .tut-audio{margin-top:calc(-43px + 86px / 60 * 4);}
