@@ -3485,19 +3485,31 @@ const SlideModules = {
       // reached the kit's nudge hand points at the answer (its outline from adapt.js if drawn, else the hotspot) until it is tapped.
       let misses = 0, pointed = false;
       const seq = Array.isArray(d.hint_seq) ? d.hint_seq : [];
+      // [L02-G2-BIRD-BACK] (2026-11-09, user request) page 10 G2 (card slide.find_fig) only: the header bird's try-again / hint reaction
+      // lasts as long as the wrong tap's line — when that line ends the bird is back on its resting face (the static talking head, as at
+      // mount). Not after the answer is tapped (its happy face stays) and not once the page has been left.
+      const find = slide.find_fig === true;
+      const moodBack = ()=>{ if(find && !done && CARD.slides[state.idx] === slide) setSwMood("point"); };
       const pointAtAnswer = ()=>{ const hot = frame.querySelector(".tis-hot.correct-hot"); if(!hot) return;
         const i = [...frame.querySelectorAll(".tis-hot")].indexOf(hot), el = frame.querySelector('.l02-shape[data-hot="' + i + '"]') || hot;
-        pointed = true; pointNudgeAt(el); state.nudgeUsed = true; SwiftPAL.emit("nudge_invoked", { slide_id: slide.id, phase: slide.phase }); };
+        pointed = true; pointNudgeAt(el); state.nudgeUsed = true; SwiftPAL.emit("nudge_invoked", { slide_id: slide.id, phase: slide.phase });
+        // [L02-G2-HAND-LOCK] (2026-11-09, user request) page 10 G2 only: once the hand points at the answer (the third wrong attempt) the
+        // other, wrong options are out of play — their rectangles and outlines get .l02-off and a tap on one does nothing at all: no wiggle,
+        // no red, no sound, no line, no bird reaction, and it does not fall through to the picture's own try-again either (the outline's
+        // handler in [L02-FIND-HOTS] swallows it; the rectangle's own guard below is belt and braces). The look is unchanged.
+        if(find) [...frame.querySelectorAll(".tis-hot")].forEach((h, j)=>{ if(h === hot) return; h.classList.add("l02-off");
+          const sh = frame.querySelector('.l02-shape[data-hot="' + j + '"]'); if(sh){ sh.classList.add("l02-off"); sh.style.cursor = "default"; } }); };
       const miss = ()=>{ if(done) return; sfxWrongSoft();
-        if(!seq.length){ setSwMood("tryagain"); play(audioFor(slide,"try_again")||null,()=>{}); return; }
+        if(!seq.length){ setSwMood("tryagain"); play(audioFor(slide,"try_again")||null, moodBack); return; }
         const k = Math.min(++misses, seq.length) - 1, last = k === seq.length - 1;
         state.attempts = misses; state.scaffoldLevel = Math.max(state.scaffoldLevel, last ? 3 : (k ? 2 : 1));
         setSwMood(k ? "hint" : "tryagain"); if(last) pointAtAnswer();
-        play("assets/Audio/" + seq[k] + "." + AUDIO_EXT, ()=>{}); };
+        play("assets/Audio/" + seq[k] + "." + AUDIO_EXT, moodBack); };
       (d.hotspots || []).forEach(h => {
         const hs = document.createElement("button"); hs.className = "tis-hot" + (h.correct ? " correct-hot" : "");
         hs.style.left=h.x+"%"; hs.style.top=h.y+"%"; hs.style.width=h.w+"%"; hs.style.height=h.h+"%";
         hs.onclick = (e)=>{ e.stopPropagation(); if(done) return;
+          if(find && pointed && !h.correct) return;   // [L02-G2-HAND-LOCK] a wrong option after the hand: nothing happens
           if(h.correct){ done=true; if(pointed) stopNudge(); hs.classList.add("hit"); sfxCorrect(); confettiCannon(); setSwMood("happy");
             SwiftPAL.emit(d.signal_name || "scene_tap_first_try", {slide_id:slide.id, phase:slide.phase, correct:true});
             play(audioFor(slide,"correct")||null, ()=> setTimeout(()=>{ if(CARD.slides[state.idx] === slide) completeSlide(true); }, 900)); }   // [L02-FIND-FIG] only its own slide
@@ -5300,6 +5312,7 @@ window.__pgWired=true; window.mountSlide(parseInt(n,10)||0);}catch(e){}},900);})
         new MutationObserver(mirror).observe(hot, { attributes: true, attributeFilter: ["class"] });
         path.addEventListener("click", function(e){
           e.stopPropagation();
+          if(hot.classList.contains("l02-off")) return;   // [L02-G2-HAND-LOCK] a wrong option once the hand is up: swallowed, nothing happens
           if(CARD.slides[state.idx] !== s || frame.querySelector(".tis-hot.hit")) return;
           hot.click();
           if(!hot.classList.contains("correct-hot")){
