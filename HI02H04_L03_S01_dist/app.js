@@ -3276,6 +3276,36 @@ const SlideModules = {
         frame.classList.remove("p2-pop"); void frame.offsetWidth; frame.classList.add("p2-pop");
         startPopSfx();
         clearTimeout(popTimer); popTimer = setTimeout(()=>{ if(alive() && then) then(); }, POP_MS); };
+      // [L02-POP-IN-VO] (2026-11-09, user request) pages T1-T9: the picture's pop-and-hold is OVER before the sentence's voice is - so before
+      // आगे बढ़ें lights at the clip's end ([L02-NAV-AT-VO-END]). Timed on the clip's own clock, like the word highlight: the pop finishes
+      // POP_END_GAP_S (0.1 s) before the clip ends. The pages that pop WITH the voice (data.pop_with_sentence: T2 / T3 / T4 / T9) keep their
+      // pop-out at the voice's start (popHold) and hold until their settle (p2-pop-out, 0.28 s) - it was 1 s after the voice. The others
+      // (T1, T5-T8) keep the same 2 s pop (p2BirdPop), now placed to end at that point instead of starting after the sentence; a clip too
+      // short for the whole 2 s (T6, 1.66 s) pops with the voice and only the hold is shorter (the same pop-out and settle). popPicture and
+      // popHoldEnd above are no longer called from here. popClipEnd at the clip's end: a held pop the clock could not settle (the clip
+      // failed to load) settles then.
+      const POP_END_GAP_S = 0.1, SETTLE_S = 0.28, POP_S = POP_MS / 1000;
+      let clipRaf = 0;
+      const popOnClip = (a)=>{ cancelAnimationFrame(clipRaf); if(!a) return;
+        let phase = POP_WITH ? 1 : 0;                       // 0 not popped yet, 1 popped out and holding, 2 the 2 s pop running / settling
+        const tick = ()=>{
+          if(!alive() || currentAudio !== a || a.ended) return;   // the clip ended or another clip cut it
+          const D = a.duration;
+          if(isFinite(D) && D > 0){
+            const t = a.currentTime, end = D - POP_END_GAP_S;
+            if(phase === 0){
+              if(end - POP_S >= 0){ if(t >= end - POP_S){ phase = 2; frame.classList.remove("p2-pop", "p2-pop-in", "p2-pop-out"); void frame.offsetWidth; frame.classList.add("p2-pop"); } }
+              else { phase = 1; popHold(); }                  // too short for the 2 s pop: pop out with the voice and hold
+            }
+            if(phase === 1 && t >= end - SETTLE_S){ phase = 2; frame.classList.remove("p2-pop-in"); void frame.offsetWidth; frame.classList.add("p2-pop-out"); }
+            if(phase === 2) return;                           // the rest runs out by itself (CSS)
+          }
+          clipRaf = requestAnimationFrame(tick);
+        };
+        clipRaf = requestAnimationFrame(tick);
+      };
+      const popClipEnd = ()=>{ cancelAnimationFrame(clipRaf);
+        if(frame.classList.contains("p2-pop-in")){ frame.classList.remove("p2-pop-in"); void frame.offsetWidth; frame.classList.add("p2-pop-out"); } };
       const speakSentence = ()=>{
         if(!alive()) return;
         clearTimeout(cueTimer); setCue(false); wordsOff(); setSwMood("talk");
@@ -3284,9 +3314,8 @@ const SlideModules = {
         play(wholeSrc, ()=>{ wordsOff(); setSwMood("point"); if(!alive()) return;
           if(!heard){ heard = true; SwiftPAL.emit("sentence_heard", { slide_id: slide.id, phase: slide.phase }); }
           // [L02-NAV-AT-VO-END] (2026-11-09, user request) pages T1-T9: आगे बढ़ें lights (with its usual breathing pulse) the moment the sentence's
-          // voice and its word highlight are over - this callback - instead of POP_MS (2 s) later. The picture's pop runs exactly as before.
-          if(POP_WITH){ popHoldEnd(); clearTimeout(popTimer); setNavActive(true); }   // [L02-POP-WITH-SENTENCE] rev 2: the held pop ends 1 s after the voice, as before
-          else { popPicture(null); setNavActive(true); }                             // [L02-POP-AFTER-SENTENCE] the picture still pops after the sentence
+          // voice and its word highlight are over - this callback - instead of POP_MS (2 s) later.
+          popClipEnd(); clearTimeout(popTimer); setNavActive(true);   // [L02-POP-IN-VO] the picture's pop is already over (popOnClip below)
         });
         if(POP_WITH) popHold();   // [L02-POP-WITH-SENTENCE] rev 2: the pop + its quiet sound start with the voice (play() above has just started it) and hold
         // [L02-SENT-RATE] (2026-10-07, user request) the sentence is heard slower (card data.sentence_rate: 0.72 = 10% slower, then 20% more; 0.8 / 0.9 before) with its pitch kept —
@@ -3296,8 +3325,9 @@ const SlideModules = {
           try{ currentAudio.preservesPitch = true; currentAudio.mozPreservesPitch = true; currentAudio.webkitPreservesPitch = true; currentAudio.playbackRate = d.sentence_rate; }catch(e){}
         }
         syncWords(currentAudio);
+        popOnClip(currentAudio);   // [L02-POP-IN-VO] the picture's pop on the clip's clock, over before the clip ends
       };
-      const chipEl = ()=> cap.querySelector(".tut-audio") || $("slideHost").querySelector(".tut-card .tut-audio");
+      const chipEl =()=> cap.querySelector(".tut-audio") || $("slideHost").querySelector(".tut-card .tut-audio");
       // [L02-READ-ALOUD] the FIRST tap on the chip starts the read-aloud beat (nothing speaks; the mic glyph dissolves into the
       // sound wave, the words pace over REC_MS), then the chip is disabled for good and the sentence speaks as a tap did before;
       // later taps do nothing. The chip is captured now: should the page be left during the beat, the timer touches nothing live.
