@@ -3531,7 +3531,11 @@ const SlideModules = {
         // handler in [L02-FIND-HOTS] swallows it; the rectangle's own guard below is belt and braces). The look is unchanged.
         if(find) [...frame.querySelectorAll(".tis-hot")].forEach((h, j)=>{ if(h === hot) return; h.classList.add("l02-off");
           const sh = frame.querySelector('.l02-shape[data-hot="' + j + '"]'); if(sh){ sh.classList.add("l02-off"); sh.style.cursor = "default"; } }); };
-      const miss = ()=>{ if(done) return; sfxWrongSoft();
+      // [L02-G2-HAND-LOCK] rev 2 (2026-11-09, user request) page 10 G2 only: once the hand is up, the answer is the ONLY thing on the
+      // picture that responds. A tap that misses the decoys' outlines (just beside the mother or the ball, the empty picture, the hand
+      // itself) used to reach this try-again through frame.onclick — wrong sound, the last hint line again, the bird's hint face. Now
+      // it is swallowed the same way: no sound, no line, no animation, no attempt counted.
+      const miss = ()=>{ if(done) return; if(find && pointed) return; sfxWrongSoft();
         if(!seq.length){ setSwMood("tryagain"); play(audioFor(slide,"try_again")||null, moodBack); return; }
         const k = Math.min(++misses, seq.length) - 1, last = k === seq.length - 1;
         state.attempts = misses; state.scaffoldLevel = Math.max(state.scaffoldLevel, last ? 3 : (k ? 2 : 1));
