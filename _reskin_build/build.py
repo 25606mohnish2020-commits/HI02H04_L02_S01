@@ -1,4 +1,4 @@
-"""Rebuild HI02H04_L02_S01 on the HI02H04_L01_S01 reference chrome + engine.
+"""Rebuild HI02H04_L03_S01 on the HI02H04_L01_S01 reference chrome + engine.
 
 index.html  = reference body markup (title/caption swapped) + this lesson's card + <script src=app.js>
 style.css   = every reference <style> block, in cascade order, minus the reference-lesson-only blocks, + L02-ADAPT
@@ -14,8 +14,8 @@ import re, json, os, sys
 # newer snapshot (REF_LIVE) deliberately and review the diff.
 REF_LIVE = r"C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001\HI02H04_L01_S01\HI02H04_L01_S01.html"
 REF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reference_HI02H04_L01_S01_2026-09-30_bak110.html")
-ROOT = r"C:\Users\25606\OneDrive\FLN @ CG\Bindu's File\HI02H04_L02_S01_dist-20260926T152741Z-1-001"
-CUR = os.path.join(ROOT, "HI02H04_L02_S01_dist")
+ROOT = r"C:\Users\25606\OneDrive\FLN @ CG\Bindu's File\HI02H04_L03_S01_dist-20260926T152741Z-1-001"
+CUR = os.path.join(ROOT, "HI02H04_L03_S01_dist")
 BACKUP_INDEX = os.path.join(ROOT, "_backup_before_reskin", "index.html")
 SCR = os.path.dirname(os.path.abspath(__file__))
 # ---- [L02-DIST-OPTIM] (2026-10-12, user request) "Remove all the unwanted, unused and unnecessary things from this folder and convert all the
@@ -73,7 +73,7 @@ for b in styles:
     if b["id"] in SKIP_STYLE: continue
     css_parts.append("/* ===== <style id=\"%s\"> ===== */\n%s" % (b["id"], b["inner"].strip("\n")))
 css_parts.append(rd(os.path.join(SCR, "adapt.css")).strip("\n"))
-style_css = ("/* HI02H04_L02_S01 — layout ported value-for-value from HI02H04_L01_S01 (its base stylesheet + every appended\n"
+style_css = ("/* HI02H04_L03_S01 — layout ported value-for-value from HI02H04_L01_S01 (its base stylesheet + every appended\n"
              "   layout patch, in the same cascade order); this lesson's own adaptations are the L02-ADAPT block at the end. */\n\n"
              + "\n\n".join(css_parts) + "\n")
 
@@ -339,7 +339,7 @@ for b in scripts:
 js_parts.append(rd(os.path.join(SCR, "adapt.js")).strip("\n") + "\n;")
 js_parts.append(rd(os.path.join(SCR, "sent_q_page.js")).strip("\n") + "\n;")   # [L02-G3-REF] the reference page-5 behaviours, card-driven (slide.sent_ref)
 js_parts.append(rd(os.path.join(SCR, "bgm_duck.js")).strip("\n") + "\n;")      # [L02-BGM-DUCK] the background-music bed — LAST, so its mountSlide wrapper is outermost (card bgm)
-app_js = ("/* HI02H04_L02_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order\n"
+app_js = ("/* HI02H04_L03_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order\n"
           "   (the reference-lesson-only scripts are left out; STORY_READ_PAGE is this lesson's own tutorial module). */\n\n"
           + "\n\n".join(js_parts) + "\n")
 
@@ -510,7 +510,7 @@ def ff(*args):
 
 # ---- [L02-VO-BATCH] (2026-10-06, user request) "I have added the folder (voiceovers_batch (25)) which contains all the new VOs — implement
 # all these VOs to their respective places, replace the older VOs with these VOs and they must be in sync." The folder (kept where the user
-# put it, HI02H04_L02_S01_dist/assets/voiceovers_batch (25)/voiceovers/, like the car and SFX folders) holds one WAV per manifest line
+# put it, HI02H04_L03_S01_dist/assets/voiceovers_batch (25)/voiceovers/, like the car and SFX folders) holds one WAV per manifest line
 # (61; 24 kHz mono 16-bit, 0.2-0.3 s of silence before the voice, -21..-15 LUFS), named by Audio ID — the VO_Manifest.xlsx of the same
 # day ([L02-VO-MANIFEST]). Each is made into assets/Audio/<id>.ogg exactly as the placeholder lines were (tts_clip): cut to 0.10 s before
 # the voice and 0.33 s after it (silencedetect -45 dB / 0.15 s), two-pass linear loudnorm to -16.5 LUFS / -1.1 dBTP (the lesson's
@@ -524,7 +524,7 @@ def ff(*args):
 # vo_q_reveal, vo_opt_khana / book / toys / bed / chair, vo_tap_speaker_sentence.
 # [L02-VO-BATCH-2] (2026-10-14, user request) "I have added a voiceovers folder — replace all the existing VOs with the VOs of that folder at
 # the exact places, keep the working flow exactly the same": the user's voiceovers_batch (27) (61 WAVs, 24 kHz mono, one per Audio ID of the
-# 2026-10-13 manifest, all new takes; dropped into the dist as HI02H04_L02_S01_dist/voiceovers and moved here beside batch (25)) is the
+# 2026-10-13 manifest, all new takes; dropped into the dist as HI02H04_L03_S01_dist/voiceovers and moved here beside batch (25)) is the
 # batch now. Every line goes through vo_clip below as before (trim, -16.5 LUFS, 48 k WAV); the word timings re-measure by md5; the gate
 # headline onsets are re-pinned (GATE_CAPTION); the celebration line is the batch's own vo_cel_prompt (its lip-sync re-measured off it).
 # One wording changed with the batch's manifest (VO_Manifest (1).xlsx): vo_tap_ok "शाबाश! सही जगह।" -> "शाबाश! सही जवाब।".
@@ -1308,7 +1308,7 @@ for _gone in ("vo_tap_bed", "sfx_walk"):
     _p = os.path.join(CUR, "assets", "Audio", _gone + "." + AUD_EXT)
     if os.path.exists(_p): os.remove(_p); print("removed", _p)
     aud.pop(_gone, None); txt.pop(_gone, None)
-# ---- [L02-STD-SFX] (2026-10-05, user request) the user's "Standard SFX" folder (HI02H04_L02_S01_dist/assets/Standard SFX-20261005T114216Z-1-001/
+# ---- [L02-STD-SFX] (2026-10-05, user request) the user's "Standard SFX" folder (HI02H04_L03_S01_dist/assets/Standard SFX-20261005T114216Z-1-001/
 # Standard SFX/, left in the dist as the source folder like assets/SFX; copies in _reskin_build/std_sfx_*_source.*): five fleet-standard
 # sounds — confetti (1.09 s), correct_feedback (0.86 s, already Opus), incorrect_feedback (0.72 s), next_button (0.10 s), play_button
 # (0.42 s); 48 kHz mono, peaks at 0 dBFS, means -8.5 .. -24 dB. Each is shipped whole (no cut, no fades: the files are clean) at the
@@ -2903,7 +2903,7 @@ index_html = f"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SwiftPAL · HI02H04_L02_S01 · {card["title"]["hi"]}</title>
+<title>SwiftPAL · HI02H04_L03_S01 · {card["title"]["hi"]}</title>
 <!-- inline favicon: stops the browser asking for /favicon.ico and logging a 404 -->
 <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
 <!-- LAYOUT: ported value-for-value from HI02H04_L01_S01 (चित्र-वाक्य मिलान) — its chrome markup, stylesheet cascade,
@@ -2969,10 +2969,10 @@ print("wrote", len(style_css), len(app_js), len(index_html))
 # the same file sits at the FLN root): one sheet "VO Manifest", two columns Audio ID | Script, the header Calibri 12 bold white on #1F3864,
 # the ids in Consolas 11, the scripts in Calibri 12, every cell vertically centred, widths 26 / 118, the header row frozen, an autofilter over
 # the table — the recording script handed to the voice team, whose batch comes back as <Audio ID>.wav (voiceovers_batch.zip). This lesson had
-# none, so it is written here as HI02H04_L02_S01_dist/VO_Manifest.xlsx. First pass (same day): every line the lesson SPEAKS, from the
+# none, so it is written here as HI02H04_L03_S01_dist/VO_Manifest.xlsx. First pass (same day): every line the lesson SPEAKS, from the
 # finished card, in play order. Second pass (2026-10-06, user: "based on the new changes I have made in this file, the manifest you are
 # generating is containing the old dialogues — update it as per the latest dialogues"): the lines now come from the user's LATEST review
-# deck, Bindu's File/HI02H04_L02_S01_review (1).pptx (2026-10-04 14:22; the same text as Downloads/HI02H04_L02_S01_review.pptx of
+# deck, Bindu's File/HI02H04_L03_S01_review (1).pptx (2026-10-04 14:22; the same text as Downloads/HI02H04_L03_S01_review.pptx of
 # 2026-10-03; its on-slide text is dumped to _reskin_build/deck_dialogues_2026-10-04.json for the next diff), read page by page and laid
 # out in the lesson's play order (MANIFEST below). Where the deck gives a line it wins over the card's text (CHANGED: the welcome's
 # punctuation, the first transition's new line, story sentences 3 / 4 / 8a / 8b, G2's prompt, G3's prompt and its "look at the picture"

@@ -1,4 +1,4 @@
-/* HI02H04_L02_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order
+/* HI02H04_L03_S01 — engine + FLN animation kit + layout patches, ported from HI02H04_L01_S01 in the same script order
    (the reference-lesson-only scripts are left out; STORY_READ_PAGE is this lesson's own tutorial module). */
 
 /* ===== [L02-TAB-PAUSE] (2026-10-21, user request: "When the user switches to another browser tab, then the file should automatically

@@ -1,4 +1,4 @@
-﻿Section,Standard,HI02H04_L02_S01,"What the lesson does (checked on the 12 Oct 2026 build, after the 7 s and music changes)"
+﻿Section,Standard,HI02H04_L03_S01,"What the lesson does (checked on the 12 Oct 2026 build, after the 7 s and music changes)"
 ,The user should see a loading screen before a title screen. ,✓,"Boot loader (assets/UI/loader.webp) held 2 s, then faded; the title card is up at about 2.6 s."
 Title Screen,The standard Play button is used with size 140 × 140 px,✓,"The play disc is the standard SVG pair (byte-identical to 'Standard play button.svg' and '…disabled.svg', md5 match) in a 140 × 140 px box; measured 139.7 px at 1280 × 720 (stage scale)."
 ,"On the title screen, the Play button appears only when the VO is complete.",✓,"During the line only the standard DISABLED grey disc is on the card; the gold Play pops in (sgBtnReveal) at the line's end, 6.5 s after it starts, and only then is tappable."

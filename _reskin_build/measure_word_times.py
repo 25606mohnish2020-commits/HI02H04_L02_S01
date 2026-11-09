@@ -20,7 +20,7 @@ import os, re, sys, json, math, struct, hashlib, subprocess, argparse
 
 SCR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(SCR)
-CUR = os.path.join(ROOT, "HI02H04_L02_S01_dist")
+CUR = os.path.join(ROOT, "HI02H04_L03_S01_dist")
 WT_PATH = os.path.join(SCR, "word_times.json")
 REF_AUDIO = r"C:\Users\25606\OneDrive\FLN @ CG\Suresh's File\HI02H04_L01_S01-20260916T080241Z-1-001\HI02H04_L01_S01\assets\Audio"
 STOPS = set("कखगघचछजझटठडढतथदधपफबभ")
