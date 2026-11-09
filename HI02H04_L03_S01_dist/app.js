@@ -3283,8 +3283,10 @@ const SlideModules = {
         cap.classList.add("p2-speaking");   // [L02-SPK-CUE] the chip's own voice: its wave arcs blink only while this clip plays
         play(wholeSrc, ()=>{ wordsOff(); setSwMood("point"); if(!alive()) return;
           if(!heard){ heard = true; SwiftPAL.emit("sentence_heard", { slide_id: slide.id, phase: slide.phase }); }
-          if(POP_WITH){ popHoldEnd(); clearTimeout(popTimer); popTimer = setTimeout(()=>{ if(alive()) setNavActive(true); }, POP_MS); }   // [L02-POP-WITH-SENTENCE] rev 2: the held pop + its sound end 1 s after the voice; आगे बढ़ें 2 s after it, as before
-          else popPicture(()=> setNavActive(true));   // [L02-POP-AFTER-SENTENCE] आगे बढ़ें only once the picture's pop is over
+          // [L02-NAV-AT-VO-END] (2026-11-09, user request) pages T1-T9: आगे बढ़ें lights (with its usual breathing pulse) the moment the sentence's
+          // voice and its word highlight are over - this callback - instead of POP_MS (2 s) later. The picture's pop runs exactly as before.
+          if(POP_WITH){ popHoldEnd(); clearTimeout(popTimer); setNavActive(true); }   // [L02-POP-WITH-SENTENCE] rev 2: the held pop ends 1 s after the voice, as before
+          else { popPicture(null); setNavActive(true); }                             // [L02-POP-AFTER-SENTENCE] the picture still pops after the sentence
         });
         if(POP_WITH) popHold();   // [L02-POP-WITH-SENTENCE] rev 2: the pop + its quiet sound start with the voice (play() above has just started it) and hold
         // [L02-SENT-RATE] (2026-10-07, user request) the sentence is heard slower (card data.sentence_rate: 0.72 = 10% slower, then 20% more; 0.8 / 0.9 before) with its pitch kept —
